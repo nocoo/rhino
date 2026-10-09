@@ -5,6 +5,7 @@ import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import type { Connect, Plugin } from "vite";
 import { MAX_BODY_BYTES } from "../src/domain/contracts.ts";
+import { cleanupDatabase } from "../tests/helpers/isolation.ts";
 import { type E2EChild, startE2EChild } from "./e2e-child.ts";
 
 export type Mode = "local" | "e2e" | "prod";
@@ -417,6 +418,7 @@ export function rhinoEnvironments(): Plugin {
 		throw new Error("Test environment requires RHINO_TEST_STATE and RHINO_TEST_CONFIG");
 	}
 	let layer: EnvironmentLayer | undefined;
+	let disconnected: (() => void) | undefined;
 	return {
 		name: "rhino-environments",
 		apply: "serve",
@@ -431,6 +433,23 @@ export function rhinoEnvironments(): Plugin {
 				port: server.config.server.port ?? 7057,
 				automated,
 			});
+			if (automated && process.send) {
+				const state = process.env.RHINO_TEST_STATE;
+				const id = process.env.RHINO_TEST_RUN_ID;
+				const config = process.env.RHINO_TEST_CONFIG;
+				if (!state || !id || !config) throw new Error("Missing owned E2E state");
+				// Miniflare exits synchronously on SIGTERM; IPC lets its child reclaim only its own state.
+				disconnected = () => {
+					void server
+						.close()
+						.then(() => cleanupDatabase({ state, id, config, env: process.env }))
+						.then(
+							() => process.exit(0),
+							() => process.exit(1),
+						);
+				};
+				process.once("disconnect", disconnected);
+			}
 			server.middlewares.use((req, res, next) => {
 				const address = server.httpServer?.address();
 				if (address && typeof address !== "string") layer?.setPort(address.port);
@@ -439,6 +458,7 @@ export function rhinoEnvironments(): Plugin {
 		},
 		async closeServer() {
 			await layer?.close();
+			if (disconnected) process.off("disconnect", disconnected);
 		},
 	};
 }

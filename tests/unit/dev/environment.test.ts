@@ -11,9 +11,12 @@ import {
 
 const mocks = vi.hoisted(() => ({
 	exec: vi.fn(),
+	cleanup: vi.fn(),
 	start: vi.fn(),
 	upstream: vi.fn(),
 }));
+
+vi.mock("../../../tests/helpers/isolation.ts", () => ({ cleanupDatabase: mocks.cleanup }));
 
 vi.mock("node:child_process", async (load) => {
 	const actual = await load<typeof import("node:child_process")>();
@@ -614,6 +617,41 @@ describe("child and production transport", () => {
 });
 
 describe("plugin wiring and production token helper", () => {
+	it("reclaims the isolated child on IPC disconnect, preserving cleanup errors", async () => {
+		vi.stubEnv("CLOUDFLARE_ENV", "test");
+		vi.stubEnv("RHINO_TEST_STATE", "/tmp/owned");
+		vi.stubEnv("RHINO_TEST_CONFIG", "/tmp/owned/wrangler.json");
+		vi.stubEnv("RHINO_TEST_RUN_ID", "run-id");
+		const send = process.send;
+		process.send = vi.fn();
+		const exit = vi.spyOn(process, "exit").mockImplementation(() => undefined as never);
+		try {
+			const plugin = rhinoEnvironments();
+			const close = vi.fn().mockResolvedValue(undefined);
+			const configure = plugin.configureServer;
+			if (typeof configure !== "function") throw new Error("configure missing");
+			const server = { config: { server: {} }, middlewares: { use: vi.fn() }, close };
+			configure.call({} as never, server as never);
+			mocks.cleanup.mockResolvedValue(undefined);
+			process.emit("disconnect");
+			await vi.waitFor(() => expect(exit).toHaveBeenCalledWith(0));
+			expect(mocks.cleanup).toHaveBeenCalledWith(
+				expect.objectContaining({ state: "/tmp/owned", id: "run-id" }),
+			);
+			configure.call({} as never, server as never);
+			mocks.cleanup.mockRejectedValueOnce(new Error("marker mismatch"));
+			process.emit("disconnect");
+			await vi.waitFor(() => expect(exit).toHaveBeenCalledWith(1));
+			if (typeof plugin.closeServer === "function")
+				await plugin.closeServer.call({} as never, {} as never);
+			delete process.env.RHINO_TEST_RUN_ID;
+			expect(() => configure.call({} as never, server as never)).toThrow("owned E2E state");
+		} finally {
+			process.send = send;
+			exit.mockRestore();
+			vi.unstubAllEnvs();
+		}
+	});
 	it("fails closed when CLOUDFLARE_ENV=test lacks state or config", () => {
 		const previous = {
 			env: process.env.CLOUDFLARE_ENV,
@@ -642,6 +680,8 @@ describe("plugin wiring and production token helper", () => {
 	});
 
 	it("applies only on serve, enforces pre, and closeServer awaits layer close", async () => {
+		const send = process.send;
+		process.send = undefined;
 		const plugin = rhinoEnvironments();
 		expect(plugin.name).toBe("rhino-environments");
 		expect(plugin.apply).toBe("serve");
@@ -696,6 +736,7 @@ describe("plugin wiring and production token helper", () => {
 			if (typeof plugin.closeServer !== "function") throw new Error("closeServer missing");
 			await plugin.closeServer.call({} as never, {} as never);
 		} finally {
+			process.send = send;
 			if (previous) process.env.CLOUDFLARE_ENV = previous;
 			else delete process.env.CLOUDFLARE_ENV;
 			if (previousState) process.env.RHINO_TEST_STATE = previousState;

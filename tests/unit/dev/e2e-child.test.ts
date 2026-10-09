@@ -190,7 +190,7 @@ describe("e2e child isolation", () => {
 			["node_modules/vite/bin/vite.js", "--host", "127.0.0.1", "--port", "19057", "--strictPort"],
 			expect.objectContaining({
 				detached: true,
-				stdio: "ignore",
+				stdio: ["ignore", "ignore", "ignore", "ipc"],
 				env: expect.objectContaining({ CLOUDFLARE_ENV: "test" }),
 			}),
 		);

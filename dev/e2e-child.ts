@@ -159,7 +159,7 @@ export async function startE2EChild(
 			spawn(command[0] ?? "", command.slice(1), {
 				env,
 				detached: true,
-				stdio: "ignore",
+				stdio: ["ignore", "ignore", "ignore", "ipc"],
 			});
 		const running = child;
 		await untilReady(running, () => (hooks.ready ?? waitForLive)(url, token, running));
