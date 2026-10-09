@@ -123,7 +123,7 @@ it("handles same-ID insert races and real D1 constraints without partial writes"
 });
 
 it("fails closed with unconfigured production owner and safe unknown errors", async () => {
-	const request = new Request(`${origin}/api/live`);
+	const request = new Request(`${origin}/api/profile`);
 	const response = await worker.fetch(request, {
 		...proxy.env,
 		RESOURCE_ENV: "production",

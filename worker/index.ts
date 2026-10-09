@@ -3,7 +3,7 @@ import { API_ROUTES, ApiError } from "../src/domain/contracts";
 import { authenticate } from "./auth";
 import { authorProfile } from "./author-profile";
 import type { WorkerEnv } from "./env";
-import { jsonError, jsonOk, logSafe, requireOrigin } from "./http";
+import { JSON_HEADERS, jsonError, jsonOk, logSafe, requireOrigin } from "./http";
 import { deleteMeasurement, getMeasurements, putMeasurement } from "./routes/measurements";
 import { getPlans, previewPlans, putPlan } from "./routes/plans";
 import { getProfile, putProfile } from "./routes/profile";
@@ -60,22 +60,27 @@ export async function handleApi(
 	if (request.method === "OPTIONS") {
 		throw new ApiError(405, "invalid_request", "Method not allowed");
 	}
+	const path = url.pathname;
+	if (path === "/api/live" && request.method === "GET") {
+		try {
+			await env.DB.prepare("SELECT 1 FROM profile LIMIT 1").all();
+			return Response.json(
+				{ status: "ok", name: "rhino", version, revision: env.DEPLOY_REVISION },
+				{ headers: JSON_HEADERS },
+			);
+		} catch {
+			return Response.json(
+				{ status: "error", name: "rhino", version },
+				{ status: 503, headers: JSON_HEADERS },
+			);
+		}
+	}
 	const identity = await authenticate(request, env);
 	if (MUTATING.has(request.method)) {
 		requireOrigin(request, env.APP_ORIGIN);
 	}
-	const path = url.pathname;
 	if (path === "/api/identity" && request.method === "GET") {
 		return jsonOk(await authorProfile(identity.email));
-	}
-	if (path === "/api/live" && request.method === "GET") {
-		await env.DB.prepare("SELECT id FROM profile LIMIT 1").all();
-		return jsonOk({
-			ok: true as const,
-			version,
-			revision: env.DEPLOY_REVISION,
-			environment: env.RESOURCE_ENV,
-		});
 	}
 	if (path === "/api/profile" && request.method === "GET") {
 		return getProfile(env);

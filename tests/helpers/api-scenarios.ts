@@ -45,6 +45,10 @@ export async function exerciseApi(harness: ApiHarness): Promise<void> {
 		assert.equal(response.status, status, `${method} ${path}: ${await response.clone().text()}`);
 		assert.equal(response.headers.get("cache-control"), "no-store");
 		const result = (await response.json()) as ApiData<T> & ApiErrorBody;
+		if (path === "/api/live" && status < 400) {
+			covered.add("GET /api/live");
+			return result as T;
+		}
 		if (status < 400) {
 			const route = API_ROUTES.find(
 				(route) =>
@@ -57,29 +61,31 @@ export async function exerciseApi(harness: ApiHarness): Promise<void> {
 		assert.ok(result.error.code);
 		return result as T;
 	}
-	const live = await call<{ ok: boolean; version: string; revision: string; environment: string }>(
+	const live = await call<{ status: string; name: string; version: string; revision: string }>(
 		"GET",
 		"/api/live",
 	);
-	assert.deepEqual(live, { ok: true, version: "0.1.0", revision: "test", environment: "test" });
+	assert.deepEqual(live, { status: "ok", name: "rhino", version: "0.1.0", revision: "test" });
 	assert.deepEqual(await call("GET", "/api/identity"), { name: null, avatar: null });
 	await call("GET", "/api/live", undefined, 200, harness.tokens.rotated);
-	await call("GET", "/api/live", undefined, 401, "");
+	await call("GET", "/api/live", undefined, 200, "");
 	for (const [key, token] of Object.entries(harness.tokens))
-		if (key !== "owner" && key !== "rotated") await call("GET", "/api/live", undefined, 403, token);
+		if (key !== "owner" && key !== "rotated")
+			await call("GET", "/api/profile", undefined, 403, token);
 	for (const route of API_ROUTES)
-		await call(
-			route.method,
-			route.path.replace(/:[^/]+/g, uuid()) +
-				(route.path.endsWith("measurements") ||
-				route.path.endsWith("sessions") ||
-				route.path.endsWith("progress")
-					? `?${range}`
-					: ""),
-			route.method === "GET" ? undefined : {},
-			401,
-			"",
-		);
+		if (route.path !== "/api/live")
+			await call(
+				route.method,
+				route.path.replace(/:[^/]+/g, uuid()) +
+					(route.path.endsWith("measurements") ||
+					route.path.endsWith("sessions") ||
+					route.path.endsWith("progress")
+						? `?${range}`
+						: ""),
+				route.method === "GET" ? undefined : {},
+				401,
+				"",
+			);
 	await call("OPTIONS", "/api/live", undefined, 405);
 	await call("PATCH", "/api/profile", {}, 404);
 	await call("GET", "/api/unknown", undefined, 404);

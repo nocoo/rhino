@@ -82,8 +82,9 @@ Deployment is manual, proven successful CI source only, fresh main and protected
 The production environment allows only main and disables admin bypass. The owner
 explicitly removed recurring reviewer approval; do not reintroduce it. Deployment
 credentials are configured, but missing credentials must still fail closed.
-The existing shared Access bypass covers `/api/live`; Worker JWT verification
-still protects it. Check `/api/profile` for the edge login redirect. Protected
+The existing shared Access bypass covers `/api/live`; its anonymous GET returns
+only version/revision and minimal database health, with no-store and 503 on failure.
+All business routes still require Worker JWT verification. Check `/api/profile` for the edge login redirect. Protected
 readiness requires an owner JWT assertion, not merely an Access cookie.
 
 Eleven motions are **unreviewed illustrative previews**, not qualified instruction.
