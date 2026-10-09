@@ -11,6 +11,7 @@ export default defineConfig({
 		coverage: {
 			provider: "v8",
 			include: [
+				"dev/**/*.ts",
 				"src/domain/**/*.{ts,tsx}",
 				"worker/**/*.ts",
 				"src/models/**/*.{ts,tsx}",

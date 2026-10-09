@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 import { type ReactElement, type ReactNode, useEffect, useState } from "react";
 import { version } from "../../package.json";
+import { EnvironmentSwitch } from "./environment-switch";
 
 const Github = createLucideIcon("Github", [
 	[
@@ -207,6 +208,7 @@ export function Frame({
 			{!mobile && rail}
 			<AppMain id="main-content">
 				<AppHeader
+					className="rhino-header"
 					title={navigation.find((item) => item.id === page)?.label}
 					leading={
 						mobile ? (
@@ -228,6 +230,7 @@ export function Frame({
 					}
 					actions={
 						<>
+							<EnvironmentSwitch />
 							<HeaderIconLink href="https://github.com/nocoo/rhino" label="Rhino 的 GitHub 仓库">
 								<Github size={18} strokeWidth={1.5} aria-hidden="true" />
 							</HeaderIconLink>

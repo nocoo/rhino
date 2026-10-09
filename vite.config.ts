@@ -1,6 +1,7 @@
 import { cloudflare } from "@cloudflare/vite-plugin";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
+import { rhinoEnvironments } from "./dev/environment.ts";
 
 const testState = process.env.RHINO_TEST_STATE;
 if (testState && process.env.CLOUDFLARE_ENV !== "test") {
@@ -10,6 +11,7 @@ if (testState && process.env.CLOUDFLARE_ENV !== "test") {
 export default defineConfig({
 	cacheDir: testState ? `${testState}/vite-cache` : "node_modules/.vite",
 	plugins: [
+		rhinoEnvironments(),
 		react(),
 		cloudflare({
 			inspectorPort: false,

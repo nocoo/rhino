@@ -13,6 +13,14 @@
 		"esModuleInterop": true,
 		"types": ["vite/client", "@cloudflare/workers-types", "bun"]
 	},
-	"include": ["src", "worker", "tests", "scripts", "*.config.ts", "worker-configuration.d.ts"],
+	"include": [
+		"src",
+		"worker",
+		"dev",
+		"tests",
+		"scripts",
+		"*.config.ts",
+		"worker-configuration.d.ts"
+	],
 	"exclude": ["node_modules", "dist", "coverage"]
 }

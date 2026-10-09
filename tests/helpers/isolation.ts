@@ -80,6 +80,8 @@ export function createTestRun(origin: string, jwks: string): TestRun {
 	writeFileSync(config, JSON.stringify({ ...selected, env: { test: selected } }));
 	const env = {
 		...cleanEnvironment(),
+		CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV: "false",
+		CLOUDFLARE_INCLUDE_PROCESS_ENV: "false",
 		CLOUDFLARE_ENV: "test",
 		RESOURCE_ENV: "test",
 		RHINO_TEST_STATE: state,

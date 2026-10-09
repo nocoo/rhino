@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { EXERCISE_VIDEO_REFERENCES } from "../../src/data/exercise-videos";
 import { EXERCISES } from "../../src/data/exercises";
 import { CATALOG_VERSION, type GetSessionsResponse } from "../../src/domain/contracts";
 import { addDays, localDateInTimeZone } from "../../src/domain/dates";
@@ -18,6 +19,74 @@ async function navigate(page: Page, name: string) {
 	if (await menu.isVisible()) await menu.click();
 	await page.getByRole("button", { name: new RegExp(`^${name}( |$)`) }).click();
 }
+
+test("automated E2E is visible, isolated and locked in UI and server", async ({ page }) => {
+	await page.goto("/");
+	const group = page.locator(".environment-switch fieldset");
+	await expect(group).toBeVisible();
+	await expect(group.getByRole("radio", { name: "E2E", exact: true })).toBeChecked();
+	await expect(group.getByRole("radio", { name: "Local", exact: true })).toBeDisabled();
+	await expect(group.getByRole("radio", { name: "Prod", exact: true })).toBeDisabled();
+	const descriptor = await (await page.request.get("/__local/environment")).json();
+	expect(descriptor).toMatchObject({ local: true, mode: "e2e", automated: true, locked: true });
+	for (const mode of ["local", "prod"]) {
+		const result = await page.request.post("/__local/environment/select", {
+			headers: { Origin: new URL(page.url()).origin, "X-Rhino-Local-Csrf": descriptor.csrfToken },
+			data: { mode, instanceId: descriptor.instanceId },
+		});
+		expect(result.status()).toBe(409);
+	}
+	await expect(
+		page.getByRole("link", { name: "Rhino 的 GitHub 仓库", exact: true }),
+	).toBeInViewport();
+	const overflow = await page.evaluate(
+		() => document.documentElement.scrollWidth > window.innerWidth,
+	);
+	expect(overflow).toBe(false);
+});
+
+test("every exercise has a distinct consent-gated matching video", async ({ page }) => {
+	let requests = 0;
+	await page.route("https://www.youtube-nocookie.com/**", async (route) => {
+		requests++;
+		await route.fulfill({ contentType: "text/html", body: "<p>Video fixture</p>" });
+	});
+	await page.goto("/");
+	await navigate(page, "动作实验室");
+	for (const [index, exercise] of EXERCISES.entries()) {
+		await page.locator(".library-nav button").nth(index).click();
+		await page.getByRole("tab", { name: "真人视频", exact: true }).click();
+		await expect(page.locator("iframe")).toHaveCount(0);
+		expect(requests).toBe(index);
+		const video = EXERCISE_VIDEO_REFERENCES[exercise.id];
+		await expect(page.getByRole("link", { name: "在 YouTube 查看原视频" })).toHaveAttribute(
+			"href",
+			video.url,
+		);
+		await page.getByRole("button", { name: "加载 YouTube 视频", exact: true }).click();
+		await expect(page.locator("iframe")).toHaveAttribute(
+			"src",
+			new RegExp(`/embed/${video.youtubeId}\\?`),
+		);
+		await expect.poll(() => requests).toBe(index + 1);
+	}
+});
+
+test("unknown environment stops the application before any data requests", async ({ page }) => {
+	let requests = 0;
+	await page.route("**/__local/environment", (route) =>
+		route.fulfill({ status: 503, body: "unavailable" }),
+	);
+	await page.route("**/api/**", (route) => {
+		requests++;
+		return route.abort();
+	});
+	await page.goto("/");
+	await expect(page.getByRole("alert")).toHaveText(
+		"无法确认数据环境，已停止加载。请刷新页面或重新启动开发服务。",
+	);
+	expect(requests).toBe(0);
+});
 
 test("Chinese blue shell, owner avatar and opt-in YouTube reference", async ({
 	page,
