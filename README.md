@@ -3,9 +3,10 @@
 A private fitness planning and training journal, built for one person.
 Weekly structure, honest workout records, and a clear view of personal progress.
 
-**Status: working local preview, not released.** The journal and automated
-quality checks run locally. Eleven Three.js movements are illustrative previews;
-professional movement review and production acceptance remain open.
+**Status: v0.1.0 personal preview.** The journal is deployed at
+**https://rhino.hexly.ai**, protected by Cloudflare Access. Eleven Three.js
+movements remain illustrative previews; professional movement review and
+physical-phone acceptance are still open.
 
 ## Features
 
@@ -19,7 +20,7 @@ professional movement review and production acceptance remain open.
   rig with eleven authored clips, muscle-region highlights and static phase posters.
 - Dumbbell curls, triceps kickbacks, lateral raises, bent-over rows and calf raises
   are selectable before training; the foundational automatic A/B plans stay unchanged.
-- Cloudflare Access owner authorization, version/conflict checks and local D1.
+- Cloudflare Access owner authorization, version/conflict checks and production D1.
 - Opt-in, attributed YouTube demonstrations for all eleven strength movements.
 - Local/E2E/Prod development selector: persistent local records, disposable test
   records, or an authenticated proxy to the production Worker, never a remote test binding.
@@ -73,8 +74,10 @@ Tests mint their own RS256 keys and use isolated local D1, never daily/remote da
 Target: **https://rhino.hexly.ai**. One Worker, Static Assets and D1, protected by
 Cloudflare Access. Stable Wrangler 4.135.0 and the public `nocoo/base-ci` workflows
 are pinned. Deployment is manual and requires a successful exact-source CI run,
-fresh main, production protection and a confirmed D1 UUID. No cloud deployment
-or GitHub Release has been performed yet.
+fresh main, a main-only production environment and a confirmed D1 UUID. The owner
+removed recurring reviewer approval; successful CI remains mandatory. See
+[release history](https://github.com/nocoo/rhino/releases) and
+[exact-source workflow results](https://github.com/nocoo/rhino/actions).
 
 See [the runbook](docs/08-local-and-release.md), [training research](docs/02-training-evidence.md),
 [design and 3D acceptance](docs/05-experience-and-3d.md), and [all documents](docs/README.md).

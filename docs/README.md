@@ -1,6 +1,6 @@
 # Documentation
 
-Status: local preview implemented after research on 2026-10-09. Documents 01-07
+Status: v0.1.0 personal preview deployed after research on 2026-10-09. Documents 01-07
 retain the original requirements and research context. Document 08 records the
 current implementation and open acceptance gates; none certifies medical safety.
 
@@ -32,7 +32,7 @@ framework.
 
 1. Accept the realistic movement preview and obtain qualified technique review.
 2. Verify the actual interface and motion on the owner's phone.
-3. Complete protected production configuration, recovery and exact-source CI.
-4. Follow the release runbook; no production deployment has occurred.
+3. Preserve exact-source CI and read-only production verification for each release.
+4. Follow the recovery runbook before later migrations; never reset production for tests.
 
 Return to the [project overview](../README.md) or [agent handbook](../AGENTS.md).

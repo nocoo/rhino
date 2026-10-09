@@ -1,6 +1,6 @@
 export {};
 
-const response = await fetch("https://rhino.hexly.ai/api/live", {
+const response = await fetch("https://rhino.hexly.ai/api/profile", {
 	redirect: "manual",
 	signal: AbortSignal.timeout(10_000),
 });

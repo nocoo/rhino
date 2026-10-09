@@ -164,3 +164,20 @@ were stopped and removed only after their original marker passed validation.
 One full browser run overlapped edits to the Vite gateway import. The config
 restart interrupted the last API assertion (19/20 passed); no business assertion
 or timeout was weakened. Freeze gateway sources before the final full rerun.
+
+## 2026-10-09 - Deployment Verification Chose a Bypassed Path
+
+The first deployment uploaded the Worker and applied the initial migration, but
+the verification job failed. It assumed `/api/live` inherited the hostname's
+Access redirect. The existing shared Access application explicitly bypasses
+that path; Rhino's independent Worker JWT check correctly returned 401 instead.
+An Access cookie also cannot establish readiness on a path where the edge does
+not turn it into an assertion. A direct owner assertion verified D1, version
+0.1.0 and the exact deployed source revision.
+
+The verifier now checks `/api/profile` for the configured team's login redirect,
+with regression tests for its exact path and invalid responses. Worker auth,
+shared Access policy and release gates are unchanged. Inspect path-specific
+Access precedence, not only the hostname application, before choosing a probe.
+Do not label a failed verification run as a failed upload or as a successful
+release; they are separate outcomes that need separate evidence.

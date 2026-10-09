@@ -69,9 +69,9 @@ models. Pure `.tsx` views and Three.js rendering use browser/visual verification
 Rejection probes prove the gate, not application health. Store L1 audit reports
 in nmem, not a tracked certification document. Do not invent grades or timings.
 
-The current implementation has passed UT, L2 and desktop/mobile L3 locally.
-This is not a published-release assertion; exact-revision CI, production D1,
-production environment protection and deployment remain separate evidence.
+The implementation has passed UT, L2 and desktop/mobile L3 locally and in CI.
+Production D1 readiness and deployed version/revision are verified separately
+with an authorized owner JWT. Keep release evidence tied to its exact revision.
 
 Local URL: `https://rhino.dev.hexly.ai`, Caddy to `127.0.0.1:7057`.
 Production target: `https://rhino.hexly.ai`, Access team `nocoo`.
@@ -79,8 +79,12 @@ Use stable Wrangler 4.135.0; this project has not migrated to beta `cf`.
 base-ci is pinned to `8816553dc9f4544d1e8486bacb5cce630a9f14cb`.
 Deployment is manual, proven successful CI source only, fresh main and protected
 `production`. The confirmed production D1 is `fe36652a-9c84-485f-bae3-384f395e45ea`.
-The production environment requires owner approval and main-only deployment;
-admin bypass is disabled. Missing deployment credentials remain a hard blocker.
+The production environment allows only main and disables admin bypass. The owner
+explicitly removed recurring reviewer approval; do not reintroduce it. Deployment
+credentials are configured, but missing credentials must still fail closed.
+The existing shared Access bypass covers `/api/live`; Worker JWT verification
+still protects it. Check `/api/profile` for the edge login redirect. Protected
+readiness requires an owner JWT assertion, not merely an Access cookie.
 
 Eleven motions are **unreviewed illustrative previews**, not qualified instruction.
 Catalog 1.2.0 includes the Chinese labels and corrected hinge/contact paths.

@@ -2,7 +2,7 @@
 
 ## 0.1.0 - 2026-10-09
 
-Initial personal preview; release publication remains gated by CI and production verification.
+Initial personal preview, with exact-source CI and production verification.
 
 - Add single-owner Cloudflare Access authentication and versioned D1 records for
   profiles, measurements, training plans and workout sessions.
@@ -15,7 +15,8 @@ Initial personal preview; release publication remains gated by CI and production
 - Add a Local/E2E/Prod development selector with instance-scoped requests,
   disposable E2E databases and an explicit Access-authenticated production proxy.
 - Add strict local quality gates, real local D1 integration tests, desktop/mobile
-  browser tests and pinned public base-ci workflows with protected manual deployment.
+  browser tests and pinned public base-ci workflows with main-only manual deployment.
+  Deployment requires proven CI, without recurring reviewer approval.
 
 The 3D movements remain unreviewed previews, not qualified coaching. External
 videos do not certify Rhino's animation or constitute a personalized prescription.

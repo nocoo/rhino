@@ -34,8 +34,8 @@ every proposal has passed. This document records the implementation boundary.
   updates that movement's catalog provenance and clears its planned load instead
   of carrying a total-external load into a per-hand exercise. Saved history stays immutable.
 - Catalog 1.2.0 localizes names/muscles and corrects hinge, arm and contact paths.
-  A NASM YouTube reference is available for the Romanian deadlift; the optional
-  third-party player is absent until the user requests it. It does not certify
+  All eleven movements have attributed YouTube references; the optional
+  third-party player is absent until the user requests it. These do not certify
   Rhino's model. The shell uses the installed Basalt primary palette in deep blue.
 - `GET /api/identity` hashes only the email from an owner-verified Access JWT
   before querying the same `lizheng.blog/api/authors/profile` service used by
@@ -73,10 +73,17 @@ the production build has neither its injected capability nor its endpoints.
 
 The initial production D1 was created on 2026-10-09 in APAC, UUID
 `fe36652a-9c84-485f-bae3-384f395e45ea`. Readback reported zero application tables
-and no user records before the initial migration. GitHub `production` now requires
-the owner reviewer, permits only branch `main`, and disables admin bypass. The
-account identifier is configured there; a scoped deployment API token is still
-required. These configuration facts do not imply a deployed Worker.
+and no user records before the initial migration. GitHub `production` permits
+only branch `main` and disables admin bypass. Deployment credentials are configured.
+After approving the initial deployment, the owner explicitly removed recurring
+reviewer approval. Exact-source successful CI and fresh-main checks remain required.
+
+The pre-existing shared Access application bypasses the edge on `/api/live`.
+Rhino does not bypass Worker authentication there: anonymous requests return 401,
+and a valid owner `Cf-Access-Jwt-Assertion` is required for D1 readiness. An Access
+cookie alone is not converted to an assertion on that bypassed path. Deployment
+checks the edge login redirect on `/api/profile` instead. Shared Access policies
+were not changed to accommodate the release.
 
 ## Local Acceptance
 
@@ -92,8 +99,9 @@ cover conditional-write failures in addition to, not instead of, real persistenc
 
 The environment/video change passed 130 unit tests in 24 files with statements
 98.55%, branches 95.42%, functions 99.17% and lines 98.89%, including the gateway
-and Worker authentication. A full desktop/mobile run passed 20 browser tests;
-the post-cleanup-fix rerun and exact-revision remote CI are separate release checks.
+and Worker authentication. The post-cleanup-fix full desktop/mobile run passed
+20 browser tests in 2.9 minutes. Five further regression checks cover the deployment
+verifier's protected path and rejection of missing/wrong login redirects.
 Real Caddy acceptance wrote only E2E: Local profile readback stayed byte-equivalent,
 leaving/re-entering E2E produced a fresh empty profile, and stale API IDs and the
 unscoped explorer were rejected. Parent SIGTERM triggered IPC child cleanup with
@@ -114,9 +122,8 @@ session edits, record reload, and all eleven motion clips.
    the initial editor uses an evenly distributed preset and all-cardio switch.
 3. Progression suggestions exist as domain rules but are not yet an interactive
    load recommendation. No automatic weight increment is applied.
-4. Production D1 and GitHub environment protection are configured. Deployment
-   credentials, exact-source CI, deployment and authenticated browser acceptance
-   remain outstanding. An Access 302 is not readiness or revision evidence.
+4. Production verification is read-only; no sample health records or workout
+   fixtures are written online. An Access 302 is not readiness or revision evidence.
 5. Vite reports large chart/application and Three.js chunks. The viewer is lazy,
    but further route splitting and real-device performance verification remain.
 
@@ -129,9 +136,10 @@ Do not call this list feature-complete or publish validated coaching claims.
 2. Confirm the Cloudflare account and create exactly the intended `rhino` D1
    database through the chosen CLI; record its returned UUID, never invent it.
    Replace the placeholder and regenerate types. Review the initial migration.
-3. Configure least-privilege deployment credentials and a protected `production`
-   GitHub environment. Verify protection actually exists; naming the environment
-   in YAML does not configure reviewers or branch restrictions.
+3. Configure least-privilege deployment credentials and a main-only `production`
+   GitHub environment with admin bypass disabled. Do not add recurring reviewer
+   approval: the owner explicitly removed it. Naming the environment in YAML
+   alone does not configure branch restrictions.
 4. Commit through Husky and push. Verify all enabled base-ci jobs on the exact
    current-main SHA, including aggregate source proof. No manual success override.
 5. Record a D1 export/Time Travel recovery point before any later data migration;
@@ -140,9 +148,10 @@ Do not call this list feature-complete or publish validated coaching claims.
 6. Dispatch Deploy with the successful CI `source-run-id` and `source-sha`.
    The proven checkout injects `DEPLOY_REVISION=HEAD`, builds, applies the reviewed
    remote migration and deploys `dist/rhino/wrangler.json`, not raw unbuilt source.
-7. Verify the unauthenticated Access redirect, then use an authorized browser to
-   inspect `/api/live`: exact version/revision, production environment and D1
-   readiness. Perform the accepted create/reload workflow without logging tokens.
+7. Verify the unauthenticated Access redirect on `/api/profile`, then request
+   `/api/live` with an owner JWT assertion: exact version/revision, production
+   environment and D1 readiness. Inspect the hosted desktop/mobile UI read-only.
+   Create/reload fixtures belong in E2E, never production. Do not log tokens.
 8. Publish a matching version tag and GitHub Release only after exact-revision
    CI and deployed verification. Do not claim a pending workflow as published.
 
