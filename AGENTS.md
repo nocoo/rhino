@@ -14,6 +14,7 @@ without writing mirror tarball URLs into the committed lockfile.
 | --- | --- |
 | `bun install --frozen-lockfile` | Install the exact lock and initialize Husky |
 | `bun run dev` | Local-only Vite/Worker, port 7057, local D1 |
+| `bun run login:prod` | Authenticate the explicit development Prod proxy through Access |
 | `bun run db:migrate` | Apply migrations only to daily-development local D1 |
 | `bun run typegen` | Regenerate checked-in Wrangler binding declarations |
 | `bun run typecheck` | Strict TS across app, Worker, tests and scripts |
@@ -53,6 +54,10 @@ without writing mirror tarball URLs into the committed lockfile.
 - Tests use per-run `.wrangler/tests/run-*` state and a verified `_test_marker`.
   The marker belongs to tests, never the production migration. No remote test
   bindings, inherited CF credentials, daily-state reset or broad cleanup.
+- The development header selects Local/E2E/Prod through instance-scoped API URLs.
+  Every server start defaults to Local. E2E is disposable; automated tests are
+  locked to it. Prod forwards to the fixed Access-protected Worker, not remote D1.
+  Never send a production token to the browser or silently retarget stale requests.
 - Use the installed Basalt public controls/tokens and Lucide. Keep one viewer,
   default pause, resource cleanup and static/text alternatives on failed WebGL.
 
@@ -73,11 +78,13 @@ Production target: `https://rhino.hexly.ai`, Access team `nocoo`.
 Use stable Wrangler 4.135.0; this project has not migrated to beta `cf`.
 base-ci is pinned to `8816553dc9f4544d1e8486bacb5cce630a9f14cb`.
 Deployment is manual, proven successful CI source only, fresh main and protected
-`production`. Placeholder D1 UUID is deliberately rejected. Never bypass it.
+`production`. The confirmed production D1 is `fe36652a-9c84-485f-bae3-384f395e45ea`.
+The production environment requires owner approval and main-only deployment;
+admin bypass is disabled. Missing deployment credentials remain a hard blocker.
 
 Eleven motions are **unreviewed illustrative previews**, not qualified instruction.
 Catalog 1.2.0 includes the Chinese labels and corrected hinge/contact paths.
-The Romanian deadlift has an opt-in NASM YouTube reference, not an endorsement.
+All eleven movements have opt-in attributed YouTube references, not endorsements.
 The realistic-motion acceptance gate in docs/05 remains open. Do not set
 `instructionReady=true`, claim expert review or declare feature-complete without
 corresponding evidence. Owner preview acceptance cannot substitute for

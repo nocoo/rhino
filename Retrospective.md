@@ -124,3 +124,43 @@ Bun's node:sqlite implementation and system SQLite returned CANTOPEN for the
 marker query. The L2/L3 orchestration now runs on the already-pinned Node runtime,
 using native node:sqlite as intended. Test state is removed only after the same
 path, symlink and exact marker checks; no cleanup bypass was added.
+
+## 2026-10-09 - Local Gateway Integration Boundaries
+
+The initial instance gateway rewrote only `req.url`. The installed Cloudflare
+Vite plugin restores Connect's `originalUrl` before calling the Worker, so a
+real Local request reached the SPA fallback and returned HTML 200 instead of
+API JSON. Locked automated E2E used bare API routes and therefore did not expose
+this manual-development defect. Actual Caddy requests found it before release.
+Inline forwarding must rewrite both fields and test the downstream restoration;
+locked test success alone is not manual environment-switch acceptance.
+
+Review also rejected an initial child-cleanup fallback that removed owned paths
+after a database marker check failed. Path ownership cannot replace the matching
+database marker. Cleanup must fail closed and preserve the state for inspection.
+Serve-only plugin scoping, header allowlisting and sanitized proxy errors are
+separate production-boundary checks, not consequences of a passing UI test.
+
+The Cloudflare explorer middleware uses `enforce: pre`; ordinary plugin order
+did not put the gateway ahead of it. Real requests still reached daily D1's
+explorer until the gateway also used the early phase. The browser selector must
+not coexist with an unscoped database-management bypass. Real Local/E2E switching
+now checks the explorer boundary as well as the application API.
+
+An attempted model-only atomic commit omitted the Window capability declaration.
+The staged-snapshot typecheck blocked it despite passing worktree tests. Adding
+the required declaration to the same commit restored a coherent change; hooks
+were not bypassed. Review the staged dependency closure, not just edited files.
+
+Actual SIGTERM testing disproved the assumption that Vite's awaited close hook
+would run when Miniflare was installed. Miniflare registers a synchronous signal
+exit handler and exits before the asynchronous child cleanup finishes. Adding
+another parent signal listener did not solve it and was removed. The E2E child
+now has a Node IPC channel: loss of its parent closes its own Vite server, then
+performs exact-marker cleanup and exits. Real parent termination verified that
+the child process and its marked state disappear. Earlier owned orphan states
+were stopped and removed only after their original marker passed validation.
+
+One full browser run overlapped edits to the Vite gateway import. The config
+restart interrupted the last API assertion (19/20 passed); no business assertion
+or timeout was weakened. Freeze gateway sources before the final full rerun.

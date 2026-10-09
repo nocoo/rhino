@@ -13,8 +13,8 @@ current implementation and open acceptance gates; none certifies medical safety.
 | [05 Experience and 3D](05-experience-and-3d.md) | Responsive interaction, visual direction, assets, and motion acceptance |
 | [06 Infrastructure and Quality](06-infrastructure-and-quality.md) | Local findings, Cloudflare, base-ci, test isolation, and deployment gates |
 | [07 Delivery and Decisions](07-delivery-and-decisions.md) | Approval choices and independently verifiable implementation stages |
-
 | [08 Local and Release](08-local-and-release.md) | Current local setup, implementation limits, production and recovery runbook |
+| [09 Video References](09-video-references.md) | Attributed external movement demonstrations and verification limits |
 
 ## Reading Conventions
 

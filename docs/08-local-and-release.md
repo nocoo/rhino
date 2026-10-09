@@ -44,21 +44,39 @@ every proposal has passed. This document records the implementation boundary.
   The independent sidebar request cannot prevent training-data loading. The
   synthetic local identity deliberately has no personal email/avatar.
 
-## Requested Production-Connected Development
+## Local, E2E and Production Isolation
 
-The owner explicitly wants ordinary development actions to affect production
-data, while all automated tests must continue on isolated Wrangler D1 instances.
-Read-only Wrangler discovery on 2026-10-09 confirmed that the configured account
-contains neither a `rhino` D1 database nor a deployed `rhino` Worker (10007).
-No cloud resource was created, no data was written and no authentication rule
-was weakened during this UI/motion change.
+The owner's latest instruction supersedes production-by-default development.
+The xray-style header switch defaults to **Local** on every server startup; it
+does not restore a production preference from local storage.
 
-Two materially different arrangements need owner selection: a local frontend
-using the deployed Access-protected Worker, or a locally executing Worker with
-a remote production D1 binding. The latter is not a connection to the deployed
-Worker. Existing local-only development is retained until that choice and the
-actual production resource are established. Never silently point synthetic
-test identities or fixture runners at remote bindings.
+- Local uses the in-process Vite Cloudflare Worker with persistent `.wrangler/state`
+  D1 and synthetic local identity. The configured Caddy address is the save origin.
+- E2E creates a fresh isolated child Vite/Worker, synthetic RS256 identity, generated
+  config and marked local D1. Credentials and dev-vars inheritance are disabled.
+  Leaving E2E stops its process before marker-checked deletion of its own state.
+  An IPC disconnect also makes the child close its server and validate its marker
+  before removing its state if the development parent exits unexpectedly.
+- Prod forwards to the fixed `https://rhino.hexly.ai` Access-protected Worker,
+  never a production D1 binding in the local runtime. Run `bun run login:prod`
+  first. `cloudflared` supplies the server-side token; browser headers cannot
+  provide proxy credentials. No token is returned to the browser or logged.
+- Automatic L2/L3 runs remain locked E2E, retain direct API routes for real JWT
+  rejection tests, and cannot switch into either Local or Prod.
+
+Manual requests carry a server instance ID. A selection invalidates old tabs;
+requests capture their target before reading bodies so a concurrent switch cannot
+send an old request into production. Selection requires the current instance,
+an unpredictable CSRF token and exact local origin. The UI confirms discard of
+unsaved edits and reloads after selection. The gateway is a serve-only Vite plugin;
+the production build has neither its injected capability nor its endpoints.
+
+The initial production D1 was created on 2026-10-09 in APAC, UUID
+`fe36652a-9c84-485f-bae3-384f395e45ea`. Readback reported zero application tables
+and no user records before the initial migration. GitHub `production` now requires
+the owner reviewer, permits only branch `main`, and disables admin bypass. The
+account identifier is configured there; a scoped deployment API token is still
+required. These configuration facts do not imply a deployed Worker.
 
 ## Local Acceptance
 
@@ -71,6 +89,15 @@ plan adoption, workout logging, failed-save recovery and no-WebGL/reduced-motion
 behavior. Unit tests invoke the imported Worker against real isolated local D1;
 the same API scenario also runs over actual HTTP. Narrow fault injection tests
 cover conditional-write failures in addition to, not instead of, real persistence.
+
+The environment/video change passed 130 unit tests in 24 files with statements
+98.55%, branches 95.42%, functions 99.17% and lines 98.89%, including the gateway
+and Worker authentication. A full desktop/mobile run passed 20 browser tests;
+the post-cleanup-fix rerun and exact-revision remote CI are separate release checks.
+Real Caddy acceptance wrote only E2E: Local profile readback stayed byte-equivalent,
+leaving/re-entering E2E produced a fresh empty profile, and stale API IDs and the
+unscoped explorer were rejected. Parent SIGTERM triggered IPC child cleanup with
+the run marker intact. No acceptance fixtures were written to daily or production D1.
 
 Use the Caddy URL for owner acceptance. Do not insert sample personal metrics
 into the daily database to decorate screenshots. Confirm both light/dark modes,
@@ -87,9 +114,9 @@ session edits, record reload, and all eleven motion clips.
    the initial editor uses an evenly distributed preset and all-cardio switch.
 3. Progression suggestions exist as domain rules but are not yet an interactive
    load recommendation. No automatic weight increment is applied.
-4. Production D1 still has a deliberately invalid placeholder UUID. Deployment
-   credentials, protected environment and authenticated browser acceptance remain
-   outstanding. An Access 302 is not application readiness or revision evidence.
+4. Production D1 and GitHub environment protection are configured. Deployment
+   credentials, exact-source CI, deployment and authenticated browser acceptance
+   remain outstanding. An Access 302 is not readiness or revision evidence.
 5. Vite reports large chart/application and Three.js chunks. The viewer is lazy,
    but further route splitting and real-device performance verification remain.
 

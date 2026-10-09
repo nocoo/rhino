@@ -20,6 +20,9 @@ professional movement review and production acceptance remain open.
 - Dumbbell curls, triceps kickbacks, lateral raises, bent-over rows and calf raises
   are selectable before training; the foundational automatic A/B plans stay unchanged.
 - Cloudflare Access owner authorization, version/conflict checks and local D1.
+- Opt-in, attributed YouTube demonstrations for all eleven strength movements.
+- Local/E2E/Prod development selector: persistent local records, disposable test
+  records, or an authenticated proxy to the production Worker, never a remote test binding.
 
 The model's muscle highlights are approximate surface regions, not tissue
 segmentation or measured activation. Motion, equipment alignment and physical-phone
@@ -39,6 +42,16 @@ bun run dev
 Open **https://rhino.dev.hexly.ai** on the configured development machine.
 Caddy forwards to loopback port 7057. Local mode uses a synthetic identity and
 local storage; do not expose it publicly. No production credentials are needed.
+Each development-server start defaults to **Local**, regardless of the previous
+selection. Switching discards unsaved edits after confirmation and reloads the
+page. Other tabs using an old instance are rejected, not redirected to new data.
+**E2E** creates a separate temporary Wrangler database; leaving it removes only
+that marked instance. Automated tests lock both UI and server to E2E.
+
+To deliberately use **Prod**, first authenticate with `bun run login:prod`, then
+select Prod in the header. The token remains in the local proxy, never browser
+JavaScript. This mode reads and writes real production data. Hosted production
+does not expose the selector or the local gateway.
 
 ```sh
 bun run typecheck
