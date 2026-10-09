@@ -8,6 +8,7 @@ import { ProfileView } from "./features/profile-view";
 import { ProgressView } from "./features/progress-view";
 import { SessionView } from "./features/session-view";
 import { TodayView } from "./features/today-view";
+import { useIdentity } from "./features/use-identity";
 import { useRhinoModel } from "./features/use-rhino-model";
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
@@ -30,6 +31,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean
 
 function Workspace() {
 	const model = useRhinoModel();
+	const identity = useIdentity();
 	const [page, setPage] = useState<Page>("today");
 	const [selected, setSelected] = useState<StrengthExerciseId>("goblet-squat");
 	const navigate = (next: Page) => {
@@ -38,7 +40,7 @@ function Workspace() {
 		setPage(next);
 	};
 	return (
-		<Frame page={page} navigate={navigate}>
+		<Frame page={page} navigate={navigate} identity={identity}>
 			{model.error && (
 				<div role="alert" className="error-message" style={{ marginBottom: 20 }}>
 					{model.error}

@@ -7,4 +7,5 @@ export type WorkerEnv = Omit<Cloudflare.Env, "RESOURCE_ENV"> & {
 export type AuthContext = {
 	sub: string;
 	mode: "local" | "access";
+	email: string | null;
 };

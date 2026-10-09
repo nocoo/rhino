@@ -19,6 +19,7 @@ export const MAX_RECOMMENDATION_AGE = 64;
 
 export const API_ROUTES = [
 	{ method: "GET", path: "/api/live" },
+	{ method: "GET", path: "/api/identity" },
 	{ method: "GET", path: "/api/profile" },
 	{ method: "PUT", path: "/api/profile" },
 	{ method: "GET", path: "/api/measurements" },
@@ -32,6 +33,8 @@ export const API_ROUTES = [
 	{ method: "PUT", path: "/api/sessions/:id" },
 	{ method: "GET", path: "/api/progress" },
 ] as const;
+
+export type IdentityProfile = { name: string | null; avatar: string | null };
 
 export const ERROR_CODES = [
 	"unauthorized",

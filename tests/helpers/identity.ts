@@ -22,9 +22,10 @@ export async function createIdentity() {
 			rotated?: boolean;
 			badSignature?: boolean;
 			missingSubject?: boolean;
+			email?: unknown;
 		} = {},
 	) {
-		let jwt = new SignJWT({ email: "synthetic@example.test" })
+		let jwt = new SignJWT({ email: options.email })
 			.setProtectedHeader({ alg: "RS256", kid: options.rotated ? "rhino-test-1" : "rhino-test-0" })
 			.setIssuer(options.issuer ?? "https://nocoo.cloudflareaccess.com")
 			.setIssuedAt();

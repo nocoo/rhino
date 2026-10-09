@@ -1,6 +1,7 @@
 import { version } from "../package.json";
 import { API_ROUTES, ApiError } from "../src/domain/contracts";
 import { authenticate } from "./auth";
+import { authorProfile } from "./author-profile";
 import type { WorkerEnv } from "./env";
 import { jsonError, jsonOk, logSafe, requireOrigin } from "./http";
 import { deleteMeasurement, getMeasurements, putMeasurement } from "./routes/measurements";
@@ -59,11 +60,14 @@ export async function handleApi(
 	if (request.method === "OPTIONS") {
 		throw new ApiError(405, "invalid_request", "Method not allowed");
 	}
-	await authenticate(request, env);
+	const identity = await authenticate(request, env);
 	if (MUTATING.has(request.method)) {
 		requireOrigin(request, env.APP_ORIGIN);
 	}
 	const path = url.pathname;
+	if (path === "/api/identity" && request.method === "GET") {
+		return jsonOk(await authorProfile(identity.email));
+	}
 	if (path === "/api/live" && request.method === "GET") {
 		await env.DB.prepare("SELECT id FROM profile LIMIT 1").all();
 		return jsonOk({

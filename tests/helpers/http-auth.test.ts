@@ -58,11 +58,16 @@ it("enforces synthetic claims and single owner without using production test key
 	expect(await authenticate(request(identity.tokens.owner), env)).toEqual({
 		sub: "rhino-local-owner",
 		mode: "access",
+		email: null,
 	});
 	expect(await authenticate(request(), { ...env, RESOURCE_ENV: "local" })).toEqual({
 		sub: "rhino-local-owner",
 		mode: "local",
+		email: null,
 	});
+	expect(
+		await authenticate(request(await identity.token({ email: "synthetic@example.test" })), env),
+	).toMatchObject({ email: "synthetic@example.test" });
 	await expect(authenticate(request(), env)).rejects.toMatchObject({ status: 401 });
 	for (const [key, token] of Object.entries(identity.tokens))
 		if (key !== "owner" && key !== "rotated")

@@ -62,6 +62,7 @@ export async function exerciseApi(harness: ApiHarness): Promise<void> {
 		"/api/live",
 	);
 	assert.deepEqual(live, { ok: true, version: "0.1.0", revision: "test", environment: "test" });
+	assert.deepEqual(await call("GET", "/api/identity"), { name: null, avatar: null });
 	await call("GET", "/api/live", undefined, 200, harness.tokens.rotated);
 	await call("GET", "/api/live", undefined, 401, "");
 	for (const [key, token] of Object.entries(harness.tokens))

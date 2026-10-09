@@ -10,7 +10,7 @@ let remoteJwksIssuer: string | null = null;
 export async function authenticate(request: Request, env: WorkerEnv): Promise<AuthContext> {
 	if (env.RESOURCE_ENV === "local") {
 		const owner = configuredOwner(env);
-		return { sub: owner, mode: "local" };
+		return { sub: owner, mode: "local", email: null };
 	}
 	if (env.RESOURCE_ENV === "production") {
 		configuredOwner(env);
@@ -68,7 +68,11 @@ async function verifyAccessJwt(
 		if (typeof payload.sub !== "string" || payload.sub.length === 0) {
 			throw new ApiError(401, "unauthorized", "Access assertion is missing a subject");
 		}
-		return { sub: payload.sub, mode: "access" };
+		return {
+			sub: payload.sub,
+			mode: "access",
+			email: typeof payload.email === "string" ? payload.email : null,
+		};
 	} catch (error) {
 		if (error instanceof ApiError) {
 			throw error;
