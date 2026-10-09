@@ -32,8 +32,10 @@ without writing mirror tarball URLs into the committed lockfile.
 
 ## Boundaries
 
-- Communicate in Chinese with the owner's requested honorific. Code, documents,
-  comments and Git messages use English; product UI is Chinese-first.
+- Communicate in Chinese with the owner's requested honorific. Code, technical
+  documents, comments and Git messages use English; product UI is Chinese-first.
+  Follow system0 README conventions: Chinese `README.md` and a complete English
+  counterpart at `docs/README.en.md`.
 - Use feature hooks as view models, pure domain functions, and bound D1 SQL.
   Do not move logic into `.tsx` to escape coverage or add compatibility layers.
 - Plans are immutable revisions. Draft sessions can be adjusted; started
@@ -60,6 +62,9 @@ without writing mirror tarball URLs into the committed lockfile.
   Never send a production token to the browser or silently retarget stale requests.
 - Use the installed Basalt public controls/tokens and Lucide. Keep one viewer,
   default pause, resource cleanup and static/text alternatives on failed WebGL.
+- Preserve the approved brand masters. Small sidebar/startup/browser marks use
+  transparent foregrounds; README uses the selected presentation. See
+  `assets/brand/README.md` for consumer sizes and platform-specific roles.
 
 ## Verification and Release
 
@@ -71,7 +76,8 @@ in nmem, not a tracked certification document. Do not invent grades or timings.
 
 The implementation has passed UT, L2 and desktop/mobile L3 locally and in CI.
 Production D1 readiness and deployed version/revision are verified separately
-with an authorized owner JWT. Keep release evidence tied to its exact revision.
+through anonymous GET `/api/live`; business access still needs owner verification.
+Keep release evidence tied to its exact revision, not unpublished local changes.
 
 Local URL: `https://rhino.dev.hexly.ai`, Caddy to `127.0.0.1:7057`.
 Production target: `https://rhino.hexly.ai`, Access team `nocoo`.
@@ -84,8 +90,8 @@ explicitly removed recurring reviewer approval; do not reintroduce it. Deploymen
 credentials are configured, but missing credentials must still fail closed.
 The existing shared Access bypass covers `/api/live`; its anonymous GET returns
 only version/revision and minimal database health, with no-store and 503 on failure.
-All business routes still require Worker JWT verification. Check `/api/profile` for the edge login redirect. Protected
-readiness requires an owner JWT assertion, not merely an Access cookie.
+All business routes still require Worker JWT verification. Check `/api/profile`
+for the edge login redirect; public readiness does not prove owner authentication.
 
 Eleven motions are **unreviewed illustrative previews**, not qualified instruction.
 Catalog 1.2.0 includes the Chinese labels and corrected hinge/contact paths.

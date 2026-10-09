@@ -159,12 +159,15 @@ SPA fallback for an unknown `/api` path.
 | `GET /api/sessions/:id` | Snapshot, actuals, save version |
 | `PUT /api/sessions/:id` | Stable-ID creation, preparation, start, quick-save, completion, or explicit correction |
 | `GET /api/progress?from=&to=` | Derived actual totals and body measurements, never fabricated scores |
-| `GET /api/live` | Minimal authenticated readiness; no health records, stack traces, or configuration |
+| `GET /api/live` | Anonymous minimal database readiness, name/version/revision; no personal records or error details |
 | `GET /api/identity` | Optional display name/avatar from the hashed, owner-verified JWT email; never an email header; no-store and fail-soft profile lookup |
 
-Health monitoring outside Access is a later explicit policy choice. Do not add
-a public bypass just to satisfy a monitor. No generic arbitrary-SQL endpoint,
-public asset uploader, or administrative delete-all route is needed.
+The owner authorized anonymous health in local revision `7376d23`. Only exact GET
+`/api/live` precedes Worker authentication; business routes still verify the owner.
+Health uses a top-level response without the business API's `data` envelope, sends
+no-store, and returns sanitized 503 on database failure. It follows the existing
+shared Access bypass; do not broaden that exception. No generic arbitrary-SQL
+endpoint, public asset uploader, or administrative delete-all route is needed.
 
 ## Save and Conflict Semantics
 

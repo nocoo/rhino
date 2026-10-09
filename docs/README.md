@@ -1,5 +1,7 @@
 # Documentation
 
+[Chinese overview](../README.md) | [English overview](README.en.md)
+
 Status: v0.1.0 personal preview deployed after research on 2026-10-09. Documents 01-07
 retain the original requirements and research context. Document 08 records the
 current implementation and open acceptance gates; none certifies medical safety.
@@ -24,9 +26,10 @@ current implementation and open acceptance gates; none certifies medical safety.
 - **Gate:** a condition that must be resolved before the affected work proceeds.
 - **Target:** an acceptance budget or quality goal, not a measurement.
 
-The documents use English as requested. Product interface language is a separate
-decision; the implementation uses Chinese-first UI without an internationalization
-framework.
+Technical documents use English. The project overview follows the system0
+bilingual README standard; the implementation uses Chinese-first UI without an
+internationalization framework. Brand consumer roles are in
+[the asset guide](../assets/brand/README.md).
 
 ## Remaining Review Priorities
 

@@ -72,7 +72,9 @@ test("every exercise has a distinct consent-gated matching video", async ({ page
 	}
 });
 
-test("unknown environment stops the application before any data requests", async ({ page }) => {
+test("unknown environment stops the application before any data requests", async ({
+	page,
+}, testInfo) => {
 	let requests = 0;
 	await page.route("**/__local/environment", (route) =>
 		route.fulfill({ status: 503, body: "unavailable" }),
@@ -86,6 +88,76 @@ test("unknown environment stops the application before any data requests", async
 		"无法确认数据环境，已停止加载。请刷新页面或重新启动开发服务。",
 	);
 	expect(requests).toBe(0);
+	await expect(page.getByRole("img", { name: "Rhino", exact: true })).toBeVisible();
+	await expect(page.getByRole("button", { name: "重新加载", exact: true })).toBeVisible();
+	await page.screenshot({ path: testInfo.outputPath("startup-error.png"), animations: "disabled" });
+	await page.unroute("**/__local/environment");
+	await page.unroute("**/api/**");
+	await page.getByRole("button", { name: "重新加载", exact: true }).click();
+	await expect(page.locator(".page-body")).toBeVisible();
+});
+
+test("approved branding covers startup, browser icons and the navigation rail", async ({
+	page,
+}, testInfo) => {
+	let release = () => {};
+	const ready = new Promise<void>((resolve) => {
+		release = resolve;
+	});
+	await page.route("**/__local/environment", async (route) => {
+		await ready;
+		await route.continue();
+	});
+	await page.goto("/", { waitUntil: "domcontentloaded" });
+	try {
+		const loading = page.getByRole("status", { name: "正在打开 Rhino 训练空间", exact: true });
+		await expect(loading).toBeVisible();
+		await expect(loading.getByRole("img", { name: "Rhino" })).toHaveJSProperty("naturalWidth", 80);
+		await page.screenshot({
+			path: testInfo.outputPath("startup-loading.png"),
+			animations: "disabled",
+		});
+	} finally {
+		release();
+	}
+	await page.locator(".page-body").waitFor();
+	await expect(page).toHaveTitle("Rhino · 训练与记录");
+	for (const [selector, path, type] of [
+		['link[rel="icon"][type="image/png"]', "/favicon.png", "image/png"],
+		['link[rel="icon"][href$=".ico"]', "/favicon.ico", "image/"],
+		['link[rel="apple-touch-icon"]', "/apple-touch-icon.png", "image/png"],
+	]) {
+		await expect(page.locator(selector)).toHaveAttribute("href", path);
+		const response = await page.request.get(path);
+		expect(response.status()).toBe(200);
+		expect(response.headers()["content-type"]).toContain(type);
+	}
+	await expect(page.locator('link[rel="icon"][type="image/png"]')).toHaveAttribute(
+		"sizes",
+		"64x64",
+	);
+	await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveAttribute("sizes", "180x180");
+	const menu = page.getByRole("button", { name: "打开导航", exact: true });
+	if (await menu.isVisible()) await menu.click();
+	const logo = page.locator(".brand-symbol");
+	await expect(logo).toHaveAttribute("src", "/logo-24.png");
+	await expect(logo).toHaveCSS("width", "24px");
+	await expect(logo).toHaveCSS("height", "24px");
+	expect(
+		await logo.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0),
+	).toBe(true);
+	await expect(page.locator(".brand-name")).toHaveText("Rhino");
+	for (const theme of ["light", "dark"]) {
+		if (theme === "dark") {
+			if (await page.getByRole("dialog").isVisible()) await page.keyboard.press("Escape");
+			await page.getByRole("button", { name: "切换主题", exact: true }).click();
+			if (await menu.isVisible()) await menu.click();
+		}
+		await expect(logo).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+		await expect(logo).toHaveCSS("border-radius", "0px");
+		await expect(logo).toHaveCSS("filter", "none");
+		await expect(logo).toHaveCSS("box-shadow", "none");
+	}
 });
 
 test("Chinese blue shell, owner avatar and opt-in YouTube reference", async ({

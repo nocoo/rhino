@@ -79,11 +79,13 @@ After approving the initial deployment, the owner explicitly removed recurring
 reviewer approval. Exact-source successful CI and fresh-main checks remain required.
 
 The pre-existing shared Access application bypasses the edge on `/api/live`.
-Rhino does not bypass Worker authentication there: anonymous requests return 401,
-and a valid owner `Cf-Access-Jwt-Assertion` is required for D1 readiness. An Access
-cookie alone is not converted to an assertion on that bypassed path. Deployment
-checks the edge login redirect on `/api/profile` instead. Shared Access policies
-were not changed to accommodate the release.
+Local source revision `7376d23` adopts owner-authorized anonymous GET health:
+`{ status: "ok", name: "rhino", version, revision }`, without a `data` envelope.
+It executes `SELECT 1 FROM profile LIMIT 1` and never returns personal rows.
+Database failure returns 503 and `{ status: "error", name: "rhino", version }`;
+both responses are no-store. Business routes retain owner JWT verification.
+Deployment checks the edge login redirect on `/api/profile` separately. Shared
+Access policies were not changed; local source adoption is not proof of deployment.
 
 ## Local Acceptance
 
@@ -149,8 +151,8 @@ Do not call this list feature-complete or publish validated coaching claims.
    The proven checkout injects `DEPLOY_REVISION=HEAD`, builds, applies the reviewed
    remote migration and deploys `dist/rhino/wrangler.json`, not raw unbuilt source.
 7. Verify the unauthenticated Access redirect on `/api/profile`, then request
-   `/api/live` with an owner JWT assertion: exact version/revision, production
-   environment and D1 readiness. Inspect the hosted desktop/mobile UI read-only.
+   anonymous `/api/live`: exact version/revision and D1 readiness on the production
+   domain. Inspect the hosted desktop/mobile UI read-only with the owner identity.
    Create/reload fixtures belong in E2E, never production. Do not log tokens.
 8. Publish a matching version tag and GitHub Release only after exact-revision
    CI and deployed verification. Do not claim a pending workflow as published.

@@ -113,7 +113,19 @@
 }
 .brand-symbol {
 	flex-shrink: 0;
-	color: var(--rhino-blue);
+	object-fit: contain;
+}
+.startup-error {
+	display: grid;
+	place-items: center;
+	min-height: 100%;
+	padding: var(--rhino-space);
+}
+.startup-error > section {
+	width: min(100%, 400px);
+}
+.startup-error img {
+	object-fit: contain;
 }
 .brand-name {
 	font-family: var(--basalt-font-display);

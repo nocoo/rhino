@@ -133,10 +133,18 @@ export function Frame({
 		<Sidebar collapsed={compact} className="rhino-sidebar" aria-label="主导航侧栏">
 			<SidebarHeader>
 				<div className="brand">
-					<img className="brand-symbol" src="/logo-80.png" width={24} height={24} alt="Rhino" />
+					<img
+						className="brand-symbol"
+						src="/logo-24.png"
+						srcSet="/logo-24.png 24w, /logo-80.png 80w"
+						sizes="24px"
+						width={24}
+						height={24}
+						alt="Rhino"
+					/>
 					{!compact && (
 						<>
-							<span className="brand-name">rhino</span>
+							<span className="brand-name">Rhino</span>
 							<span className="version-pill">v{version}</span>
 						</>
 					)}
