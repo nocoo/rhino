@@ -1,0 +1,13 @@
+{
+	"study": "hexly.ai/artwork/logo-family/rhino/2026-10-09-03",
+	"finishing": "02",
+	"model": "gpt-image-2.5-sunburst",
+	"rawApprovedByOwner": true,
+	"transparentSha256": "d06b2ab605fc05981ddc236e0a705f2147dc0b2a96184eba2715df7c8336b26a",
+	"roles": {
+		"logo.png": "Transparent canonical master; exact selected bytes",
+		"icon.png": "Square presentation for platform icons",
+		"icon-rounded.png": "Large README presentation"
+	},
+	"usage": "Small headers and favicons use transparent foregrounds with no background tile or additional mask."
+}

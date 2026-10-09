@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/brand/icon-rounded.png" width="240" alt="Rhino logo" /></p>
+
 # Rhino
 
 A private fitness planning and training journal, built for one person.

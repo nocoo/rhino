@@ -30,7 +30,6 @@ import {
 	CalendarDays,
 	ChartNoAxesCombined,
 	createLucideIcon,
-	Dumbbell,
 	Menu,
 	PanelLeftClose,
 	PanelLeftOpen,
@@ -134,7 +133,7 @@ export function Frame({
 		<Sidebar collapsed={compact} className="rhino-sidebar" aria-label="主导航侧栏">
 			<SidebarHeader>
 				<div className="brand">
-					<Dumbbell className="brand-symbol" size={24} strokeWidth={1.5} aria-label="Rhino" />
+					<img className="brand-symbol" src="/logo-80.png" width={24} height={24} alt="Rhino" />
 					{!compact && (
 						<>
 							<span className="brand-name">rhino</span>
