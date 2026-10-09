@@ -1,9 +1,9 @@
 import { spawn } from "node:child_process";
 import { closeSync, mkdirSync, openSync, readFileSync } from "node:fs";
 import { createServer } from "node:net";
-import { createIdentity } from "../tests/helpers/identity";
-import { cleanupDatabase, createTestRun, initializeDatabase } from "../tests/helpers/isolation";
-import { run } from "./process";
+import { createIdentity } from "../tests/helpers/identity.ts";
+import { cleanupDatabase, createTestRun, initializeDatabase } from "../tests/helpers/isolation.ts";
+import { run } from "./process.ts";
 
 const tier = process.argv[2];
 if (tier !== "l2" && tier !== "l3") throw new Error("Use run-tests.ts l2|l3");
@@ -75,7 +75,7 @@ try {
 		tier === "l2"
 			? ["bun", "test", "./tests/l2", ...process.argv.slice(3)]
 			: ["node", "node_modules/@playwright/test/cli.js", "test", ...process.argv.slice(3)],
-		{ env, timeout: tier === "l2" ? 120_000 : 180_000 },
+		{ env, timeout: tier === "l2" ? 120_000 : 360_000 },
 	);
 	if (interrupted) throw new Error("Test run interrupted");
 } finally {

@@ -11,7 +11,7 @@ import {
 import { homedir } from "node:os";
 import { join, resolve, sep } from "node:path";
 import { DatabaseSync } from "node:sqlite";
-import { cleanEnvironment, run } from "../../scripts/process";
+import { cleanEnvironment, run } from "../../scripts/process.ts";
 
 export type TestRun = { state: string; id: string; config: string; env: NodeJS.ProcessEnv };
 
