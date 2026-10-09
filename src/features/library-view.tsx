@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@nocoo/basalt/componen
 import { ArrowUpRight, BookOpen, Info, Play } from "lucide-react";
 import { lazy, Suspense, useState } from "react";
 import { exerciseNames } from "../components/workout-summary";
+import { EXERCISE_VIDEO_REFERENCES } from "../data/exercise-videos";
 import { EXERCISES } from "../data/exercises";
 import type { StrengthExerciseId } from "../domain/contracts";
 
@@ -69,18 +70,19 @@ const chineseCues: Record<StrengthExerciseId, [string, string, string]> = {
 	],
 };
 
-function RomanianDeadliftVideo() {
+function ExerciseVideo({ exerciseId }: { exerciseId: StrengthExerciseId }) {
 	const [loaded, setLoaded] = useState(false);
+	const reference = EXERCISE_VIDEO_REFERENCES[exerciseId];
 	return (
 		<LayerCard className="reference-video">
 			<LayerCard.Header>
-				<h2>真人动作参考 · 哑铃罗马尼亚硬拉</h2>
+				<h2>真人动作参考 · {reference.title}</h2>
 			</LayerCard.Header>
 			<LayerCard.Body className="stack">
 				{loaded ? (
 					<iframe
-						src="https://www.youtube-nocookie.com/embed/aa57T45iFSE?hl=zh-CN&cc_lang_pref=zh-Hans"
-						title="NASM 官方：哑铃罗马尼亚硬拉真人示范"
+						src={`https://www.youtube-nocookie.com/embed/${reference.youtubeId}?hl=zh-CN&cc_lang_pref=zh-Hans`}
+						title={`${reference.publisher}：${reference.sourceTitle}`}
 						allow="encrypted-media; picture-in-picture; fullscreen"
 						referrerPolicy="strict-origin-when-cross-origin"
 						allowFullScreen
@@ -88,23 +90,18 @@ function RomanianDeadliftVideo() {
 				) : (
 					<div className="video-consent">
 						<Play size={32} aria-hidden="true" />
-						<p>由美国国家运动医学学会（NASM）发布</p>
-						<p className="field-hint">
-							点击后连接 YouTube，并向其发送网络信息。视频为英文，不会自动播放。
+						<p>
+							{reference.publisher} · {reference.sourceTitle}
 						</p>
+						<p className="field-hint">点击后连接 YouTube，并向其发送网络信息。不会自动播放。</p>
 						<Button onClick={() => setLoaded(true)}>加载 YouTube 视频</Button>
 					</div>
 				)}
 				<p className="field-hint">
-					无法播放？网络、地区或发布方限制可能影响嵌入；可打开原视频查看。视频不是个人训练处方，三维模型也未获
-					NASM 认证。
+					如果视频无法播放，网络、地区或发布方限制可能影响嵌入，可使用下方链接打开原视频。此视频是外部参考，不是个人训练处方；三维模型为未审核示意，未获发布方认证。
 				</p>
 				<Button asChild variant="secondary">
-					<a
-						href="https://www.youtube.com/watch?v=aa57T45iFSE"
-						target="_blank"
-						rel="noopener noreferrer"
-					>
+					<a href={reference.url} target="_blank" rel="noopener noreferrer">
 						在 YouTube 查看原视频 <ArrowUpRight size={15} />
 					</a>
 				</Button>
@@ -160,20 +157,16 @@ export function LibraryView({
 					<Tabs key={selected} defaultValue="model">
 						<TabsList aria-label="动作参考方式">
 							<TabsTrigger value="model">三维示意</TabsTrigger>
-							{selected === "romanian-deadlift" && (
-								<TabsTrigger value="video">真人视频</TabsTrigger>
-							)}
+							<TabsTrigger value="video">真人视频</TabsTrigger>
 						</TabsList>
 						<TabsContent value="model">
 							<Suspense fallback={<LayerCard.Loading label="正在准备三维视图" />}>
 								<LazyExerciseViewer exerciseId={selected} />
 							</Suspense>
 						</TabsContent>
-						{selected === "romanian-deadlift" && (
-							<TabsContent value="video">
-								<RomanianDeadliftVideo />
-							</TabsContent>
-						)}
+						<TabsContent value="video">
+							<ExerciseVideo key={selected} exerciseId={selected} />
+						</TabsContent>
 					</Tabs>
 					<details>
 						<summary className="field-hint">查看静态动作阶段（未审核示意）</summary>
