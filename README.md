@@ -1,56 +1,73 @@
 # Rhino
 
-A private fitness planning and training journal for one person, with realistic
-3D exercise instruction and a clear view of personal progress.
+A private fitness planning and training journal, built for one person.
+Weekly structure, honest workout records, and a clear view of personal progress.
 
-**Status: research and design proposal.** There is no application, database,
-package manifest, CI workflow, or deployment in this repository yet. Review the
-documents before implementation. All proposed behavior is unimplemented unless
-explicitly stated otherwise.
+**Status: working local preview, not released.** The journal and automated
+quality checks run locally. Six Three.js movements are illustrative previews;
+professional movement review and production acceptance remain open.
 
-## Product
+## Features
 
-- Plan a sustainable training week and review the plan each month.
-- Combine strength and cardio, including cardio-only cycling sessions.
-- Choose a workout, adjust exercises and sets, then log what actually happened.
-- Learn movements and target muscles through realistic Three.js instruction.
-- Track dated height and weight, BMI, training consistency, and estimated cardio
-  heart-rate guidance.
-- Use a compact, professional interface on desktop and mobile.
+- Weekly strength/cardio plans based on frequency, time, equipment and priority;
+  cardio-only cycling is supported. Monthly adoption creates immutable revisions.
+- Pre-session movement, sets, repetitions and cardio-duration adjustments;
+  actual repetitions, load, RIR, skipped sets, cardio intensity and quick logging.
+- Dated height/weight without storage rounding, historical-height BMI, trends,
+  birthday-based estimated heart-rate guidance and clinician-entered overrides.
+- Responsive Chinese-first Basalt interface, Lucide icons, realistic-proportion
+  rig with six authored clips, muscle-region highlights and static phase posters.
+- Cloudflare Access owner authorization, version/conflict checks and local D1.
 
-## Technical Constraints
+The model's muscle highlights are approximate surface regions, not tissue
+segmentation or measured activation. Motion, equipment alignment and physical-phone
+performance still require acceptance. This is not a medical or exercise prescription.
 
-| Area | Requirement |
-| --- | --- |
-| Hosting and data | Cloudflare Workers, Static Assets, and D1 |
-| Authentication | Cloudflare Access; one authorized owner |
-| Frontend | Vite; proposed React and Basalt integration |
-| Language | TypeScript **7.0.2**, exactly; replaces the earlier 5.7 request |
-| Lint and format | Biome |
-| Icons and instruction | Lucide and Three.js |
-| CI/CD | Public reusable workflows from `nocoo/base-ci`, immutable SHA pins |
-| Production target | `https://rhino.hexly.ai` |
-| Local target | `https://rhino.dev.hexly.ai` |
+## Develop
 
-The domains are targets, not evidence of a running service. Runtime versions,
-deployment tooling, ports, and 3D assets still have explicit approval gates.
+Node **26.10.0**, Bun **1.4.2**, TypeScript **7.0.2**. Use the permitted local
+registry mirror if the machine blocks npmjs; CI uses the portable frozen lock.
 
-## Documentation
+```sh
+bun install --frozen-lockfile
+bun run db:migrate
+bun run dev
+```
 
-Start with the [documentation index](docs/README.md). The suggested review order
-is [scope](docs/01-product-scope.md),
-[training evidence](docs/02-training-evidence.md),
-[planning rules](docs/03-planning-and-metrics.md), and
-[decisions and delivery](docs/07-delivery-and-decisions.md).
+Open **https://rhino.dev.hexly.ai** on the configured development machine.
+Caddy forwards to loopback port 7057. Local mode uses a synthetic identity and
+local storage; do not expose it publicly. No production credentials are needed.
 
-Agent instructions and honest quality status: [AGENTS.md](AGENTS.md).
-Operational incident records: [Retrospective.md](Retrospective.md).
+```sh
+bun run typecheck
+bun run lint
+bun run test:coverage
+bun run test:l2
+bun run test:l3
+bun run gate:security
+bun run build
+```
 
-No install, development, test, or deployment command exists yet. The planned
-command contract is documented, not presented as runnable setup instructions.
+Husky checks the staged index, not an unstaged corrected worktree. Coverage
+requires all four metrics >=95%; the wrapper also rejects skipped/empty suites.
+`bun run gate:verify` exercises failure rejection in a disposable repository.
+Tests mint their own RS256 keys and use isolated local D1, never daily/remote data.
+
+## Deployment
+
+Target: **https://rhino.hexly.ai**. One Worker, Static Assets and D1, protected by
+Cloudflare Access. Stable Wrangler 4.135.0 and the public `nocoo/base-ci` workflows
+are pinned. Deployment is manual and requires a successful exact-source CI run,
+fresh main, production protection and a confirmed D1 UUID. No cloud deployment
+or GitHub Release has been performed yet.
+
+See [the runbook](docs/08-local-and-release.md), [training research](docs/02-training-evidence.md),
+[design and 3D acceptance](docs/05-experience-and-3d.md), and [all documents](docs/README.md).
+Exact agent commands and boundaries: [AGENTS.md](AGENTS.md).
 
 ## License
 
-Repository code and documentation: [MIT](LICENSE). Future anatomical models,
-textures, motion clips, fonts, and other third-party assets retain their own
-licenses and require an asset provenance record.
+Application code and documentation: [MIT](LICENSE).
+Bundled MakeHuman geometry/rig assets retain their separately stated **CC0**
+license. Source revision, hashes, modifications and limitations are recorded in
+[assets-source](assets-source/README.md); no purchased assets are included.

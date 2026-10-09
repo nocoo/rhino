@@ -1,106 +1,86 @@
 # Rhino
 
-Rhino is a planned single-owner fitness journal with realistic 3D instruction,
-Vite frontend, Cloudflare Worker API, and D1 persistence.
-Overview: [README.md](README.md). Architecture: [docs/04-architecture-and-data.md](docs/04-architecture-and-data.md).
+Single-owner fitness planning and journaling with Vite/React/Basalt, a Cloudflare
+Worker API and D1. Read [README.md](README.md) and [docs](docs/README.md).
+Instructions apply repository-wide; there are no nested handbooks.
 
-## Scope and Instruction Sources
+## Commands
 
-- This handbook applies throughout the repository; there are no nested handbooks.
-- Preserve project constraints when scaffolding. Do not create a CLAUDE.md copy.
-- The owner requested research and documents before implementation. Current
-  documents are proposals; do not treat them as deployment or purchase permission.
-- Communicate with the owner in Chinese using their requested Chinese honorific.
-  Code, documents, comments, search queries, and Git messages use English.
-- Source of truth today: the reviewed requirements in `docs/`. No manifest,
-  application configuration, schema, or test command exists yet.
+Use Bun 1.4.2 and Node 26.10.0. TypeScript is pinned to **7.0.2**.
+The machine blocks the official npm registry; follow the global mirror policy
+without writing mirror tarball URLs into the committed lockfile.
 
-## Setup and Commands
+| Command | Purpose |
+| --- | --- |
+| `bun install --frozen-lockfile` | Install the exact lock and initialize Husky |
+| `bun run dev` | Local-only Vite/Worker, port 7057, local D1 |
+| `bun run db:migrate` | Apply migrations only to daily-development local D1 |
+| `bun run typegen` | Regenerate checked-in Wrangler binding declarations |
+| `bun run typecheck` | Strict TS across app, Worker, tests and scripts |
+| `bun run lint` | Biome recommended rules and formatting, reject warnings |
+| `bun run test:coverage` | Full UT, four 95% thresholds, reject skips/empty/report loss |
+| `bun run test:l2` | Real HTTP/Worker/D1 API scenarios with synthetic JWTs |
+| `bun run test:l3` | Desktop/mobile Chromium critical workflows |
+| `bun run gate:l1` | Check the exact staged index in an isolated snapshot |
+| `bun run gate:verify` | Disposable Git/Husky healthy and rejection probes |
+| `bun run gate:security` | Gitleaks and OSV; missing scanners fail closed |
+| `bun run gate:pre-push` | Pushed-ref L2 and G2 (normally invoked by Husky) |
+| `bun run build` | Build Worker and static assets, not deployment |
+| `node assets-source/build-model.mjs` | Rebuild the shared rig and six clips |
+| `node assets-source/build-posters.mjs` | Render matching static phase posters |
 
-This is a documentation-only repository. There is no install/dev/build/test
-entrypoint and no dependencies to install. Do not invent successful command runs.
+## Boundaries
 
-The following inspection command is currently valid from the repository root:
+- Communicate in Chinese with the owner's requested honorific. Code, documents,
+  comments and Git messages use English; product UI is Chinese-first.
+- Use feature hooks as view models, pure domain functions, and bound D1 SQL.
+  Do not move logic into `.tsx` to escape coverage or add compatibility layers.
+- Plans are immutable revisions. Draft sessions can be adjusted; started
+  session targets/date/timezone/provenance are immutable. Actuals can be corrected
+  under version checks. Never infer performed work from planned work.
+- Dates use YYYY-MM-DD, instants UTC, kg/cm values are not rounded in storage.
+  BMI is not a diagnosis. Age-based heart rate is an uncertain estimate for the
+  documented 18-64 scope, never a load prescription or safety ceiling.
+- Production verifies Access RS256 issuer/audience/expiry/subject and exact
+  OWNER_SUB. Blank owner fails closed. Never trust an email header or auto-claim.
+- `local` uses a synthetic identity behind loopback Vite/Caddy restrictions.
+  `test` requires real synthetic JWT verification using JSON `TEST_ACCESS_JWKS`.
+  Production ignores test JWKS and uses the fixed remote Access key endpoint.
+- Mutations require exact APP_ORIGIN and JSON; streamed bodies are capped at
+  256 KiB. API responses are no-store. Do not log personal payloads or JWTs.
+- Tests use per-run `.wrangler/tests/run-*` state and a verified `_test_marker`.
+  The marker belongs to tests, never the production migration. No remote test
+  bindings, inherited CF credentials, daily-state reset or broad cleanup.
+- Use the installed Basalt public controls/tokens and Lucide. Keep one viewer,
+  default pause, resource cleanup and static/text alternatives on failed WebGL.
 
-```sh
-git diff --check
-```
+## Verification and Release
 
-The future script contract is in
-[infrastructure and quality](docs/06-infrastructure-and-quality.md). Replace
-planned descriptions with exact verified commands when the application lands.
-TypeScript must be pinned to **7.0.2**, not the superseded 5.7 requirement.
+Husky pre-commit invokes coverage, strict TS and lint on the staged snapshot.
+Four coverage metrics each require >=95%, including auth and feature `.ts`
+models. Pure `.tsx` views and Three.js rendering use browser/visual verification.
+Rejection probes prove the gate, not application health. Store L1 audit reports
+in nmem, not a tracked certification document. Do not invent grades or timings.
 
-## Product and Code Boundaries
+The current implementation has passed UT, L2 and desktop/mobile L3 locally.
+This is not a published-release assertion; exact-revision CI, production D1,
+production environment protection and deployment remain separate evidence.
 
-- Cloudflare Access authentication must be followed by explicit single-owner
-  authorization; never auto-claim the first visitor or trust an email header.
-- A production owner identity is not known yet. Production access fails closed.
-- Use MVVM boundaries: views, feature view-model hooks, pure domain functions,
-  and Worker persistence. Prefer bound D1 SQL over a speculative abstraction.
-- Keep plan revisions, session targets, and actual results distinct. Session
-  edits cannot silently rewrite plans or completed history.
-- Use kg/cm, date-only birthday/effective dates, UTC instants, and recorded
-  timezone context. Do not round stored values or invent missing measurements.
-- Age-based heart rate is an estimate, BMI is not a diagnosis, and training
-  defaults are not individual medical prescriptions. Preserve scope limitations.
-- Every selectable strength exercise needs reviewed realistic motion, muscle
-  mapping, asset provenance, and a static accessible alternative.
-- Use Basalt controls/tokens if the proposed integration is approved; do not
-  maintain a copied control library. Use Lucide for the requested icons.
-- No compatibility layers, generic job systems, AI services, or additional
-  Cloudflare products without a demonstrated current requirement.
-- Never log tokens, birthdays, weights, workout payloads, or medical details.
+Local URL: `https://rhino.dev.hexly.ai`, Caddy to `127.0.0.1:7057`.
+Production target: `https://rhino.hexly.ai`, Access team `nocoo`.
+Use stable Wrangler 4.135.0; this project has not migrated to beta `cf`.
+base-ci is pinned to `8816553dc9f4544d1e8486bacb5cce630a9f14cb`.
+Deployment is manual, proven successful CI source only, fresh main and protected
+`production`. Placeholder D1 UUID is deliberately rejected. Never bypass it.
 
-## Testing and Quality Contract
+Six motions are **unreviewed illustrative previews**, not qualified instruction.
+The realistic-motion acceptance gate in docs/05 remains open. Do not set
+`instructionReady=true`, claim expert review or declare feature-complete without
+corresponding evidence. Owner preview acceptance cannot substitute for
+professional review; any preview release must preserve its limitations.
 
-All application quality lanes are **planned**, not enforced or certified.
-
-| Dimension | Required contract | Current evidence |
-| --- | --- | --- |
-| L1 | UT statements/branches/functions/lines each >=95%; strict TS; Biome check-only with zero warnings/errors; installed Husky staged-index gate and failure blocking | Planned; no source, tests, config, hooks, or results |
-| L2 | Real local HTTP/Worker/D1 tests for owned routes, constraints, auth and mutation races | Planned |
-| L3 | Critical desktop/mobile journeys including realistic instruction and failed-save recovery | Planned |
-| G2 | Dependency and secret scanners with missing-tool failure | Planned |
-| D1 isolation | Per-run local state, marker guards before writes/reset/cleanup, owned process cleanup | Planned |
-
-The former G1 is included in L1; the framework retains its 6DQ name. Current
-hooks/CI: none configured in this repository. No S/A/B/F grade is claimed.
-Pre-commit targets the Git index snapshot, not an unstaged fixed worktree.
-Personal targets: L1 under 30 seconds; pre-push pushed-ref L2 + G2 under 3 minutes.
-These are requirements, not measured timing results. Gates stay check-only and
-must reject missing tools, timeouts, skipped required suites, and child failures.
-
-Workers tests use isolated local workerd/Miniflare/D1, never remote test resources
-or daily-development data. Initialize a per-run `_test_marker(env=test)` only
-after validating the local owned path; verify it before fixture writes/cleanup.
-
-## Resources and Operational Safety
-
-| Purpose | Target / state | Boundary |
-| --- | --- | --- |
-| Development | `rhino.dev.hexly.ai`; candidate port 7057 | Not configured/reserved; approve mapping before Caddy changes |
-| Tests | Candidate L2 17057 and L3 27057 | Per-run local storage/fixtures; recheck ports |
-| Production | `rhino.hexly.ai`, Access team `nocoo`, D1 ID unknown | Target only; no deployment verified |
-
-Access issuer/audience and infrastructure evidence are documented in
-[architecture](docs/04-architecture-and-data.md) and
-[infrastructure](docs/06-infrastructure-and-quality.md). Identifiers are not secrets.
-Do not run auto-configuring `cf` commands before the toolchain decision.
-Use the selected CLI consistently; migrated `cf` projects must not retain a
-parallel Wrangler deployment path. Public base-ci callers require verified
-immutable SHA pins and exact-revision deployment evidence.
-
-Deployment, remote migrations, Access/Caddy changes, asset purchases, releases,
-and destructive operations require authorization for the specific action.
-Do not touch unrelated certificate, Keychain, trust-store, or ACL configuration.
-
-## Completion and Documentation
-
-- Maintain the linked English docs tree and honest planned/enforced/manual/N/A
-  status. Configuration inspection alone is not passing execution evidence.
-- Commit completed logical changes atomically with explicit paths and a lowercase
-  Conventional Commit subject of at most 50 characters. Do not push unasked.
-- Report checks actually run, unresolved choices, and unverified behavior.
-- Record real incidents in [Retrospective.md](Retrospective.md); keep architecture
-  and delivery plans in `docs/`, not in accident narratives.
+Commit coherent changes using explicit paths and normal hooks, lowercase
+Conventional Commits <=50 characters. No unrequested pushes, hook bypasses,
+destructive resets or edits to unrelated infrastructure. Avoid exporting
+credentials. Do not change certificates, Keychain or ACL settings.
+Record actual incidents in `Retrospective.md`.

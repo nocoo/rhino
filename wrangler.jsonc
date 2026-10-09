@@ -1,0 +1,102 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "rhino",
+	"account_id": "d51a8fde361e4be31db17d8c56737c1f",
+	"main": "worker/index.ts",
+	"compatibility_date": "2026-09-25",
+	"compatibility_flags": ["nodejs_compat"],
+	"workers_dev": false,
+	"preview_urls": false,
+	"routes": [
+		{
+			"pattern": "rhino.hexly.ai",
+			"custom_domain": true
+		}
+	],
+	"assets": {
+		"binding": "ASSETS",
+		"not_found_handling": "single-page-application",
+		"run_worker_first": true
+	},
+	"observability": {
+		"enabled": true,
+		"traces": {
+			"enabled": true
+		}
+	},
+	"vars": {
+		"DEPLOY_REVISION": "unreleased",
+		"RESOURCE_ENV": "production",
+		"ACCESS_ISSUER": "https://nocoo.cloudflareaccess.com",
+		"ACCESS_AUD": "2a76fd13714fbf4b676b80a7717f31852579385065fc1e553a8b3e8c49ac44bc",
+		"OWNER_SUB": "455c6a6a-735c-5bc1-aeca-0ae5cf9e9692",
+		"APP_ORIGIN": "https://rhino.hexly.ai",
+		"TEST_ACCESS_JWKS": ""
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "rhino",
+			"database_id": "00000000-0000-0000-0000-000000000000",
+			"migrations_dir": "migrations"
+		}
+	],
+	"env": {
+		"local": {
+			"name": "rhino-local",
+			"workers_dev": false,
+			"preview_urls": false,
+			"routes": [],
+			"vars": {
+				"DEPLOY_REVISION": "local",
+				"RESOURCE_ENV": "local",
+				"ACCESS_ISSUER": "https://nocoo.cloudflareaccess.com",
+				"ACCESS_AUD": "rhino-local",
+				"OWNER_SUB": "rhino-local-owner",
+				"APP_ORIGIN": "https://rhino.dev.hexly.ai",
+				"TEST_ACCESS_JWKS": ""
+			},
+			"d1_databases": [
+				{
+					"binding": "DB",
+					"database_name": "rhino-local",
+					"database_id": "local-rhino-local",
+					"migrations_dir": "migrations"
+				}
+			],
+			"assets": {
+				"binding": "ASSETS",
+				"not_found_handling": "single-page-application",
+				"run_worker_first": true
+			}
+		},
+		"test": {
+			"name": "rhino-test",
+			"workers_dev": false,
+			"preview_urls": false,
+			"routes": [],
+			"vars": {
+				"DEPLOY_REVISION": "test",
+				"RESOURCE_ENV": "test",
+				"ACCESS_ISSUER": "https://nocoo.cloudflareaccess.com",
+				"ACCESS_AUD": "rhino-test",
+				"OWNER_SUB": "rhino-local-owner",
+				"APP_ORIGIN": "http://127.0.0.1:17057",
+				"TEST_ACCESS_JWKS": ""
+			},
+			"d1_databases": [
+				{
+					"binding": "DB",
+					"database_name": "rhino-test",
+					"database_id": "local-rhino-test",
+					"migrations_dir": "migrations"
+				}
+			],
+			"assets": {
+				"binding": "ASSETS",
+				"not_found_handling": "single-page-application",
+				"run_worker_first": true
+			}
+		}
+	}
+}

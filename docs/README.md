@@ -1,7 +1,8 @@
 # Documentation
 
-Status: proposal for review, researched on 2026-10-09. This tree describes the
-intended product; it does not certify implemented behavior or medical safety.
+Status: local preview implemented after research on 2026-10-09. Documents 01-07
+retain the original requirements and research context. Document 08 records the
+current implementation and open acceptance gates; none certifies medical safety.
 
 | Document | Purpose |
 | --- | --- |
@@ -13,6 +14,8 @@ intended product; it does not certify implemented behavior or medical safety.
 | [06 Infrastructure and Quality](06-infrastructure-and-quality.md) | Local findings, Cloudflare, base-ci, test isolation, and deployment gates |
 | [07 Delivery and Decisions](07-delivery-and-decisions.md) | Approval choices and independently verifiable implementation stages |
 
+| [08 Local and Release](08-local-and-release.md) | Current local setup, implementation limits, production and recovery runbook |
+
 ## Reading Conventions
 
 - **Requirement:** explicitly requested by the owner.
@@ -22,16 +25,14 @@ intended product; it does not certify implemented behavior or medical safety.
 - **Target:** an acceptance budget or quality goal, not a measurement.
 
 The documents use English as requested. Product interface language is a separate
-decision; a Chinese-first interface is proposed without adding an internationalization
-framework in the first release.
+decision; the implementation uses Chinese-first UI without an internationalization
+framework.
 
-## Review Priorities
+## Remaining Review Priorities
 
-1. Confirm the initial training audience, goals, and available equipment.
-2. Approve the realistic 3D asset and movement-review path.
-3. Choose stable Wrangler or the beta `cf` toolchain before scaffolding.
-4. Confirm the owner identity and local ports before configuring infrastructure.
-5. Approve implementation only after these documents have been reviewed.
+1. Accept the realistic movement preview and obtain qualified technique review.
+2. Verify the actual interface and motion on the owner's phone.
+3. Complete protected production configuration, recovery and exact-source CI.
+4. Follow the release runbook; no production deployment has occurred.
 
-Return to the [project overview](../README.md) or the
-[agent handbook](../AGENTS.md).
+Return to the [project overview](../README.md) or [agent handbook](../AGENTS.md).

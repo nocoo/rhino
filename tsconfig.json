@@ -1,0 +1,18 @@
+{
+	"compilerOptions": {
+		"target": "ES2023",
+		"lib": ["ES2023", "DOM", "DOM.Iterable"],
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"jsx": "react-jsx",
+		"strict": true,
+		"noEmit": true,
+		"skipLibCheck": true,
+		"allowImportingTsExtensions": true,
+		"resolveJsonModule": true,
+		"esModuleInterop": true,
+		"types": ["vite/client", "@cloudflare/workers-types", "bun"]
+	},
+	"include": ["src", "worker", "tests", "scripts", "*.config.ts", "worker-configuration.d.ts"],
+	"exclude": ["node_modules", "dist", "coverage"]
+}

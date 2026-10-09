@@ -1,0 +1,96 @@
+{
+	"source": "https://github.com/makehumancommunity/makehuman",
+	"revision": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+	"assetLicense": "CC0-1.0",
+	"programCodeCopied": false,
+	"review": {
+		"status": "draft",
+		"reviewer": null,
+		"reviewDate": null
+	},
+	"modifications": "Extracted body mesh, adult male/muscle morphs, four-weight skinning, approximate region masks, Rhino-authored keyframe clips; illustrative equipment added at runtime.",
+	"sourcePaths": {
+		"base.obj": "makehuman/data/3dobjs/base.obj",
+		"skeleton.json": "makehuman/data/rigs/default.mhskel",
+		"weights.json": "makehuman/data/rigs/default_weights.mhw",
+		"caucasian-male-young.target": "makehuman/data/targets/macrodetails/caucasian-male-young.target",
+		"universal-male-young-maxmuscle-averageweight.target": "makehuman/data/targets/macrodetails/universal-male-young-maxmuscle-averageweight.target"
+	},
+	"files": [
+		{
+			"path": "assets-source/makehuman/LICENSE.ASSETS.md",
+			"bytes": 6962,
+			"sha256": "f6089cba01cb570a24712b41ab8a586ccd3cc5ef53dc266ca50b95c288956d2c"
+		},
+		{
+			"path": "assets-source/makehuman/LICENSE.md",
+			"bytes": 3598,
+			"sha256": "edd99571ca62698f78c943fd4fffb159a413c315fa0d4819d3cec5cadaf8b4f1"
+		},
+		{
+			"path": "assets-source/makehuman/base.obj",
+			"bytes": 1749303,
+			"sha256": "8e761e6624b8f54536409135d1636da63b32486a90d4897f84e121d144f6fb4c"
+		},
+		{
+			"path": "assets-source/makehuman/caucasian-male-young.target",
+			"bytes": 396479,
+			"sha256": "70e228ba7164737dae664454394536fc5935fa48d333c1a97d77e2dc6eacc5f5"
+		},
+		{
+			"path": "assets-source/makehuman/revision.txt",
+			"bytes": 41,
+			"sha256": "fd1a9df6efd4ba25da857a822213e9ba9c8e213cf6dc564b8329bbb61119a762"
+		},
+		{
+			"path": "assets-source/makehuman/skeleton.json",
+			"bytes": 117790,
+			"sha256": "99f179bce0aa850b45d4191a1d0d234c5851f881c057439470ded3bddf729a24"
+		},
+		{
+			"path": "assets-source/makehuman/universal-male-young-maxmuscle-averageweight.target",
+			"bytes": 147110,
+			"sha256": "c171ff9cc95e96273beb3e3b1969a01988c2d4982ebc6fe04bf81cf72ee3b295"
+		},
+		{
+			"path": "assets-source/makehuman/weights.json",
+			"bytes": 897521,
+			"sha256": "0f3641d651ae3d00ad6b4ccee43142edb109d3bd909d27d9e4139ef1beed8625"
+		},
+		{
+			"path": "public/models/exercises/cable-row.png",
+			"bytes": 40837,
+			"sha256": "fd7be578e24574fd495a02b0a4bb488bba6df4f774c443a1280524cfb4d93419"
+		},
+		{
+			"path": "public/models/exercises/chest-press.png",
+			"bytes": 40702,
+			"sha256": "7f66b7268d510ceb5331205112833d4359cab92128cecb608519970557fd7ec4"
+		},
+		{
+			"path": "public/models/exercises/goblet-squat.png",
+			"bytes": 50315,
+			"sha256": "1ebadd377ef80575ac18f26b228b3a93f97ab353624bb8ba41c3c4bfae44defc"
+		},
+		{
+			"path": "public/models/exercises/lat-pulldown.png",
+			"bytes": 46133,
+			"sha256": "a431bf5e8195e2d3421d007d1018b24c7c456354626af1c0328e3c45e1e03e0a"
+		},
+		{
+			"path": "public/models/exercises/romanian-deadlift.png",
+			"bytes": 51206,
+			"sha256": "4d9f7a47c55a826eb4b84fc0ff620ee2093b0ac83703a67619ac581e2a8eb82f"
+		},
+		{
+			"path": "public/models/exercises/shoulder-press.png",
+			"bytes": 43187,
+			"sha256": "7eb6476b7d03d53349523935426be2b53ca5100a98ab2c25c56166fdf0f49ac5"
+		},
+		{
+			"path": "public/models/rhino-anatomy.glb",
+			"bytes": 1785448,
+			"sha256": "857e38c53aa72b15cebf6df91cda87febf5ee746a8b1be4b37f29f0da58902a0"
+		}
+	]
+}

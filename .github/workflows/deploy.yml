@@ -1,0 +1,47 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      source-run-id:
+        description: Successful CI push run on current main
+        required: true
+        type: string
+      source-sha:
+        description: Exact SHA proven by that run
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  deploy:
+    uses: nocoo/base-ci/.github/workflows/deploy-worker.yml@8816553dc9f4544d1e8486bacb5cce630a9f14cb
+    with:
+      expected-workflow-path: .github/workflows/ci.yml
+      expected-workflow-name: CI
+      expected-branch: main
+      source-run-id: ${{ inputs.source-run-id }}
+      source-sha: ${{ inputs.source-sha }}
+      allowed-source-events: push
+      require-fresh-main: true
+      package-manager: bun
+      runtime-version: "1.4.2"
+      node-version: "26.10.0"
+      install-policy: blocked
+      deploy-cli: wrangler
+      wrangler-version: "4.135.0"
+      wrangler-config: wrangler.jsonc
+      build-command: bun scripts/prepare-deployment.ts && bun run build
+      d1-migrations: true
+      d1-databases: rhino
+      deploy-script: node node_modules/wrangler/bin/wrangler.js deploy --config dist/rhino/wrangler.json
+      environment: production
+      verify-command: bun scripts/verify-deployment.ts
+      verify-retries: 6
+      verify-retry-seconds: 5
+    secrets:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

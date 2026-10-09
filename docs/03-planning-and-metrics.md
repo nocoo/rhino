@@ -2,6 +2,11 @@
 
 [Index](README.md) | [Evidence](02-training-evidence.md) | [Data Model](04-architecture-and-data.md)
 
+> Implementation update (2026-10-09): the local journal is implemented. Read
+> [the current runbook](08-local-and-release.md) for selected tooling, implemented
+> behavior and unresolved release/3D acceptance. Proposal-era observations below
+> retain their historical context and are not current deployment evidence.
+
 All rules in this document are proposed. Source IDs refer to
 [the evidence register](02-training-evidence.md). Pure functions will live in
 `src/domain/planning.ts` and `src/domain/metrics.ts`; the Worker validates and

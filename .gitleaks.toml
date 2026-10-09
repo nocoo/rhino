@@ -1,0 +1,9 @@
+title = "Rhino secret scanning"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Public Cloudflare Access application audience, not a credential"
+regexTarget = "secret"
+regexes = ['''^2a76fd13714fbf4b676b80a7717f31852579385065fc1e553a8b3e8c49ac44bc$''']

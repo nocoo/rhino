@@ -1,0 +1,4 @@
+# Preserve the exact pinned third-party asset bytes; manifest.json records hashes.
+assets-source/makehuman/* -diff
+public/models/*.glb binary
+public/models/exercises/*.png binary

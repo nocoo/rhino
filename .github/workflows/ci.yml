@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    uses: nocoo/base-ci/.github/workflows/quality.yml@8816553dc9f4544d1e8486bacb5cce630a9f14cb
+    with:
+      package-manager: bun
+      runtime-version: "1.4.2"
+      node-version: "26.10.0"
+      install-policy: blocked
+      typecheck: true
+      lint: true
+      unit: true
+      security: true
+      typecheck-command: bun run typecheck
+      lint-command: bun run lint
+      test-command: bun run test:coverage
+      lockfiles: bun.lock
+      gitleaks-config: .gitleaks.toml
+      coverage-path: coverage
+      build: true
+      build-command: bun run build
+      l2: true
+      l2-command: bun run test:l2
+      l3: true
+      l3-command: bun run test:l3
+      l3-browser: chromium
+  proof:
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Require aggregate source proof
+        env:
+          TESTED_SHA: ${{ needs.quality.outputs.tested-sha }}
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          test -n "$TESTED_SHA"
+          test "$TESTED_SHA" = "$EXPECTED_SHA"
+          echo "Verified complete quality source: $TESTED_SHA"

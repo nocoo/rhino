@@ -2,6 +2,11 @@
 
 [Index](README.md) | [Scope](01-product-scope.md) | [Infrastructure](06-infrastructure-and-quality.md)
 
+> Implementation update (2026-10-09): the local journal is implemented. Read
+> [the current runbook](08-local-and-release.md) for selected tooling, implemented
+> behavior and unresolved release/3D acceptance. Proposal-era observations below
+> retain their historical context and are not current deployment evidence.
+
 ## Decisions for Owner Review
 
 Confirmed constraints: Cloudflare/D1/Access, Vite, Biome, TypeScript **7.0.2**,

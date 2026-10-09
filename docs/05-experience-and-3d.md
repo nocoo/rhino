@@ -2,6 +2,11 @@
 
 [Index](README.md) | [Product Scope](01-product-scope.md) | [Delivery Gates](07-delivery-and-decisions.md)
 
+> Implementation update (2026-10-09): the local journal is implemented. Read
+> [the current runbook](08-local-and-release.md) for selected tooling, implemented
+> behavior and unresolved release/3D acceptance. Proposal-era observations below
+> retain their historical context and are not current deployment evidence.
+
 ## Visual Direction
 
 Proposed direction: a precise personal training studio, not a gamified fitness

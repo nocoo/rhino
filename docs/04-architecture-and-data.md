@@ -2,6 +2,11 @@
 
 [Index](README.md) | [Planning Rules](03-planning-and-metrics.md) | [Infrastructure](06-infrastructure-and-quality.md)
 
+> Implementation update (2026-10-09): the local journal is implemented. Read
+> [the current runbook](08-local-and-release.md) for selected tooling, implemented
+> behavior and unresolved release/3D acceptance. Proposal-era observations below
+> retain their historical context and are not current deployment evidence.
+
 ## Smallest Complete Architecture
 
 ```text
