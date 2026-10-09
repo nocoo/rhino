@@ -1,4 +1,5 @@
 import { strict as assert } from "node:assert";
+import { version } from "../../package.json";
 import {
 	API_ROUTES,
 	type ApiData,
@@ -65,7 +66,7 @@ export async function exerciseApi(harness: ApiHarness): Promise<void> {
 		"GET",
 		"/api/live",
 	);
-	assert.deepEqual(live, { status: "ok", name: "rhino", version: "0.1.0", revision: "test" });
+	assert.deepEqual(live, { status: "ok", name: "rhino", version, revision: "test" });
 	assert.deepEqual(await call("GET", "/api/identity"), { name: null, avatar: null });
 	await call("GET", "/api/live", undefined, 200, harness.tokens.rotated);
 	await call("GET", "/api/live", undefined, 200, "");

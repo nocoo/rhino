@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.1.1 - 2026-10-09
+
+- Adopt the approved rhinoceros identity across the sidebar, startup and failure
+  states, browser favicons, Apple touch icon and README presentation.
+- Normalize the Chinese README and complete English counterpart, with current
+  development, isolation, training limitations and brand-usage documentation.
+- Expose anonymous minimal database health on exact GET `/api/live`, with
+  no-store responses and sanitized 503 on database failure. Business APIs still
+  require the verified owner identity.
+- Verify branding, startup recovery, browser metadata, sidebar geometry and
+  desktop/mobile themes while preserving training and data behavior.
+
+Health API contract change: successful responses are now top-level
+`{ status: "ok", name: "rhino", version, revision }`, not
+`{ data: { ok, version, revision, environment } }`. The endpoint no longer requires
+a JWT and does not report the environment. This patch version follows the owner's
+explicit Z+1 release request. No database migration or dependency update is required.
+
+The 3D previews remain unreviewed illustrations, not qualified coaching.
+
 ## 0.1.0 - 2026-10-09
 
 Initial personal preview, with exact-source CI and production verification.

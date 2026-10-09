@@ -2,7 +2,8 @@
 
 [Chinese overview](../README.md) | [English overview](README.en.md)
 
-Status: v0.1.0 personal preview deployed after research on 2026-10-09. Documents 01-07
+Status: personal preview; see [releases](https://github.com/nocoo/rhino/releases)
+for published versions. Initial research was completed on 2026-10-09. Documents 01-07
 retain the original requirements and research context. Document 08 records the
 current implementation and open acceptance gates; none certifies medical safety.
 

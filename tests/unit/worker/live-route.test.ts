@@ -1,4 +1,5 @@
 import { expect, it, vi } from "vitest";
+import { version } from "../../../package.json";
 import type { WorkerEnv } from "../../../worker/env";
 import { handleApi } from "../../../worker/index";
 
@@ -15,12 +16,12 @@ it("returns anonymous minimal health without private rows or error details", asy
 	expect(await healthy.json()).toEqual({
 		status: "ok",
 		name: "rhino",
-		version: "0.1.0",
+		version,
 		revision: "test",
 	});
 	all.mockRejectedValue(new Error("private database detail"));
 	const failed = await handleApi(request, env);
 	expect(failed.status).toBe(503);
 	expect(failed.headers.get("cache-control")).toBe("no-store");
-	expect(await failed.json()).toEqual({ status: "error", name: "rhino", version: "0.1.0" });
+	expect(await failed.json()).toEqual({ status: "error", name: "rhino", version });
 });
