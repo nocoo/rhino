@@ -26,7 +26,7 @@ without writing mirror tarball URLs into the committed lockfile.
 | `bun run gate:security` | Gitleaks and OSV; missing scanners fail closed |
 | `bun run gate:pre-push` | Pushed-ref L2 and G2 (normally invoked by Husky) |
 | `bun run build` | Build Worker and static assets, not deployment |
-| `node assets-source/build-model.mjs` | Rebuild the shared rig and six clips |
+| `node assets-source/build-model.mjs` | Rebuild the shared rig and eleven clips |
 | `node assets-source/build-posters.mjs` | Render matching static phase posters |
 
 ## Boundaries
@@ -73,7 +73,7 @@ base-ci is pinned to `8816553dc9f4544d1e8486bacb5cce630a9f14cb`.
 Deployment is manual, proven successful CI source only, fresh main and protected
 `production`. Placeholder D1 UUID is deliberately rejected. Never bypass it.
 
-Six motions are **unreviewed illustrative previews**, not qualified instruction.
+Eleven motions are **unreviewed illustrative previews**, not qualified instruction.
 The realistic-motion acceptance gate in docs/05 remains open. Do not set
 `instructionReady=true`, claim expert review or declare feature-complete without
 corresponding evidence. Owner preview acceptance cannot substitute for

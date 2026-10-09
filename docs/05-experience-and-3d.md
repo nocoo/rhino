@@ -110,6 +110,35 @@ Body focus, actual versus planned, units, and save state outrank decoration.
 
 ## The 3D Instruction Contract
 
+### Implemented Preview Correction (2026-10-09)
+
+The stage header, muscle legend and camera controls occupy document flow rather
+than covering the canvas. Canvas height is 360-560px (340-460px in compact cards),
+scaled against the small viewport height. The camera fits baked full-repetition
+bounds at the current aspect ratio and reserves room for handheld equipment.
+Front, side and rear presets reset framing; detail fits the highlighted regions
+while retaining the current direction. Posterior-focused movements open at the rear.
+Below 1024px, the exercise picker is a horizontal scrollable row rather than an
+eleven-item vertical list above the viewer; each button exposes its selected state.
+
+The bind-pose shoulder/elbow axis now distinguishes deltoid caps, anterior upper
+arm and posterior upper arm. Pushes highlight triceps; pulls and curls highlight
+biceps. This corrects the global-height classification but is still a surface
+approximation, not individually segmented anatomical tissue.
+
+Catalog 1.1.0 contains eleven clips/posters. Five added dumbbell movements are
+available through the existing pre-training selector: curl, triceps kickback,
+lateral raise, bent-over row and calf raise. Automatic A/B templates remain
+foundational rather than silently substituting isolation work. Every asset is
+still draft with `instructionReady=false`; no professional review is implied.
+
+Asset tests check animated bounds, three camera directions and mask partitioning.
+Browser tests scrub all eleven clips with unobstructed controls on desktop/mobile,
+capture arm views, and save/reopen the new selections with precise per-hand loads.
+These are technical regressions, not anatomical or coaching certification.
+
+### Acceptance Contract
+
 **Realistic authored animation is a core deliverable, not decorative polish.**
 Every selectable strength movement needs a licensed, reviewed model/clip pair.
 A capsule person, disconnected rotating limbs, generic idle animation, or an

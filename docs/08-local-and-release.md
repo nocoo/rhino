@@ -27,8 +27,12 @@ every proposal has passed. This document records the implementation boundary.
 - Actual progress minutes are explicitly `actualCardioMinutes`. Strength
   duration is not inferred from planned time. A completed strength session
   counts only when at least one set is performed.
-- Model assets are self-hosted. One 1.79 MB GLB contains six clips; matching
+- Model assets are self-hosted. One 2.36 MB GLB contains eleven clips; matching
   PNG phase posters and written cues are available when WebGL fails.
+- Catalog 1.1.0 adds five selectable dumbbell movements without changing the
+  foundational automatic A/B templates. Replacing an old draft's movement
+  updates that movement's catalog provenance and clears its planned load instead
+  of carrying a total-external load into a per-hand exercise. Saved history stays immutable.
 
 ## Local Acceptance
 
@@ -45,7 +49,7 @@ cover conditional-write failures in addition to, not instead of, real persistenc
 Use the Caddy URL for owner acceptance. Do not insert sample personal metrics
 into the daily database to decorate screenshots. Confirm both light/dark modes,
 360px/390px/768px/1440px layouts, chart/table visibility, keyboard navigation,
-session edits, record reload, and all six motion clips.
+session edits, record reload, and all eleven motion clips.
 
 ## Open Acceptance Work
 

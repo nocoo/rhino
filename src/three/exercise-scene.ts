@@ -1,6 +1,7 @@
 import {
 	AmbientLight,
 	AnimationMixer,
+	Box3,
 	BoxGeometry,
 	Clock,
 	CylinderGeometry,
@@ -19,28 +20,22 @@ import {
 } from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { type GLTF, GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { getExercise } from "../data/exercises";
+import type { StrengthExerciseId } from "../domain/contracts";
+import { type CameraView, FIELD_OF_VIEW, frameBounds } from "./framing";
 
 export type SceneController = {
-	setExercise: (id: string) => void;
+	setExercise: (id: StrengthExerciseId) => void;
 	setPlaying: (playing: boolean) => void;
 	setProgress: (progress: number) => void;
 	setMuscles: (enabled: boolean) => void;
-	setCamera: (view: "front" | "side" | "detail") => void;
+	setCamera: (view: CameraView) => void;
 	dispose: () => void;
-};
-
-const muscleRegions: Record<string, number[]> = {
-	"goblet-squat": [1, 3],
-	"romanian-deadlift": [2, 3],
-	"chest-press": [7, 6],
-	"cable-row": [8, 6],
-	"lat-pulldown": [8, 6],
-	"shoulder-press": [5, 6],
 };
 
 export async function createExerciseScene(
 	host: HTMLElement,
-	exercise: string,
+	exercise: StrengthExerciseId,
 	onProgress: (value: number) => void,
 	onUnavailable: () => void = () => {},
 ): Promise<SceneController> {
@@ -54,13 +49,13 @@ export async function createExerciseScene(
 	);
 	host.appendChild(renderer.domElement);
 	const scene = new Scene();
-	const camera = new PerspectiveCamera(34, 1, 0.05, 30);
+	const camera = new PerspectiveCamera(FIELD_OF_VIEW, 1, 0.05, 50);
 	const controls = new OrbitControls(camera, renderer.domElement);
 	controls.enableDamping = false;
 	renderer.domElement.style.touchAction = "pan-y";
 	controls.enablePan = false;
 	controls.minDistance = 1.1;
-	controls.maxDistance = 5;
+	controls.maxDistance = 15;
 	controls.minPolarAngle = 0.25;
 	controls.maxPolarAngle = Math.PI / 2 + 0.1;
 	scene.add(new HemisphereLight(0xeaf4ff, 0x4e534b, 2));
@@ -93,6 +88,11 @@ export async function createExerciseScene(
 	let mixer: AnimationMixer;
 	let duration = 4;
 	let model: Group;
+	let view: CameraView = "front";
+	let direction: Exclude<CameraView, "detail"> = "front";
+	const bounds = new Box3(new Vector3(-0.6, 0, -0.3), new Vector3(0.6, 2.3, 0.5));
+	const detailBounds = new Box3();
+	let body: SkinnedMesh;
 	const metal = new MeshStandardMaterial({ color: 0x444c47, metalness: 0.55, roughness: 0.48 });
 	const pad = new MeshStandardMaterial({ color: 0x3e4c43, roughness: 0.92 });
 	let updateEquipment = () => {};
@@ -107,6 +107,7 @@ export async function createExerciseScene(
 		mask0: { value: new Vector3(1, 0, 1) },
 		mask1: { value: new Vector3() },
 		mask2: { value: new Vector3() },
+		mask3: { value: new Vector3() },
 		highlight: { value: 1 },
 	};
 	const resize = () => {
@@ -115,7 +116,7 @@ export async function createExerciseScene(
 		renderer.setSize(width, height);
 		camera.aspect = width / Math.max(height, 1);
 		camera.updateProjectionMatrix();
-		render();
+		cameraView(view);
 	};
 	const observer = new ResizeObserver(resize);
 	observer.observe(host);
@@ -124,15 +125,16 @@ export async function createExerciseScene(
 		updateLoop();
 	});
 	intersection.observe(host);
-	const cameraView = (view: "front" | "side" | "detail") => {
-		controls.target.set(0, view === "detail" ? 1.24 : 0.96, 0);
-		camera.position.set(
-			...((view === "side"
-				? [3.3, 1.3, 0.4]
-				: view === "detail"
-					? [0.5, 1.45, 1.55]
-					: [2.25, 1.45, 3.2]) as [number, number, number]),
+	const cameraView = (nextView: CameraView) => {
+		view = nextView;
+		if (view !== "detail") direction = view;
+		const fit = frameBounds(
+			view === "detail" && !detailBounds.isEmpty() ? detailBounds : bounds,
+			camera.aspect,
+			direction,
 		);
+		controls.target.copy(fit.target);
+		camera.position.copy(fit.position);
 		controls.update();
 		render();
 	};
@@ -142,15 +144,15 @@ export async function createExerciseScene(
 	material.onBeforeCompile = (shader) => {
 		Object.assign(shader.uniforms, uniforms);
 		shader.vertexShader =
-			`attribute vec3 _region0; attribute vec3 _region1; attribute vec3 _region2; varying vec3 vRegion0; varying vec3 vRegion1; varying vec3 vRegion2;\n${shader.vertexShader}`.replace(
+			`attribute vec3 _region0; attribute vec3 _region1; attribute vec3 _region2; attribute vec3 _region3; varying vec3 vRegion0; varying vec3 vRegion1; varying vec3 vRegion2; varying vec3 vRegion3;\n${shader.vertexShader}`.replace(
 				"#include <begin_vertex>",
-				"#include <begin_vertex>\nvRegion0 = _region0; vRegion1 = _region1; vRegion2 = _region2;",
+				"#include <begin_vertex>\nvRegion0 = _region0; vRegion1 = _region1; vRegion2 = _region2; vRegion3 = _region3;",
 			);
 		shader.fragmentShader =
-			`varying vec3 vRegion0; varying vec3 vRegion1; varying vec3 vRegion2; uniform vec3 mask0; uniform vec3 mask1; uniform vec3 mask2; uniform float highlight;\n${shader.fragmentShader}`.replace(
+			`varying vec3 vRegion0; varying vec3 vRegion1; varying vec3 vRegion2; varying vec3 vRegion3; uniform vec3 mask0; uniform vec3 mask1; uniform vec3 mask2; uniform vec3 mask3; uniform float highlight;\n${shader.fragmentShader}`.replace(
 				"#include <color_fragment>",
 				`#include <color_fragment>
-      float targeted = clamp(dot(vRegion0,mask0)+dot(vRegion1,mask1)+dot(vRegion2,mask2),0.0,1.0);
+      float targeted = clamp(dot(vRegion0,mask0)+dot(vRegion1,mask1)+dot(vRegion2,mask2)+dot(vRegion3,mask3),0.0,1.0);
       diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.87,0.37,0.13), targeted * highlight * 0.82);`,
 			);
 	};
@@ -190,6 +192,7 @@ export async function createExerciseScene(
 	model = gltf.scene;
 	model.traverse((object) => {
 		if (object instanceof SkinnedMesh) {
+			body = object;
 			for (const original of Array.isArray(object.material) ? object.material : [object.material])
 				original.dispose();
 			object.material = material;
@@ -235,7 +238,7 @@ export async function createExerciseScene(
 		}
 		return group;
 	};
-	const setExercise = (id: string) => {
+	const setExercise = (id: StrengthExerciseId) => {
 		currentId = id;
 		const clip = gltf.animations.find((item) => item.name === id);
 		mixer.stopAllAction();
@@ -244,8 +247,8 @@ export async function createExerciseScene(
 			mixer.clipAction(clip).reset().play();
 			mixer.setTime(0);
 		}
-		const selected = muscleRegions[id] ?? [];
-		[uniforms.mask0, uniforms.mask1, uniforms.mask2].forEach((mask, group) => {
+		const selected = getExercise(id).highlightRegions;
+		[uniforms.mask0, uniforms.mask1, uniforms.mask2, uniforms.mask3].forEach((mask, group) => {
 			mask.value.set(
 				...([1, 2, 3].map((offset) => (selected.includes(group * 3 + offset) ? 1 : 0)) as [
 					number,
@@ -298,7 +301,7 @@ export async function createExerciseScene(
 				connect(cable, left.add(right).multiplyScalar(0.5), top);
 			};
 		}
-		if (["goblet-squat", "romanian-deadlift", "shoulder-press"].includes(id)) {
+		if (getExercise(id).equipmentId === "dumbbell") {
 			for (const side of id === "goblet-squat" ? ["L"] : ["L", "R"]) {
 				const wrist = model.getObjectByName(`wrist_${side}`);
 				if (wrist) {
@@ -309,6 +312,27 @@ export async function createExerciseScene(
 				}
 			}
 		}
+		const motion = body.userData.motionBounds[id];
+		bounds
+			.set(
+				new Vector3(...(motion.min as [number, number, number])),
+				new Vector3(...(motion.max as [number, number, number])),
+			)
+			.expandByScalar(0.16);
+		if (id === "lat-pulldown") bounds.expandByPoint(new Vector3(0, 2.3, -0.65));
+		if (["chest-press", "cable-row"].includes(id)) bounds.expandByPoint(new Vector3(0, 0.73, 1));
+		detailBounds.makeEmpty();
+		for (const region of selected) {
+			const area = motion.regions[region];
+			detailBounds.union(
+				new Box3(
+					new Vector3(...(area.min as [number, number, number])),
+					new Vector3(...(area.max as [number, number, number])),
+				),
+			);
+		}
+		detailBounds.expandByScalar(0.12);
+		cameraView([4, 8, 10].includes(selected[0]) ? "rear" : "front");
 		onProgress(0);
 		render();
 	};

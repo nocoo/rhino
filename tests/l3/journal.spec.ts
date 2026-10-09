@@ -1,4 +1,8 @@
 import { expect, type Page, test } from "@playwright/test";
+import { EXERCISES } from "../../src/data/exercises";
+import { CATALOG_VERSION, type GetSessionsResponse } from "../../src/domain/contracts";
+import { addDays, localDateInTimeZone } from "../../src/domain/dates";
+import { sessionTarget, uuid } from "../helpers/fixtures";
 import { assertMarker, type TestRun } from "../helpers/isolation";
 
 async function guard() {
@@ -95,7 +99,14 @@ test("failed save keeps editor input, and reduced-motion fallback remains access
 		page.getByText("测量记录已保存，同日记录会更新而非重复新增", { exact: true }),
 	).toBeVisible();
 	await navigate(page, "动作实验室");
-	await expect(page.getByText(/WebGL|静态|三维/).first()).toBeVisible();
+	await page
+		.locator(".library-nav")
+		.getByRole("button", { name: /俯身哑铃臂屈伸/ })
+		.click();
+	const poster = page.getByRole("img", { name: "动作起始与中间阶段的静态示意，尚未经专业审核" });
+	await expect(poster).toBeVisible();
+	await expect(poster).toHaveJSProperty("naturalWidth", 680);
+	await expect(page.getByRole("button", { name: "播放演示", exact: true })).toBeDisabled();
 });
 
 test("Basalt shell geometry, collapse and drawer focus match the reference", async ({
@@ -178,15 +189,17 @@ test("all pages retain responsive spacing and usable controls in both themes", a
 			for (const [index, name] of pages.entries()) {
 				await navigate(page, name);
 				await expect(page.locator(".page-body")).toBeVisible();
-				if (name === "今日训练" || name === "动作实验室")
+				if (name === "今日训练" || name === "动作实验室") {
 					await expect(page.locator(".movement-viewer")).toBeVisible();
+					await expect(page.getByRole("button", { name: "播放演示", exact: true })).toBeEnabled();
+				}
 				const sizes = await page.locator(".rhino-island").evaluate((island) => {
 					const rect = island.getBoundingClientRect();
 					return {
 						overflow: island.scrollWidth > island.clientWidth,
 						clipped: [...island.querySelectorAll("input,button,[role=combobox]")]
 							.filter((control) => {
-								if (control.closest("table")) return false;
+								if (control.closest("table, .library-nav")) return false;
 								const box = control.getBoundingClientRect();
 								return box.width > 0 && (box.left < rect.left || box.right > rect.right);
 							})
@@ -202,4 +215,133 @@ test("all pages retain responsive spacing and usable controls in both themes", a
 			}
 		}
 	}
+});
+
+test("all eleven previews render with unobstructed controls and scrubbed arm views", async ({
+	page,
+}, testInfo) => {
+	test.setTimeout(60_000);
+	const errors: string[] = [];
+	page.on("pageerror", (error) => errors.push(error.message));
+	await page.emulateMedia({ reducedMotion: "reduce" });
+	await page.goto("/");
+	await navigate(page, "动作实验室");
+	await expect(page.locator(".library-nav button")).toHaveCount(11);
+	if (testInfo.project.name === "mobile") {
+		const navigation = await page.locator(".library-nav").boundingBox();
+		expect(navigation?.height).toBeLessThan(120);
+	}
+	for (const [index, exercise] of EXERCISES.entries()) {
+		await page.locator(".library-nav button").nth(index).click();
+		await expect(page.getByRole("button", { name: "播放演示", exact: true })).toBeEnabled();
+		await expect(page.locator("canvas")).toHaveCount(1);
+		await expect(page.locator(".stage-poster")).toHaveCount(0);
+		const slider = page.getByRole("slider", { name: "动作进度" });
+		await slider.focus();
+		await slider.press("Home");
+		for (let step = 0; step < 5; step++) await slider.press("PageUp");
+		await expect(slider).toHaveAttribute("aria-valuenow", "50");
+		await page.getByRole("button", { name: "侧面视角", exact: true }).click();
+		await page.getByRole("button", { name: "背面视角", exact: true }).click();
+		if (["triceps-kickback", "cable-row"].includes(exercise.id))
+			await page.locator(".movement-viewer").screenshot({
+				path: testInfo.outputPath(`${exercise.id}-rear.png`),
+			});
+		await page.getByRole("button", { name: "局部细节", exact: true }).click();
+		if (exercise.id === "triceps-kickback")
+			await page.locator(".movement-viewer").screenshot({
+				path: testInfo.outputPath("triceps-kickback-detail.png"),
+			});
+		await page.getByRole("button", { name: "正面视角", exact: true }).click();
+		await page.locator(".movement-viewer").scrollIntoViewIfNeeded();
+		const canvas = await page.locator("canvas").boundingBox();
+		const tools = await page.locator(".stage-controls").boundingBox();
+		const playback = await page.locator(".playback-bar").boundingBox();
+		if (!canvas || !tools || !playback) throw new Error("Missing viewer geometry");
+		expect(canvas.height).toBeGreaterThanOrEqual(360);
+		expect(tools.y + tools.height).toBeLessThanOrEqual(canvas.y + 1);
+		expect(canvas.y + canvas.height).toBeLessThanOrEqual(playback.y + 1);
+		if (["shoulder-press", "dumbbell-curl", "lateral-raise"].includes(exercise.id))
+			await page.locator(".movement-viewer").screenshot({
+				path: testInfo.outputPath(`${exercise.id}-front.png`),
+			});
+		await slider.press("End");
+		await expect(slider).toHaveAttribute("aria-valuenow", "100");
+	}
+	await page.getByRole("button", { name: "播放演示", exact: true }).click();
+	await expect(page.getByRole("button", { name: "暂停演示", exact: true })).toBeEnabled();
+	await page.getByRole("button", { name: "暂停演示", exact: true }).click();
+	await page.getByRole("button", { name: "切换肌群高亮", exact: true }).click();
+	await expect(page.getByRole("button", { name: "切换肌群高亮" })).toHaveAttribute(
+		"aria-pressed",
+		"false",
+	);
+	expect(errors).toEqual([]);
+});
+
+test("five added movements can replace an old draft and persist precise per-hand loads", async ({
+	page,
+}) => {
+	await page.goto("/");
+	await navigate(page, "个人档案");
+	await page.getByLabel("生日", { exact: true }).fill("1990-02-28");
+	await page.getByRole("button", { name: "保存档案", exact: true }).click();
+	await expect(page.getByText("档案已保存", { exact: true })).toBeVisible();
+	const names = ["哑铃弯举", "俯身哑铃臂屈伸", "哑铃侧平举", "俯身哑铃划船", "哑铃提踵"];
+	const ids = ["dumbbell-curl", "triceps-kickback", "lateral-raise", "bent-over-row", "calf-raise"];
+	const target = sessionTarget();
+	const exercise = target.blocks[0].exercises[0];
+	target.blocks[0].exercises = names.map(() => ({
+		...structuredClone(exercise),
+		id: uuid(),
+		workingSets: [{ ...exercise.workingSets[0], id: uuid() }],
+	}));
+	const date = localDateInTimeZone(new Date(), "Asia/Shanghai");
+	const id = uuid();
+	const seeded = await page.request.put(`/api/sessions/${id}`, {
+		headers: { Origin: new URL(page.url()).origin },
+		data: {
+			expectedVersion: 0,
+			mutationId: uuid(),
+			sourcePlanRevision: null,
+			localDate: date,
+			timezone: "Asia/Shanghai",
+			status: "draft",
+			target,
+			actual: null,
+		},
+	});
+	expect(seeded.ok()).toBe(true);
+	await page.reload();
+	await page.getByRole("button", { name: "继续训练", exact: true }).click();
+	for (const [index, name] of names.entries()) {
+		await page.getByRole("combobox", { name: "训练动作", exact: true }).nth(index).click();
+		await page.getByRole("option", { name, exact: true }).click();
+	}
+	await page.getByRole("button", { name: "确认并开始", exact: true }).click();
+	await page.getByRole("button", { name: "按计划完成", exact: true }).click();
+	for (const name of names)
+		await page.getByLabel(`${name}第1组负重`, { exact: true }).fill("2.375");
+	await page.getByRole("button", { name: "保存训练", exact: true }).click();
+	await expect(page.getByText("训练已记录。下一次，继续。", { exact: true })).toBeVisible();
+	await page.reload();
+	const response = await page.request.get(`/api/sessions?from=${addDays(date, -365)}&to=${date}`);
+	expect(response.ok()).toBe(true);
+	const { data }: { data: GetSessionsResponse } = await response.json();
+	const position = data.sessions.findIndex((session) => session.id === id);
+	const saved = data.sessions[position];
+	expect(saved.status).toBe("completed");
+	const savedExercises = saved.target.blocks.flatMap((block) => block.exercises);
+	expect(savedExercises.map((item) => item.exerciseId)).toEqual(ids);
+	for (const item of savedExercises) {
+		expect(item).toMatchObject({ catalogVersion: CATALOG_VERSION, loadConvention: "per-hand" });
+		expect(item.workingSets[0].loadKg).toBeNull();
+	}
+	expect(saved.actual?.exercises.map((item) => item.sets[0].loadKg)).toEqual(
+		names.map(() => 2.375),
+	);
+	await navigate(page, "我的进展");
+	await page.getByRole("button", { name: "查看记录", exact: true }).nth(position).click();
+	for (const name of names)
+		await expect(page.getByLabel(`${name}第1组负重`, { exact: true })).toHaveValue("2.375");
 });

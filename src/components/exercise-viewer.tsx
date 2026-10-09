@@ -1,14 +1,15 @@
 import { Button } from "@nocoo/basalt";
 import { Slider } from "@nocoo/basalt/components/slider";
-import { Focus, Layers3, Pause, Play, RotateCcw, View } from "lucide-react";
+import { Focus, Layers3, Pause, Play, RotateCcw, RotateCw, View } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import type { StrengthExerciseId } from "../domain/contracts";
 import { createExerciseScene, type SceneController } from "../three/exercise-scene";
 
 export function ExerciseViewer({
 	exerciseId,
 	compact = false,
 }: {
-	exerciseId: string;
+	exerciseId: StrengthExerciseId;
 	compact?: boolean;
 }) {
 	const host = useRef<HTMLDivElement>(null);
@@ -58,59 +59,77 @@ export function ExerciseViewer({
 					<span /> 3D · 交互演示
 				</span>
 			</div>
-			<div className="anatomy-stage" ref={host} />
-			{failed && (
-				<img
-					className="stage-poster"
-					src={`/models/exercises/${exerciseId}.png`}
-					alt="动作起始与中间阶段的静态示意，尚未经专业审核"
-				/>
-			)}
-			{(loading || failed) && (
-				<div className="stage-message" role="status">
-					{failed ? "三维视图暂不可用，请阅读下方动作说明。" : "正在加载人体模型…"}
+			<div className="stage-controls">
+				<div className="stage-legend">
+					<span className="muscle-dot" /> 目标肌群区域{" "}
+					<span className="muted">· 非肌肉激活测量</span>
 				</div>
-			)}
-			<div className="stage-legend">
-				<span className="muscle-dot" /> 目标肌群区域 <span className="muted">· 非肌肉激活测量</span>
+				<div className="camera-tools">
+					<Button
+						variant="ghost"
+						size="icon"
+						aria-label="正面视角"
+						disabled={loading || failed}
+						onClick={() => controller.current?.setCamera("front")}
+					>
+						<View size={17} />
+					</Button>
+					<Button
+						variant="ghost"
+						size="icon"
+						aria-label="侧面视角"
+						disabled={loading || failed}
+						onClick={() => controller.current?.setCamera("side")}
+					>
+						<RotateCcw size={17} />
+					</Button>
+					<Button
+						variant="ghost"
+						size="icon"
+						aria-label="背面视角"
+						disabled={loading || failed}
+						onClick={() => controller.current?.setCamera("rear")}
+					>
+						<RotateCw size={17} />
+					</Button>
+					<Button
+						variant="ghost"
+						size="icon"
+						aria-label="局部细节"
+						disabled={loading || failed}
+						onClick={() => controller.current?.setCamera("detail")}
+					>
+						<Focus size={17} />
+					</Button>
+					<Button
+						variant={muscles ? "secondary" : "ghost"}
+						size="icon"
+						aria-label="切换肌群高亮"
+						aria-pressed={muscles}
+						disabled={loading || failed}
+						onClick={() => {
+							setMuscles(!muscles);
+							controller.current?.setMuscles(!muscles);
+						}}
+					>
+						<Layers3 size={17} />
+					</Button>
+				</div>
 			</div>
-			<div className="camera-tools">
-				<Button
-					variant="ghost"
-					size="icon"
-					aria-label="正面视角"
-					onClick={() => controller.current?.setCamera("front")}
-				>
-					<View size={17} />
-				</Button>
-				<Button
-					variant="ghost"
-					size="icon"
-					aria-label="侧面视角"
-					onClick={() => controller.current?.setCamera("side")}
-				>
-					<RotateCcw size={17} />
-				</Button>
-				<Button
-					variant="ghost"
-					size="icon"
-					aria-label="局部细节"
-					onClick={() => controller.current?.setCamera("detail")}
-				>
-					<Focus size={17} />
-				</Button>
-				<Button
-					variant={muscles ? "secondary" : "ghost"}
-					size="icon"
-					aria-label="切换肌群高亮"
-					aria-pressed={muscles}
-					onClick={() => {
-						setMuscles(!muscles);
-						controller.current?.setMuscles(!muscles);
-					}}
-				>
-					<Layers3 size={17} />
-				</Button>
+			<div className="stage-viewport">
+				<div className="anatomy-stage" ref={host} />
+				{failed && (
+					<img
+						className="stage-poster"
+						src={`/models/exercises/${exerciseId}.png`}
+						alt="动作起始与中间阶段的静态示意，尚未经专业审核"
+					/>
+				)}
+				{(loading || failed) && (
+					<div className="stage-message" role="status">
+						{failed ? "三维视图暂不可用，请阅读下方动作说明。" : "正在加载人体模型…"}
+					</div>
+				)}
 			</div>
 			<div className="playback-bar">
 				<Button

@@ -52,9 +52,11 @@ export function useSessionModel(session: SessionRecord) {
 		Object.assign(exercises[index], {
 			exerciseId: id,
 			name: exercise.name,
+			catalogVersion: exercise.asset.catalogVersion,
 			equipmentId: exercise.equipmentId,
 			loadConvention: exercise.loadConvention,
 			restSeconds: exercise.restSecondsDefault,
+			workingSets: exercises[index].workingSets.map((set) => ({ ...set, loadKg: null })),
 		});
 		changeTarget(next);
 	}

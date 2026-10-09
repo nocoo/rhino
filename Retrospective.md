@@ -66,3 +66,29 @@ The first exact logo-position check caught a 1/64px flex-centering difference;
 an explicit compact brand row now gives identical expanded/collapsed placement.
 Inspect computed browser geometry and screenshots before claiming conformity;
 component imports and passing business tests alone are insufficient evidence.
+
+## 2026-10-09 - Clipped Motion and Misplaced Arm Masks
+
+Fixed camera distances did not account for narrow canvases or raised arms, and
+overlaid labels consumed the visible motion area. Upper-arm masks were divided
+by a global height threshold in unshifted source coordinates, conflating shoulder
+and arm regions; pushes and pulls also reused the same arm mask. Passing business
+tests and generating a GLB had not established framing or muscle placement.
+
+The exporter now partitions arms relative to shoulder/elbow joints and bakes
+sampled motion bounds. Runtime framing fits those bounds and the current aspect
+ratio. Controls sit outside the canvas, with a rear preset for posterior muscles.
+Regression checks inspect the actual exported mesh and sampled animation, not
+only hardcoded catalog labels; browser stills cover full extension and both arm
+surfaces. These approximations remain explicitly unreviewed.
+
+Catalog expansion also exposed stale provenance when replacing a movement in an
+old draft. The replaced movement now adopts its source catalog version without
+rewriting the plan snapshot or unrelated historical targets. It also clears the
+old movement's planned load instead of silently reinterpreting its weight convention.
+
+Inspection of the added clips caught inherited all-around lower-leg highlighting
+and floating feet in hinged poses. Calf masks now exclude the shin, and the added
+hinge/toe-rise poses anchor their supporting joints with sampled contact tests.
+The first persistence browser run used a more specific kickback label than the
+UI exposed; the shared UI name now explicitly identifies the bent-over variant.

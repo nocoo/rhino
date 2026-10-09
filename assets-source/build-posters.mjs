@@ -38,6 +38,11 @@ try {
 		"cable-row",
 		"lat-pulldown",
 		"shoulder-press",
+		"dumbbell-curl",
+		"triceps-kickback",
+		"lateral-raise",
+		"bent-over-row",
+		"calf-raise",
 	]) {
 		const frames = [];
 		await page.evaluate((exercise) => window.scene.setExercise(exercise), id);

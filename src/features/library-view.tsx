@@ -41,6 +41,31 @@ const chineseCues: Record<StrengthExerciseId, [string, string, string]> = {
 		"沿舒适路径向上推起，不锁死手肘，然后缓慢降低。",
 		"推起时呼气。避免用过度腰椎后仰换取举起高度。",
 	],
+	"dumbbell-curl": [
+		"双手各握一只哑铃，站稳，手臂自然垂在身体两侧。",
+		"屈肘将哑铃弯向肩部，再有控制地放下，尽量保持上臂稳定。",
+		"弯举时呼气，放下时吸气。避免身体摆动借力。",
+	],
+	"triceps-kickback": [
+		"髋部后移并保持躯干稳定，双手各握一只哑铃，上臂靠近身体。",
+		"伸直手肘将哑铃向后送，再屈肘回位，尽量不移动上臂。",
+		"伸肘时呼气，回位时吸气。避免弓背或甩动哑铃。",
+	],
+	"lateral-raise": [
+		"双手各握一只较轻的哑铃，手臂在身体两侧，手肘微屈。",
+		"双臂向两侧抬至舒适高度，再缓慢放下。",
+		"抬起时呼气，放下时吸气。避免耸肩、摆动或在疼痛范围内继续。",
+	],
+	"bent-over-row": [
+		"双手各握一只哑铃，屈髋俯身、膝盖微屈，背部保持舒适稳定。",
+		"手肘向髋部方向拉，再有控制地放下，躯干保持不动。",
+		"拉起时呼气，放下时吸气。避免弓背、扭转或耸肩。",
+	],
+	"calf-raise": [
+		"双手各握一只哑铃，双脚约与髋同宽；如需平衡可轻扶稳固支撑。",
+		"双脚跟抬起，短暂停留，再有控制地落下。",
+		"抬起时呼气，落下时吸气。避免弹震或把重量压向脚外侧。",
+	],
 };
 
 export function LibraryView({
@@ -58,17 +83,18 @@ export function LibraryView({
 				description="观察动作路径，理解目标肌群。旋转视角，按自己的速度学习。"
 				actions={
 					<span className="pill">
-						<BookOpen size={13} /> 6 个基础动作
+						<BookOpen size={13} /> {EXERCISES.length} 个动作预览
 					</span>
 				}
 			/>
 			<div className="library-layout">
-				<div className="stack library-nav">
+				<nav className="stack library-nav" aria-label="选择训练动作">
 					{EXERCISES.map((item, index) => (
 						<Button
 							key={item.id}
 							variant={selected === item.id ? "secondary" : "ghost"}
 							className="library-item"
+							aria-pressed={selected === item.id}
 							onClick={() => select(item.id)}
 						>
 							<span className="mono muted">{String(index + 1).padStart(2, "0")}</span>
@@ -79,7 +105,7 @@ export function LibraryView({
 							{selected === item.id && <ArrowUpRight size={15} />}
 						</Button>
 					))}
-				</div>
+				</nav>
 				<div className="stack">
 					<Suspense fallback={<LayerCard.Loading label="正在准备三维视图" />}>
 						<LazyExerciseViewer key={selected} exerciseId={selected} />

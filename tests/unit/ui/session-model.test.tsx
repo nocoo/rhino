@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
+import { CATALOG_VERSION } from "../../../src/domain/contracts";
 import { actualFromTarget } from "../../../src/features/use-rhino-model";
 import { useSessionModel } from "../../../src/features/use-session-model";
 import { sessionRecord, uuid } from "../../helpers/fixtures";
@@ -26,8 +27,17 @@ it("keeps target edits isolated from the original plan and resets actuals", () =
 			(set) => set.repsLow === 15 && set.repsHigh === 15,
 		),
 	).toBe(true);
-	act(() => result.current.updateExercise(0, "romanian-deadlift"));
-	expect(result.current.target.blocks[0]?.exercises[0]?.exerciseId).toBe("romanian-deadlift");
+	act(() => result.current.updateExercise(0, "dumbbell-curl"));
+	expect(result.current.target.blocks[0]?.exercises[0]).toMatchObject({
+		exerciseId: "dumbbell-curl",
+		catalogVersion: CATALOG_VERSION,
+		equipmentId: "dumbbell",
+		loadConvention: "per-hand",
+	});
+	expect(result.current.target.catalogVersion).toBe(session.target.catalogVersion);
+	expect(result.current.target.blocks[0].exercises[0].workingSets.map((set) => set.loadKg)).toEqual(
+		[null, null, null],
+	);
 	expect(session).toEqual(original);
 	expect(result.current.dirty).toBe(true);
 	act(() => result.current.setCount(0, 1));

@@ -9,6 +9,11 @@ export const exerciseNames: Record<StrengthExerciseId, string> = {
 	"cable-row": "坐姿绳索划船",
 	"lat-pulldown": "高位下拉",
 	"shoulder-press": "哑铃肩推",
+	"dumbbell-curl": "哑铃弯举",
+	"triceps-kickback": "俯身哑铃臂屈伸",
+	"lateral-raise": "哑铃侧平举",
+	"bent-over-row": "俯身哑铃划船",
+	"calf-raise": "哑铃提踵",
 };
 export const emphasisNames: Record<SessionTarget["emphasis"], string> = {
 	"full-body": "全身力量",

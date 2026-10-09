@@ -10,7 +10,7 @@ import {
 } from "./dates";
 
 export const ALGORITHM_VERSION = "1.0.0";
-export const CATALOG_VERSION = "1.0.0";
+export const CATALOG_VERSION = "1.1.0";
 export const MAX_BODY_BYTES = 256 * 1024;
 export const MAX_DATE_RANGE_DAYS = 400;
 export const PROFILE_ID = 1;
@@ -54,6 +54,11 @@ export const strengthExerciseIdSchema = z.enum([
 	"cable-row",
 	"lat-pulldown",
 	"shoulder-press",
+	"dumbbell-curl",
+	"triceps-kickback",
+	"lateral-raise",
+	"bent-over-row",
+	"calf-raise",
 ]);
 
 export const equipmentIdSchema = z.enum([

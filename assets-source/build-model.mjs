@@ -93,10 +93,25 @@ for (const oldIndex of faces) {
 		let region = 0;
 		if (dominant.includes("upperleg")) region = z > 0 ? 1 : 2;
 		else if (dominant.includes("pelvis")) region = 3;
-		else if (dominant.includes("lowerleg")) region = 4;
-		else if (dominant.includes("upperarm") || dominant.includes("shoulder"))
-			region = y > 0.41 ? 5 : 6;
-		else if (dominant.includes("spine") || dominant.includes("breast"))
+		else if (dominant.includes("lowerleg")) {
+			const side = dominant.endsWith(".L") ? "L" : "R";
+			const knee = heads[namesToIndex.get(`lowerleg01.${side}`)];
+			const ankle = heads[namesToIndex.get(`foot.${side}`)];
+			const axis = ankle.clone().sub(knee);
+			const along = new THREE.Vector3(x, y - floor, z).sub(knee).dot(axis) / axis.lengthSq();
+			region = z < knee.z + along * axis.z ? 4 : 0;
+		} else if (dominant.includes("upperarm") || dominant.includes("shoulder")) {
+			const side = dominant.endsWith(".L") ? "L" : "R";
+			const shoulder = heads[namesToIndex.get(`upperarm01.${side}`)];
+			const elbow = heads[namesToIndex.get(`lowerarm01.${side}`)];
+			const point = new THREE.Vector3(x, y - floor, z);
+			const axis = elbow.clone().sub(shoulder);
+			const along = point.clone().sub(shoulder).dot(axis) / axis.lengthSq();
+			const center = shoulder.clone().addScaledVector(axis, along);
+			if (dominant.includes("shoulder") && Math.abs(x) < Math.abs(shoulder.x) - 0.015)
+				region = z > shoulder.z ? 7 : 8;
+			else region = along < 0.28 ? 5 : z > center.z ? 6 : 10;
+		} else if (dominant.includes("spine") || dominant.includes("breast"))
 			region = y > 0.3 ? (z > 0 ? 7 : 8) : 9;
 		regions.push(region);
 		mapped.set(oldIndex, mapped.size);
@@ -107,7 +122,7 @@ const geometry = new THREE.BufferGeometry();
 geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
 geometry.setAttribute("skinIndex", new THREE.Uint16BufferAttribute(skinIndices, 4));
 geometry.setAttribute("skinWeight", new THREE.Float32BufferAttribute(skinWeights, 4));
-for (let group = 0; group < 3; group++) {
+for (let group = 0; group < 4; group++) {
 	geometry.setAttribute(
 		`_region${group}`,
 		new THREE.Float32BufferAttribute(
@@ -140,6 +155,11 @@ for (const id of [
 	"cable-row",
 	"lat-pulldown",
 	"shoulder-press",
+	"dumbbell-curl",
+	"triceps-kickback",
+	"lateral-raise",
+	"bent-over-row",
+	"calf-raise",
 ]) {
 	const tracks = [];
 	const angles = {};
@@ -161,6 +181,15 @@ for (const id of [
 			set(`lowerleg01.${side}`, [8, 0, 0], [20, 0, 0]);
 			set(`foot.${side}`, [-4, 0, 0], [28, 0, 0]);
 			set(`upperarm01.${side}`, [0, 0, -sign * restArm], [-45, 0, -sign * restArm]);
+		}
+		if (id === "triceps-kickback" || id === "bent-over-row") {
+			set(`upperleg01.${side}`, [-30, 0, 0], [-30, 0, 0]);
+			set(`lowerleg01.${side}`, [16, 0, 0], [16, 0, 0]);
+			set(`foot.${side}`, [14, 0, 0], [14, 0, 0]);
+		}
+		if (id === "calf-raise") {
+			set(`foot.${side}`, [0, 0, 0], [24, 0, 0]);
+			for (let toe = 1; toe <= 5; toe++) set(`toe${toe}-1.${side}`, [0, 0, 0], [-24, 0, 0]);
 		}
 		if (id === "chest-press") {
 			set(`upperarm01.${side}`, [-70, 0, sign * 30], [-90, 0, -sign * 15]);
@@ -185,6 +214,7 @@ for (const id of [
 	}
 	if (id === "goblet-squat") set("spine05", [5, 0, 0], [24, 0, 0]);
 	if (id === "romanian-deadlift") set("spine05", [0, 0, 0], [55, 0, 0]);
+	if (id === "triceps-kickback" || id === "bent-over-row") set("spine05", [40, 0, 0], [40, 0, 0]);
 	const root = heads[namesToIndex.get("root")];
 	const delta =
 		id === "goblet-squat"
@@ -227,7 +257,7 @@ for (const id of [
 			if (id === "goblet-squat") {
 				elbowGoal = shoulder.clone().add(new THREE.Vector3(sign * 0.015, -0.27, 0.12));
 				wristGoal = shoulder.clone().add(new THREE.Vector3(-sign * 0.13, -0.15, 0.31));
-			} else if (id === "romanian-deadlift") {
+			} else if (id === "romanian-deadlift" || id === "calf-raise") {
 				elbowGoal = shoulder.clone().add(new THREE.Vector3(sign * 0.02, -0.29, 0.01));
 				wristGoal = elbowGoal.clone().add(new THREE.Vector3(sign * 0.025, -0.27, 0.015));
 			} else if (id === "chest-press") {
@@ -244,6 +274,28 @@ for (const id of [
 				wristGoal = elbowGoal
 					.clone()
 					.add(new THREE.Vector3(-sign * 0.05, phase ? 0.03 : -0.04, 0.25));
+			} else if (id === "dumbbell-curl") {
+				elbowGoal = shoulder.clone().add(new THREE.Vector3(sign * 0.02, -0.29, 0));
+				wristGoal = elbowGoal
+					.clone()
+					.add(new THREE.Vector3(0, phase ? 0.22 : -0.26, phase ? 0.16 : 0.04));
+			} else if (id === "triceps-kickback") {
+				elbowGoal = shoulder.clone().add(new THREE.Vector3(sign * 0.02, -0.09, -0.27));
+				wristGoal = elbowGoal
+					.clone()
+					.add(new THREE.Vector3(0, phase ? -0.08 : -0.27, phase ? -0.26 : 0.02));
+			} else if (id === "lateral-raise") {
+				elbowGoal = shoulder
+					.clone()
+					.add(new THREE.Vector3(sign * (phase ? 0.29 : 0.06), phase ? -0.04 : -0.29, 0.04));
+				wristGoal = elbowGoal
+					.clone()
+					.add(new THREE.Vector3(sign * (phase ? 0.25 : 0.04), phase ? -0.06 : -0.26, 0.06));
+			} else if (id === "bent-over-row") {
+				elbowGoal = shoulder
+					.clone()
+					.add(new THREE.Vector3(sign * 0.04, phase ? -0.06 : -0.29, phase ? -0.28 : 0));
+				wristGoal = elbowGoal.clone().add(new THREE.Vector3(0, -0.26, phase ? 0.07 : 0));
 			} else {
 				const high = id === "lat-pulldown" ? !phase : phase;
 				const elbowDrop = id === "lat-pulldown" ? -0.22 : 0;
@@ -265,6 +317,12 @@ for (const id of [
 					bone.quaternion.setFromEuler(new THREE.Euler(1.1, 0, sign * 0.04));
 				}
 		}
+		if (["triceps-kickback", "bent-over-row", "calf-raise"].includes(id)) {
+			const anchor = namesToIndex.get(id === "calf-raise" ? "toe2-1.L" : "foot.L");
+			const offset = heads[anchor].clone().sub(bones[anchor].getWorldPosition(new THREE.Vector3()));
+			bones[namesToIndex.get("root")].position.add(offset);
+			mesh.updateMatrixWorld(true);
+		}
 		for (const bone of bones) sampled.get(bone.name).push(...bone.quaternion.toArray());
 		rootValues.push(...bones[namesToIndex.get("root")].position.toArray());
 	}
@@ -275,6 +333,36 @@ for (const id of [
 	tracks.push(new THREE.VectorKeyframeTrack("root.position", times, rootValues));
 	clips.push(new THREE.AnimationClip(id, 4, tracks));
 }
+const motionBounds = {};
+const mixer = new THREE.AnimationMixer(mesh);
+for (const clip of clips) {
+	mixer.stopAllAction();
+	mixer.clipAction(clip).reset().play();
+	const bounds = new THREE.Box3();
+	const muscleBounds = Array.from({ length: 11 }, () => new THREE.Box3());
+	const point = new THREE.Vector3();
+	for (let sample = 0; sample <= 32; sample++) {
+		mixer.setTime((clip.duration * sample) / 32);
+		mesh.updateMatrixWorld(true);
+		mesh.skeleton.update();
+		for (let vertex = 0; vertex < regions.length; vertex++) {
+			mesh.getVertexPosition(vertex, point);
+			bounds.expandByPoint(point);
+			muscleBounds[regions[vertex]].expandByPoint(point);
+		}
+	}
+	motionBounds[clip.name] = {
+		min: bounds.min.toArray(),
+		max: bounds.max.toArray(),
+		regions: muscleBounds.map((region) => ({
+			min: region.min.toArray(),
+			max: region.max.toArray(),
+		})),
+	};
+}
+mixer.stopAllAction();
+mixer.uncacheRoot(mesh);
+mesh.userData.motionBounds = motionBounds;
 for (let i = 0; i < bones.length; i++) {
 	bones[i].quaternion.identity();
 	const parent = namesToIndex.get(rig.bones[names[i]].parent);

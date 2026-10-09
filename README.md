@@ -4,7 +4,7 @@ A private fitness planning and training journal, built for one person.
 Weekly structure, honest workout records, and a clear view of personal progress.
 
 **Status: working local preview, not released.** The journal and automated
-quality checks run locally. Six Three.js movements are illustrative previews;
+quality checks run locally. Eleven Three.js movements are illustrative previews;
 professional movement review and production acceptance remain open.
 
 ## Features
@@ -16,7 +16,9 @@ professional movement review and production acceptance remain open.
 - Dated height/weight without storage rounding, historical-height BMI, trends,
   birthday-based estimated heart-rate guidance and clinician-entered overrides.
 - Responsive Chinese-first Basalt interface, Lucide icons, realistic-proportion
-  rig with six authored clips, muscle-region highlights and static phase posters.
+  rig with eleven authored clips, muscle-region highlights and static phase posters.
+- Dumbbell curls, triceps kickbacks, lateral raises, bent-over rows and calf raises
+  are selectable before training; the foundational automatic A/B plans stay unchanged.
 - Cloudflare Access owner authorization, version/conflict checks and local D1.
 
 The model's muscle highlights are approximate surface regions, not tissue
