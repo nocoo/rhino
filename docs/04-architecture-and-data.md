@@ -160,6 +160,7 @@ SPA fallback for an unknown `/api` path.
 | `PUT /api/sessions/:id` | Stable-ID creation, preparation, start, quick-save, completion, or explicit correction |
 | `GET /api/progress?from=&to=` | Derived actual totals and body measurements, never fabricated scores |
 | `GET /api/live` | Minimal authenticated readiness; no health records, stack traces, or configuration |
+| `GET /api/identity` | Optional display name/avatar from the hashed, owner-verified JWT email; never an email header; no-store and fail-soft profile lookup |
 
 Health monitoring outside Access is a later explicit policy choice. Do not add
 a public bypass just to satisfy a monitor. No generic arbitrary-SQL endpoint,

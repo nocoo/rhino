@@ -43,6 +43,8 @@ without writing mirror tarball URLs into the committed lockfile.
   documented 18-64 scope, never a load prescription or safety ceiling.
 - Production verifies Access RS256 issuer/audience/expiry/subject and exact
   OWNER_SUB. Blank owner fails closed. Never trust an email header or auto-claim.
+- Optional sidebar identity uses only verified JWT email with the lizheng.blog
+  hashed-email profile service. Failure must not block training-data loading.
 - `local` uses a synthetic identity behind loopback Vite/Caddy restrictions.
   `test` requires real synthetic JWT verification using JSON `TEST_ACCESS_JWKS`.
   Production ignores test JWKS and uses the fixed remote Access key endpoint.
@@ -74,6 +76,8 @@ Deployment is manual, proven successful CI source only, fresh main and protected
 `production`. Placeholder D1 UUID is deliberately rejected. Never bypass it.
 
 Eleven motions are **unreviewed illustrative previews**, not qualified instruction.
+Catalog 1.2.0 includes the Chinese labels and corrected hinge/contact paths.
+The Romanian deadlift has an opt-in NASM YouTube reference, not an endorsement.
 The realistic-motion acceptance gate in docs/05 remains open. Do not set
 `instructionReady=true`, claim expert review or declare feature-complete without
 corresponding evidence. Owner preview acceptance cannot substitute for

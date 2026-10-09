@@ -11,7 +11,7 @@ adult male/muscular targets, builds the weighted skeleton, and exports eleven
 authored keyframe clips to `public/models/rhino-anatomy.glb`.
 
 Regenerate with `node assets-source/build-model.mjs`. The GLB is approximately
-2.36 MB before HTTP compression, with 13,380 vertices and 26,756 triangles.
+4.61 MB before HTTP compression, with 13,380 vertices and 26,756 triangles.
 Regenerate the static phase posters with `node assets-source/build-posters.mjs`.
 The complete source/output SHA-256 inventory is `manifest.json`.
 No runtime CDN or third-party model request is required.
@@ -24,13 +24,22 @@ push and pull movements no longer share an undifferentiated arm mask. Calf masks
 cover the posterior lower leg, not the shin. New hinged poses anchor both feet;
 the toe-rise pose keeps forefoot contact while raising the heel.
 
+Catalog 1.2.0 adds Chinese labels and reauthors the hinge paths. Pelvis and torso
+rotate together; dense 65-key sampling preserves contact through the repetition
+instead of interpolating three translated endpoints. RDL arms follow the legs,
+kickback upper arms stay beside the torso, and pulldown inverse kinematics retain
+a fixed front-of-head hand spacing. The hip hinge endpoints are model-specific
+illustrations, not prescribed joint angles or a universal range of motion.
+
 The exporter samples 33 poses per clip and stores full-motion body/region bounds
 in GLB extras. Runtime perspective fitting uses these bounds plus equipment
 allowance at the current aspect ratio, without skinning every vertex per frame.
 Poster exports use the same viewer; posterior-focused movements open at the rear.
 Detail framing retains the current front/side/rear direction.
 Technical tests check mask locations, moving tracks, clip/poster completeness,
-sampled bounds and front/side/rear framing at narrow and wide aspect ratios.
+sampled bounds and front/side/rear framing at narrow and wide aspect ratios. They
+also check neutral local spine rotations, RDL knee/arm/leg relationships, foot
+contacts and fixed pulldown grip geometry in the actual exported GLB.
 
 The muscle highlights are approximate surface regions, not individually segmented
 anatomical tissue or measured activation. The movement clips are illustrative;

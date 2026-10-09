@@ -1,8 +1,9 @@
 import { Button, LayerCard } from "@nocoo/basalt";
 import { PageHeader } from "@nocoo/basalt/components/page-header";
 import { SectionRule } from "@nocoo/basalt/components/section-rule";
-import { ArrowUpRight, BookOpen, Info } from "lucide-react";
-import { lazy, Suspense } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@nocoo/basalt/components/tabs";
+import { ArrowUpRight, BookOpen, Info, Play } from "lucide-react";
+import { lazy, Suspense, useState } from "react";
 import { exerciseNames } from "../components/workout-summary";
 import { EXERCISES } from "../data/exercises";
 import type { StrengthExerciseId } from "../domain/contracts";
@@ -17,9 +18,9 @@ const chineseCues: Record<StrengthExerciseId, [string, string, string]> = {
 		"下蹲时吸气，站起时呼气。不要为追求深度牺牲控制。",
 	],
 	"romanian-deadlift": [
-		"双手各握一只哑铃，膝盖微屈，肋骨与骨盆保持稳定。",
-		"髋部向后推，哑铃贴近腿部，下放至大腿后侧产生拉伸感。",
-		"下降时吸气，伸髋时呼气。避免弓背和锁死膝盖。",
+		"双脚约与髋同宽，膝盖微屈，双臂伸长但不强行锁死，哑铃靠近大腿前侧。",
+		"从髋部向后折叠，保持膝屈幅度相对稳定，脊柱与颈部保持自然中立；哑铃沿腿部下放。",
+		"只下放到能保持姿势且无痛的位置，不追求触地或统一深度。伸髋站直，避免顶髋后仰；不确定时先请教练指导。",
 	],
 	"chest-press": [
 		"调节座椅，让把手与胸部中段对齐，背部贴稳靠垫。",
@@ -68,6 +69,50 @@ const chineseCues: Record<StrengthExerciseId, [string, string, string]> = {
 	],
 };
 
+function RomanianDeadliftVideo() {
+	const [loaded, setLoaded] = useState(false);
+	return (
+		<LayerCard className="reference-video">
+			<LayerCard.Header>
+				<h2>真人动作参考 · 哑铃罗马尼亚硬拉</h2>
+			</LayerCard.Header>
+			<LayerCard.Body className="stack">
+				{loaded ? (
+					<iframe
+						src="https://www.youtube-nocookie.com/embed/aa57T45iFSE?hl=zh-CN&cc_lang_pref=zh-Hans"
+						title="NASM 官方：哑铃罗马尼亚硬拉真人示范"
+						allow="encrypted-media; picture-in-picture; fullscreen"
+						referrerPolicy="strict-origin-when-cross-origin"
+						allowFullScreen
+					/>
+				) : (
+					<div className="video-consent">
+						<Play size={32} aria-hidden="true" />
+						<p>由美国国家运动医学学会（NASM）发布</p>
+						<p className="field-hint">
+							点击后连接 YouTube，并向其发送网络信息。视频为英文，不会自动播放。
+						</p>
+						<Button onClick={() => setLoaded(true)}>加载 YouTube 视频</Button>
+					</div>
+				)}
+				<p className="field-hint">
+					无法播放？网络、地区或发布方限制可能影响嵌入；可打开原视频查看。视频不是个人训练处方，三维模型也未获
+					NASM 认证。
+				</p>
+				<Button asChild variant="secondary">
+					<a
+						href="https://www.youtube.com/watch?v=aa57T45iFSE"
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						在 YouTube 查看原视频 <ArrowUpRight size={15} />
+					</a>
+				</Button>
+			</LayerCard.Body>
+		</LayerCard>
+	);
+}
+
 export function LibraryView({
 	selected,
 	select,
@@ -100,16 +145,36 @@ export function LibraryView({
 							<span className="mono muted">{String(index + 1).padStart(2, "0")}</span>
 							<span>
 								{exerciseNames[item.id]}
-								<small>{item.name}</small>
+								<small>
+									{item.muscles
+										.filter((muscle) => muscle.role === "primary")
+										.map((muscle) => muscle.name)
+										.join(" · ")}
+								</small>
 							</span>
 							{selected === item.id && <ArrowUpRight size={15} />}
 						</Button>
 					))}
 				</nav>
 				<div className="stack">
-					<Suspense fallback={<LayerCard.Loading label="正在准备三维视图" />}>
-						<LazyExerciseViewer key={selected} exerciseId={selected} />
-					</Suspense>
+					<Tabs key={selected} defaultValue="model">
+						<TabsList aria-label="动作参考方式">
+							<TabsTrigger value="model">三维示意</TabsTrigger>
+							{selected === "romanian-deadlift" && (
+								<TabsTrigger value="video">真人视频</TabsTrigger>
+							)}
+						</TabsList>
+						<TabsContent value="model">
+							<Suspense fallback={<LayerCard.Loading label="正在准备三维视图" />}>
+								<LazyExerciseViewer exerciseId={selected} />
+							</Suspense>
+						</TabsContent>
+						{selected === "romanian-deadlift" && (
+							<TabsContent value="video">
+								<RomanianDeadliftVideo />
+							</TabsContent>
+						)}
+					</Tabs>
 					<details>
 						<summary className="field-hint">查看静态动作阶段（未审核示意）</summary>
 						<img
@@ -124,7 +189,7 @@ export function LibraryView({
 					<LayerCard>
 						<LayerCard.Header className="workout-heading">
 							<div>
-								<span className="eyebrow muted">TECHNIQUE NOTES</span>
+								<span className="eyebrow muted">动作要点</span>
 								<h2>{exerciseNames[selected]}</h2>
 							</div>
 							<span className="pill">

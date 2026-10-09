@@ -10,7 +10,7 @@ import {
 } from "./dates";
 
 export const ALGORITHM_VERSION = "1.0.0";
-export const CATALOG_VERSION = "1.1.0";
+export const CATALOG_VERSION = "1.2.0";
 export const MAX_BODY_BYTES = 256 * 1024;
 export const MAX_DATE_RANGE_DAYS = 400;
 export const PROFILE_ID = 1;

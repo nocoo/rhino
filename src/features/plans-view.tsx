@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Choice, Field } from "../components/fields";
 import { WorkoutSummary } from "../components/workout-summary";
 import { defaultPreferences, type GoalPreference, type PlanInput } from "../domain/contracts";
+import { WEEKDAY_LABELS } from "../domain/dates";
 import type { RhinoModel } from "./use-rhino-model";
 
 export function PlansView({ model }: { model: RhinoModel }) {
@@ -139,7 +140,7 @@ export function PlansView({ model }: { model: RhinoModel }) {
 					<WorkoutSummary
 						key={slot.weekday}
 						target={slot.target}
-						subtitle={`SESSION ${String(index + 1).padStart(2, "0")} / ${slot.weekday.toUpperCase()}`}
+						subtitle={`训练 ${String(index + 1).padStart(2, "0")} / ${WEEKDAY_LABELS[slot.weekday]}`}
 						onStart={!model.preview ? () => void model.start(slot.target) : undefined}
 						busy={model.busy}
 					/>

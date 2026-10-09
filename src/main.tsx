@@ -10,9 +10,9 @@ if (!root) throw new Error("Missing application root");
 createRoot(root).render(
 	<ThemeProvider defaultTheme="light" persist={false}>
 		<AccentProvider
-			defaultAccent="green"
+			defaultAccent="primary"
 			persist={false}
-			paletteOverrides={{ green: { light: "145 25% 35%", dark: "145 26% 58%" } }}
+			paletteOverrides={{ primary: { light: "216 58% 36%", dark: "214 65% 70%" } }}
 		>
 			<LinkProvider>
 				<TooltipProvider>

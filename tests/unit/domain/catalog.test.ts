@@ -36,7 +36,7 @@ describe("exercise catalog", () => {
 		const catalogIds = EXERCISES.map((exercise) => exercise.id).sort();
 		expect(catalogIds).toEqual([...strengthExerciseIdSchema.options].sort());
 		expect(new Set(catalogIds).size).toBe(catalogIds.length);
-		expect(CATALOG_VERSION).toBe("1.1.0");
+		expect(CATALOG_VERSION).toBe("1.2.0");
 		expect(ALGORITHM_VERSION).toBe("1.0.0");
 	});
 

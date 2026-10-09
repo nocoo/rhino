@@ -54,7 +54,7 @@ export function ExerciseViewer({
 	return (
 		<section className={`movement-viewer ${compact ? "compact" : ""}`} aria-label="三维动作演示">
 			<div className="stage-top">
-				<span className="eyebrow">MOVEMENT LAB</span>
+				<span className="eyebrow">动作实验室</span>
 				<span className="stage-status">
 					<span /> 3D · 交互演示
 				</span>

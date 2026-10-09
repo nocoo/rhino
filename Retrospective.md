@@ -92,3 +92,35 @@ and floating feet in hinged poses. Calf masks now exclude the shin, and the adde
 hinge/toe-rise poses anchor their supporting joints with sampled contact tests.
 The first persistence browser run used a more specific kickback label than the
 UI exposed; the shared UI name now explicitly identifies the bent-over variant.
+
+## 2026-10-09 - A Rendered Hinge Was Not a Hip Hinge
+
+The owner correctly identified the Romanian deadlift as nonstandard. The old
+exporter rotated spine05 while leaving the pelvis stationary, rotated the femurs
+as if sitting, and manually translated the root without preserving foot contact.
+Camera/framing tests could pass while the displayed movement remained wrong.
+
+The replacement rotates the root so pelvis and torso remain coupled, compensates
+the leg joints, anchors contact throughout a 65-sample repetition and steers the
+straight arms along the legs. Review of all eleven clips also found an estimated
+elbow-length error, widening pulldown grip, drifting seat geometry and overly
+straight lateral-raise elbows. These received targeted corrections and actual
+GLB kinematic tests. Posters are regenerated from the same model. Dense sampling
+made the old first-two-keyframes motion assertion unsuitable; it now compares
+the start and midpoint rather than mistaking a smooth initial increment for no
+movement. No threshold was lowered to hide a form failure.
+
+The lesson is to inspect the skeleton hierarchy, side views and contact/load
+paths before multiplying animations. Technical checks and an official reference
+video do not qualify a model as safe instruction; professional review remains
+outstanding. The catalog continues to say so prominently.
+
+The expanded desktop/mobile motion suite exceeded its old 180-second aggregate
+runner budget while unrelated browser suites shared the machine. The aggregate
+deadline is now 360 seconds; individual tests, assertions and quality floors are
+unchanged. Cleanup then exposed a stopped-WAL database read difference: Node
+26.10's SQLite read the exact marker and integrity check successfully, while
+Bun's node:sqlite implementation and system SQLite returned CANTOPEN for the
+marker query. The L2/L3 orchestration now runs on the already-pinned Node runtime,
+using native node:sqlite as intended. Test state is removed only after the same
+path, symlink and exact marker checks; no cleanup bypass was added.

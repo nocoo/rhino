@@ -27,12 +27,38 @@ every proposal has passed. This document records the implementation boundary.
 - Actual progress minutes are explicitly `actualCardioMinutes`. Strength
   duration is not inferred from planned time. A completed strength session
   counts only when at least one set is performed.
-- Model assets are self-hosted. One 2.36 MB GLB contains eleven clips; matching
+- Model assets are self-hosted. One 4.61 MB GLB contains eleven clips; matching
   PNG phase posters and written cues are available when WebGL fails.
 - Catalog 1.1.0 adds five selectable dumbbell movements without changing the
   foundational automatic A/B templates. Replacing an old draft's movement
   updates that movement's catalog provenance and clears its planned load instead
   of carrying a total-external load into a per-hand exercise. Saved history stays immutable.
+- Catalog 1.2.0 localizes names/muscles and corrects hinge, arm and contact paths.
+  A NASM YouTube reference is available for the Romanian deadlift; the optional
+  third-party player is absent until the user requests it. It does not certify
+  Rhino's model. The shell uses the installed Basalt primary palette in deep blue.
+- `GET /api/identity` hashes only the email from an owner-verified Access JWT
+  before querying the same `lizheng.blog/api/authors/profile` service used by
+  Life.ai. Untrusted email headers are ignored. No email means no lookup; timeout,
+  malformed/oversized response or invalid HTTPS avatar returns a neutral fallback.
+  The independent sidebar request cannot prevent training-data loading. The
+  synthetic local identity deliberately has no personal email/avatar.
+
+## Requested Production-Connected Development
+
+The owner explicitly wants ordinary development actions to affect production
+data, while all automated tests must continue on isolated Wrangler D1 instances.
+Read-only Wrangler discovery on 2026-10-09 confirmed that the configured account
+contains neither a `rhino` D1 database nor a deployed `rhino` Worker (10007).
+No cloud resource was created, no data was written and no authentication rule
+was weakened during this UI/motion change.
+
+Two materially different arrangements need owner selection: a local frontend
+using the deployed Access-protected Worker, or a locally executing Worker with
+a remote production D1 binding. The latter is not a connection to the deployed
+Worker. Existing local-only development is retained until that choice and the
+actual production resource are established. Never silently point synthetic
+test identities or fixture runners at remote bindings.
 
 ## Local Acceptance
 

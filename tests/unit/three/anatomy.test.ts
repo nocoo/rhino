@@ -89,8 +89,9 @@ describe("authored anatomy asset", () => {
 			expect(
 				clip?.tracks.some((track) => {
 					const size = track.getValueSize();
+					const midpoint = Math.floor(track.times.length / 2) * size;
 					return Array.from(track.values.slice(0, size)).some(
-						(value, axis) => Math.abs(value - track.values[size + axis]) > 0.01,
+						(value, axis) => Math.abs(value - track.values[midpoint + axis]) > 0.01,
 					);
 				}),
 			).toBe(true);
@@ -116,15 +117,13 @@ describe("authored anatomy asset", () => {
 				mixer.setTime((clip.duration * frame) / 16);
 				gltf.scene.updateMatrixWorld(true);
 				body.skeleton.update();
-				if (["triceps-kickback", "bent-over-row", "calf-raise"].includes(clip.name)) {
-					for (const { bone, rest } of anchors.filter(({ bone }) =>
-						bone.name.startsWith(clip.name === "calf-raise" ? "toe" : "foot"),
-					))
-						expect(
-							bone.getWorldPosition(point).distanceTo(rest),
-							`${clip.name} contact`,
-						).toBeLessThan(0.005);
-				}
+				for (const { bone, rest } of anchors.filter(({ bone }) =>
+					bone.name.startsWith(clip.name === "calf-raise" ? "toe" : "foot"),
+				))
+					expect(
+						bone.getWorldPosition(point).distanceTo(rest),
+						`${clip.name} contact`,
+					).toBeLessThan(0.005);
 				for (let vertex = 0; vertex < body.geometry.attributes.position.count; vertex++) {
 					body.getVertexPosition(vertex, point);
 					actual.expandByPoint(point);
@@ -151,5 +150,81 @@ describe("authored anatomy asset", () => {
 		}
 		mixer.stopAllAction();
 		mixer.uncacheRoot(gltf.scene);
+	});
+
+	it("keeps hinged spines neutral, RDL knees stable and the load close to the leg", async () => {
+		const { body, gltf } = await anatomy();
+		const mixer = new AnimationMixer(gltf.scene);
+		const bone = (name: string) => {
+			const result = body.skeleton.getBoneByName(name);
+			if (!result) throw new Error(`Missing joint ${name}`);
+			return result;
+		};
+		const point = (name: string) => bone(name).getWorldPosition(new Vector3());
+		const angle = (a: Vector3, center: Vector3, b: Vector3) =>
+			(a.clone().sub(center).angleTo(b.clone().sub(center)) * 180) / Math.PI;
+		for (const name of ["romanian-deadlift", "triceps-kickback", "bent-over-row"]) {
+			const clip = gltf.animations.find((item) => item.name === name);
+			if (!clip) throw new Error("Missing hinge clip");
+			mixer.stopAllAction();
+			mixer.clipAction(clip).reset().play();
+			for (let sample = 0; sample <= 64; sample++) {
+				mixer.setTime((sample / 64) * 4);
+				gltf.scene.updateMatrixWorld(true);
+				for (const spine of ["spine01", "spine02", "spine03", "spine04", "spine05"]) {
+					expect(Math.abs(bone(spine).quaternion.w), `${name} neutral ${spine}`).toBeCloseTo(1, 5);
+				}
+				for (const side of ["L", "R"]) {
+					const hip = point(`upperleg01_${side}`);
+					const knee = point(`lowerleg01_${side}`);
+					const ankle = point(`foot_${side}`);
+					const wrist = point(`wrist_${side}`);
+					const shoulder = point(`upperarm01_${side}`);
+					const elbow = point(`lowerarm01_${side}`);
+					if (name === "romanian-deadlift") {
+						expect(angle(hip, knee, ankle), "stable slight knee bend").toBeCloseTo(158.9, 0);
+						expect(angle(shoulder, elbow, wrist), "long arms").toBeGreaterThan(177);
+						const fraction = Math.max(0, Math.min(1, (wrist.y - knee.y) / (hip.y - knee.y)));
+						const leg = knee.clone().lerp(hip, fraction);
+						expect(wrist.z - leg.z, "wrist close to front of leg").toBeGreaterThan(0.02);
+						expect(wrist.z - leg.z, "wrist close to front of leg").toBeLessThan(0.13);
+					}
+				}
+			}
+		}
+	});
+
+	it("keeps a fixed pulldown grip in front of the face and soft lateral-raise elbows", async () => {
+		const { gltf } = await anatomy();
+		const mixer = new AnimationMixer(gltf.scene);
+		const point = (name: string) => {
+			const bone = gltf.scene.getObjectByName(name);
+			if (!bone) throw new Error(`Missing ${name}`);
+			return bone.getWorldPosition(new Vector3());
+		};
+		for (const name of ["lat-pulldown", "lateral-raise"]) {
+			const clip = gltf.animations.find((item) => item.name === name);
+			if (!clip) throw new Error("Missing arm clip");
+			mixer.stopAllAction();
+			mixer.clipAction(clip).reset().play();
+			let initialWidth = 0;
+			for (let sample = 0; sample <= 32; sample++) {
+				mixer.setTime(sample / 8);
+				gltf.scene.updateMatrixWorld(true);
+				const left = point("wrist_L");
+				if (name === "lat-pulldown") {
+					const width = left.distanceTo(point("wrist_R"));
+					if (!sample) initialWidth = width;
+					expect(width).toBeCloseTo(initialWidth, 3);
+					expect(left.z - point("head").z).toBeGreaterThan(0.04);
+				} else {
+					const elbow = point("lowerarm01_L");
+					const internal =
+						(point("upperarm01_L").sub(elbow).angleTo(left.sub(elbow)) * 180) / Math.PI;
+					expect(internal).toBeGreaterThan(145);
+					expect(internal).toBeLessThan(175);
+				}
+			}
+		}
 	});
 });

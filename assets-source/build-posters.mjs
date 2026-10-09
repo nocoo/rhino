@@ -13,7 +13,7 @@ server.middlewares.use((request, response, next) => {
 	if (request.url !== "/") return next();
 	response.setHeader("content-type", "text/html");
 	response.end(
-		`<body style="margin:0;background:#dfe6d9"><div id="stage" style="width:340px;height:420px"></div><script type="module">import {createExerciseScene} from '/src/three/exercise-scene.ts'; window.scene=await createExerciseScene(document.querySelector('#stage'),'goblet-squat',()=>{});</script>`,
+		`<body style="margin:0;background:#dfe6ef"><div id="stage" style="width:340px;height:420px"></div><script type="module">import {createExerciseScene} from '/src/three/exercise-scene.ts'; window.scene=await createExerciseScene(document.querySelector('#stage'),'goblet-squat',()=>{});</script>`,
 	);
 });
 await server.listen();

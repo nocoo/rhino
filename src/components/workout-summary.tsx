@@ -1,20 +1,11 @@
 import { Button, LayerCard } from "@nocoo/basalt";
 import { ArrowRight, Bike, Clock3, Dumbbell, Play } from "lucide-react";
+import { EXERCISES } from "../data/exercises";
 import type { SessionTarget, StrengthExerciseId } from "../domain/contracts";
 
-export const exerciseNames: Record<StrengthExerciseId, string> = {
-	"goblet-squat": "高脚杯深蹲",
-	"romanian-deadlift": "哑铃罗马尼亚硬拉",
-	"chest-press": "器械推胸",
-	"cable-row": "坐姿绳索划船",
-	"lat-pulldown": "高位下拉",
-	"shoulder-press": "哑铃肩推",
-	"dumbbell-curl": "哑铃弯举",
-	"triceps-kickback": "俯身哑铃臂屈伸",
-	"lateral-raise": "哑铃侧平举",
-	"bent-over-row": "俯身哑铃划船",
-	"calf-raise": "哑铃提踵",
-};
+export const exerciseNames = Object.fromEntries(
+	EXERCISES.map((exercise) => [exercise.id, exercise.name]),
+) as Record<StrengthExerciseId, string>;
 export const emphasisNames: Record<SessionTarget["emphasis"], string> = {
 	"full-body": "全身力量",
 	"full-body-a": "全身力量 · A",
@@ -42,7 +33,7 @@ export function WorkoutSummary({
 		<LayerCard className="workout-card">
 			<LayerCard.Header className="workout-heading">
 				<div>
-					<span className="eyebrow muted">{subtitle ?? "YOUR NEXT SESSION"}</span>
+					<span className="eyebrow muted">{subtitle ?? "下一次训练"}</span>
 					<h2>{emphasisNames[target.emphasis]}</h2>
 				</div>
 				<span className="pill">

@@ -14,7 +14,7 @@ import {
 	type WeeklySlot,
 	type WorkingSetTarget,
 } from "./contracts";
-import { WEEKDAYS, type Weekday, weekdayIndex } from "./dates";
+import { WEEKDAY_LABELS, WEEKDAYS, type Weekday, weekdayIndex } from "./dates";
 import { stableUuid } from "./hash";
 
 const PREP_DEFAULT = 8;
@@ -48,20 +48,18 @@ export function previewPlan(input: PlanInput): PlanPreviewResult {
 	if (input.cardioOnlyWeekdays.length > input.weeklyFrequency) {
 		return {
 			preview: null,
-			limitations: ["Cardio-only days cannot exceed the requested weekly frequency."],
+			limitations: ["纯有氧天数不能超过每周训练频次。"],
 		};
 	}
 	const limitations: string[] = [];
 	const rationale = emptyRationale();
 	const available = exercisesForEquipment(input.equipmentIds);
 	if (available.length === 0) {
-		limitations.push(
-			"No catalog strength movement matches the available equipment; only cardio can be scheduled.",
-		);
+		limitations.push("现有器械不匹配动作库中的力量训练，本次只能安排有氧。");
 	}
 	const days = pickDays(input);
 	if (days.length === 0) {
-		return { preview: null, limitations: ["No training days could be scheduled."] };
+		return { preview: null, limitations: ["暂时无法安排训练日，请调整频次和日期。"] };
 	}
 	const reservedCardio = new Set(uniqueWeekdays(input.cardioOnlyWeekdays));
 	const strengthCount = plannedStrengthCount(
@@ -72,12 +70,10 @@ export function previewPlan(input: PlanInput): PlanPreviewResult {
 	);
 	const strengthDays = placeStrengthDays(days, strengthCount, reservedCardio);
 	if (input.weeklyFrequency <= 2) {
-		rationale.explanations.push(
-			"Fewer than three weekly slots limits how closely the week can follow twice-weekly major-muscle coverage.",
-		);
+		rationale.explanations.push("每周少于三次时，可能无法让所有主要肌群都得到每周两次训练。");
 	}
 	if (strengthDays.length < 2) {
-		rationale.coverageGaps.push("The week does not include two strength sessions.");
+		rationale.coverageGaps.push("本周力量训练不足两次。");
 	}
 	if (
 		strengthDays.some((day, index) =>
@@ -85,13 +81,11 @@ export function previewPlan(input: PlanInput): PlanPreviewResult {
 		)
 	) {
 		rationale.compromises.push(
-			"Selected days place strength sessions on adjacent days; allow recovery and adjust days or intensity.",
+			"所选日期中有相邻的力量训练日，请预留恢复时间，按状态调整日期或强度。",
 		);
 	}
 	if (reservedCardio.size >= days.length) {
-		rationale.explanations.push(
-			"Cardio-only reservations occupy the scheduled slots; strength is omitted.",
-		);
+		rationale.explanations.push("所有训练日都已预留为纯有氧，本次不安排力量训练。");
 	}
 	const slots: WeeklySlot[] = [];
 	for (const weekday of days) {
@@ -125,7 +119,7 @@ export function previewPlan(input: PlanInput): PlanPreviewResult {
 		);
 	}
 	if (slots.some((slot) => slot.kind === "strength") === false && available.length > 0) {
-		rationale.coverageGaps.push("No strength session was placed after cardio-only reservations.");
+		rationale.coverageGaps.push("预留纯有氧训练日后，剩余日期未安排力量训练。");
 	}
 	const preview: PlanPreview = {
 		algorithmVersion: ALGORITHM_VERSION,
@@ -243,13 +237,11 @@ function buildStrengthSlot(args: {
 	for (const id of wanted) {
 		if (!args.availableIds.includes(id)) {
 			const exercise = getExercise(id);
-			args.rationale.unfilledRequirements.push(
-				`${exercise.name} needs ${exercise.equipmentId}, which is unavailable.`,
-			);
+			args.rationale.unfilledRequirements.push(`${exercise.name}所需器械不可用，暂未纳入计划。`);
 		}
 	}
 	if (selected.length === 0) {
-		args.limitations.push(`No strength movement could be placed on ${args.weekday}.`);
+		args.limitations.push(`${WEEKDAY_LABELS[args.weekday]}无法安排匹配器械的力量动作。`);
 		return buildCardioSlot({
 			input: args.input,
 			weekday: args.weekday,
@@ -276,14 +268,10 @@ function buildStrengthSlot(args: {
 	while (sessionMinutes(target) > budget && exerciseIds.length > 1) {
 		if (includeCardio) {
 			includeCardio = false;
-			args.rationale.compromises.push(
-				"Optional cardio was dropped so strength work fits the time budget.",
-			);
+			args.rationale.compromises.push("为在预计时间内完成力量训练，已移除可选有氧部分。");
 		} else {
 			exerciseIds = exerciseIds.slice(0, -1);
-			args.rationale.compromises.push(
-				"An exercise was dropped so the session fits the time budget.",
-			);
+			args.rationale.compromises.push("为控制单次训练时长，已减少一个力量动作。");
 		}
 		target = composeStrengthTarget({
 			input: args.input,
@@ -296,7 +284,7 @@ function buildStrengthSlot(args: {
 		});
 	}
 	if (sessionMinutes(target) > budget) {
-		args.limitations.push(`The ${args.weekday} strength session still exceeds the time budget.`);
+		args.limitations.push(`${WEEKDAY_LABELS[args.weekday]}的力量训练仍超出时间预算，请调整。`);
 	}
 	return {
 		weekday: args.weekday,
@@ -338,9 +326,7 @@ function buildCardioSlot(args: {
 		],
 	};
 	if (args.kind === "recovery") {
-		args.rationale.explanations.push(
-			`${capitalize(args.weekday)} is an easy recovery-oriented cardio slot.`,
-		);
+		args.rationale.explanations.push(`${WEEKDAY_LABELS[args.weekday]}安排轻松有氧，以恢复为主。`);
 	}
 	return {
 		weekday: args.weekday,
@@ -485,10 +471,6 @@ function canonicalizeSeed(input: PlanInput): string {
 		input.equipmentIds.join(","),
 		input.timezone,
 	].join("|");
-}
-
-function capitalize(value: string): string {
-	return value.slice(0, 1).toUpperCase() + value.slice(1);
 }
 
 export function isReviewDue(localDate: string, latestReviewMonth: string | null): boolean {

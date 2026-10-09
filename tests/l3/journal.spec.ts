@@ -18,6 +18,78 @@ async function navigate(page: Page, name: string) {
 	if (await menu.isVisible()) await menu.click();
 	await page.getByRole("button", { name: new RegExp(`^${name}( |$)`) }).click();
 }
+
+test("Chinese blue shell, owner avatar and opt-in YouTube reference", async ({
+	page,
+}, testInfo) => {
+	let youtubeRequests = 0;
+	await page.route("https://www.youtube-nocookie.com/**", async (route) => {
+		youtubeRequests++;
+		await route.fulfill({ contentType: "text/html", body: "<p>Video fixture</p>" });
+	});
+	await page.route("**/api/identity", (route) =>
+		route.fulfill({
+			json: { data: { name: "测试用户", avatar: "https://lizheng.blog/rhino-test-avatar.svg" } },
+		}),
+	);
+	await page.route("https://lizheng.blog/rhino-test-avatar.svg", (route) =>
+		route.fulfill({
+			contentType: "image/svg+xml",
+			body: '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36"><circle cx="18" cy="18" r="18" fill="steelblue"/></svg>',
+		}),
+	);
+	await page.goto("/");
+	const menu = page.getByRole("button", { name: "打开导航", exact: true });
+	if (await menu.isVisible()) await menu.click();
+	await expect(page.getByRole("img", { name: "测试用户", exact: true })).toBeVisible();
+	await page.getByRole("button", { name: "动作实验室", exact: true }).click();
+	await expect(
+		page.getByRole("link", { name: "Rhino 的 GitHub 仓库", exact: true }),
+	).toHaveAttribute("href", "https://github.com/nocoo/rhino");
+	await expect(
+		page.getByRole("link", { name: "在 Hexly 项目页查看 Rhino", exact: true }),
+	).toHaveAttribute("href", "https://hexly.ai/projects/rhino");
+	const accent = await page.evaluate(() =>
+		getComputedStyle(document.documentElement).getPropertyValue("--basalt-primary"),
+	);
+	expect(accent.trim()).toBe("216 58% 36%");
+	await page.locator(".library-nav button").nth(1).click();
+	await expect(page.getByText("腘绳肌", { exact: true })).toBeVisible();
+	const selected = page.locator('.library-item[aria-pressed="true"]');
+	const rightGap = await selected.evaluate((element) => {
+		const arrow = element.querySelector("svg");
+		if (!arrow) throw new Error("Missing arrow");
+		return element.getBoundingClientRect().right - arrow.getBoundingClientRect().right;
+	});
+	expect(rightGap).toBeLessThan(16);
+	expect(youtubeRequests).toBe(0);
+	await page.getByRole("tab", { name: "真人视频", exact: true }).click();
+	await expect(page.locator("canvas")).toHaveCount(0);
+	await expect(page.locator("iframe")).toHaveCount(0);
+	expect(youtubeRequests).toBe(0);
+	await page.getByRole("button", { name: "加载 YouTube 视频", exact: true }).click();
+	await expect(page.locator("iframe")).toHaveAttribute(
+		"src",
+		/youtube-nocookie.com\/embed\/aa57T45iFSE/,
+	);
+	await expect.poll(() => youtubeRequests).toBe(1);
+	await expect(page.getByRole("link", { name: "在 YouTube 查看原视频" })).toHaveAttribute(
+		"href",
+		"https://www.youtube.com/watch?v=aa57T45iFSE",
+	);
+	await page.screenshot({ path: testInfo.outputPath("video-reference.png") });
+	await page.getByRole("tab", { name: "三维示意", exact: true }).click();
+	await expect(page.locator("iframe")).toHaveCount(0);
+	await expect(page.getByRole("button", { name: "播放演示", exact: true })).toBeEnabled();
+	const slider = page.getByRole("slider", { name: "动作进度" });
+	await slider.focus();
+	await slider.press("Home");
+	for (let step = 0; step < 5; step++) await slider.press("PageUp");
+	await page.getByRole("button", { name: "侧面视角", exact: true }).click();
+	await page
+		.locator(".movement-viewer")
+		.screenshot({ path: testInfo.outputPath("rdl-corrected-side.png") });
+});
 test("profile, measurements, plan, workout and reopened progress persist", async ({
 	page,
 }, testInfo) => {

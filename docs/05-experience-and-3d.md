@@ -137,6 +137,14 @@ Browser tests scrub all eleven clips with unobstructed controls on desktop/mobil
 capture arm views, and save/reopen the new selections with precise per-hand loads.
 These are technical regressions, not anatomical or coaching certification.
 
+Catalog 1.2.0 corrects the hinge/contact and arm paths with dense authored samples,
+coupled pelvis/torso rotation and leg-adjacent RDL loads. The RDL detail includes
+Basalt tabs for the 3D preview and the official NASM YouTube reference. The video
+is not loaded until explicitly requested; switching tabs unmounts the inactive
+renderer/player. Source attribution, network limitations and the original link
+remain visible. Chinese muscle labels and a deep-blue Basalt primary palette
+replace English anatomical labels and the previous green theme.
+
 ### Acceptance Contract
 
 **Realistic authored animation is a core deliverable, not decorative polish.**

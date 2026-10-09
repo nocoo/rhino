@@ -58,7 +58,7 @@ export async function createExerciseScene(
 	controls.maxDistance = 15;
 	controls.minPolarAngle = 0.25;
 	controls.maxPolarAngle = Math.PI / 2 + 0.1;
-	scene.add(new HemisphereLight(0xeaf4ff, 0x4e534b, 2));
+	scene.add(new HemisphereLight(0xeaf4ff, 0x414f65, 2));
 	scene.add(new AmbientLight(0xffffff, 0.4));
 	const key = new DirectionalLight(0xffedd8, 3.5);
 	key.position.set(-2, 3, 3);
@@ -69,7 +69,7 @@ export async function createExerciseScene(
 	const floor = new Mesh(
 		new PlaneGeometry(6, 6),
 		new MeshStandardMaterial({
-			color: 0x404941,
+			color: 0x34435c,
 			roughness: 1,
 			transparent: true,
 			opacity: 0.13,
@@ -93,8 +93,8 @@ export async function createExerciseScene(
 	const bounds = new Box3(new Vector3(-0.6, 0, -0.3), new Vector3(0.6, 2.3, 0.5));
 	const detailBounds = new Box3();
 	let body: SkinnedMesh;
-	const metal = new MeshStandardMaterial({ color: 0x444c47, metalness: 0.55, roughness: 0.48 });
-	const pad = new MeshStandardMaterial({ color: 0x3e4c43, roughness: 0.92 });
+	const metal = new MeshStandardMaterial({ color: 0x404958, metalness: 0.55, roughness: 0.48 });
+	const pad = new MeshStandardMaterial({ color: 0x34465f, roughness: 0.92 });
 	let updateEquipment = () => {};
 	const render = () => {
 		if (!disposed && visible && !document.hidden) {
@@ -140,7 +140,7 @@ export async function createExerciseScene(
 	};
 	cameraView("front");
 	resize();
-	const material = new MeshStandardMaterial({ color: 0xa5afa6, roughness: 0.57, metalness: 0.12 });
+	const material = new MeshStandardMaterial({ color: 0xa7adb8, roughness: 0.57, metalness: 0.12 });
 	material.onBeforeCompile = (shader) => {
 		Object.assign(shader.uniforms, uniforms);
 		shader.vertexShader =
@@ -260,15 +260,19 @@ export async function createExerciseScene(
 		clearEquipment();
 		updateEquipment = () => {};
 		if (["chest-press", "cable-row", "lat-pulldown"].includes(id)) {
+			model.updateMatrixWorld(true);
+			const hip = model.getObjectByName("upperleg01_L");
+			if (!hip) throw new Error("Missing seated hip joint");
+			const hipPosition = hip.getWorldPosition(new Vector3());
 			const seat = new Mesh(new BoxGeometry(0.38, 0.1, 0.36), pad);
-			seat.position.set(0, 0.44, 0);
+			seat.position.set(0, hipPosition.y - 0.07, hipPosition.z - 0.02);
 			equipment.add(seat);
-			const leg = new Mesh(new CylinderGeometry(0.035, 0.035, 0.44, 12), metal);
-			leg.position.set(0, 0.22, 0);
+			const leg = new Mesh(new CylinderGeometry(0.035, 0.035, seat.position.y, 12), metal);
+			leg.position.set(0, seat.position.y / 2, seat.position.z);
 			equipment.add(leg);
 			if (id === "chest-press") {
 				const back = new Mesh(new BoxGeometry(0.36, 0.58, 0.09), pad);
-				back.position.set(0, 0.81, -0.14);
+				back.position.set(0, seat.position.y + 0.37, hipPosition.z - 0.14);
 				equipment.add(back);
 			}
 			const grips: Group[] = [];

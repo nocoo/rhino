@@ -78,7 +78,7 @@ export function ProgressView({
 				<LayerCard className="chart-card">
 					<LayerCard.Header>
 						<h2 className="card-title">
-							体重趋势 <span className="eyebrow muted">WEIGHT / KG</span>
+							体重趋势 <span className="eyebrow muted">体重 / 千克</span>
 						</h2>
 					</LayerCard.Header>
 					<LayerCard.Body>
@@ -104,7 +104,7 @@ export function ProgressView({
 				<LayerCard className="chart-card">
 					<LayerCard.Header>
 						<h2 className="card-title">
-							BMI 趋势 <span className="eyebrow muted">BODY MASS INDEX</span>
+							BMI 趋势 <span className="eyebrow muted">身体质量指数</span>
 						</h2>
 					</LayerCard.Header>
 					<LayerCard.Body>

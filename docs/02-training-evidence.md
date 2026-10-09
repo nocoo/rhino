@@ -80,6 +80,34 @@ abstract level; effect sizes and subgroup claims must not be expanded beyond it.
 | E13 | NHS, [Heart attack](https://www.nhs.uk/conditions/heart-attack/) and [Fainting](https://www.nhs.uk/conditions/fainting/); official source extracts | Urgent symptom escalation, including fainting during exercise |
 | E14 | ACSM, 2009, *Progression models in resistance training for healthy adults*. [DOI](https://doi.org/10.1249/MSS.0b013e3181915670), [PMID 19204579](https://europepmc.org/article/MED/19204579); abstract, historical | Context for progression, not the current overriding position stand |
 
+## Movement Reference Check - 2026-10-09
+
+- NASM, [Romanian Deadlift Basics](https://blog.nasm.org/romanian-deadlift-basics):
+  retrieved the official article. It describes backward hip movement, a neutral
+  spine, slightly bent knees and avoiding excessive knee bending that turns the
+  hinge into a squat. Depth depends on maintaining position and hamstring
+  tolerance, not reproducing the model's endpoint.
+- NASM, [Dumbbell Romanian Deadlift demonstration](https://www.youtube.com/watch?v=aa57T45iFSE):
+  checked YouTube oEmbed attribution and the watch-page metadata/description.
+  The publisher is National Academy of Sports Medicine; metadata reports
+  `playableInEmbed=true`. The description calls for dumbbells in front of the
+  thighs, close to the shins, with a flat back. Its example knee angle and depth
+  are not universal prescriptions. The app links the original and loads the
+  privacy-enhanced player only after an explicit action; availability can change.
+  A live browser check from the Caddy development origin loaded and played the
+  embedded video (video readyState 4, currentTime advanced, no media error).
+  Opening the bare embed URL without a referring page returned player error 153;
+  that is not the application flow. Keep a valid origin referrer and source link.
+- [ACE hip hinge](https://www.acefitness.org/resources/everyone/exercise-library/33/hip-hinge/)
+  was identified by the independent review, but direct retrieval returned 403.
+  It is a further-reading link, not additional directly verified evidence here.
+
+The authored rig now rotates pelvis and torso together rather than bending one
+lumbar joint. Technical checks cover planted feet, stable RDL knee flexion, long
+arms, a leg-adjacent wrist path, fixed pulldown hand spacing and modest lateral
+raise elbow flexion. These are **regression checks, not clinical or professional
+movement approval**. The 11 clips retain `draft` / `instructionReady=false`.
+
 ## Review Policy
 
 Recheck the source and algorithm documents when a cited guideline changes or

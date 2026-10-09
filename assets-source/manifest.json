@@ -8,7 +8,7 @@
 		"reviewer": null,
 		"reviewDate": null
 	},
-	"modifications": "Extracted body mesh, adult male/muscle morphs, four-weight skinning, joint-relative arm and posterior calf masks, eleven Rhino-authored keyframe clips with sampled motion bounds and planted foot anchors for added hinged/toe-rise poses; illustrative equipment added at runtime.",
+	"modifications": "Extracted body mesh, adult male/muscle morphs, four-weight skinning, joint-relative arm and posterior calf masks. Eleven Rhino-authored 65-sample clips with coupled pelvis/torso hinge, sampled foot contacts, leg-tracking RDL arms, fixed-width front pulldown grip and motion bounds. Runtime equipment remains illustrative. Chinese catalog 1.2.0; professional review pending.",
 	"sourcePaths": {
 		"base.obj": "makehuman/data/3dobjs/base.obj",
 		"skeleton.json": "makehuman/data/rigs/default.mhskel",
@@ -19,13 +19,13 @@
 	"files": [
 		{
 			"path": "assets-source/build-model.mjs",
-			"bytes": 15391,
-			"sha256": "ad72ecc67c0bbdceac87739e94af2d39940519049e2444e2bb4cbc8cae64f816"
+			"bytes": 15769,
+			"sha256": "a8ffb0db61fc409793b8119e1e6964df95784e3f51cb401406cccb18b762b586"
 		},
 		{
 			"path": "assets-source/build-posters.mjs",
 			"bytes": 2285,
-			"sha256": "317c9b1bb3a5ab580c77ec3dee74ca2ab6818a83da619f4952ba4b1a7e131b3e"
+			"sha256": "754e61c9ad52471562ff51df790e2f4501e6cafd2e53779f2b5820c8575eaf1f"
 		},
 		{
 			"path": "assets-source/makehuman/LICENSE.ASSETS.md",
@@ -69,63 +69,63 @@
 		},
 		{
 			"path": "public/models/exercises/bent-over-row.png",
-			"bytes": 32435,
-			"sha256": "73ee59c3c3b0cc7d740b40095e354e109be906f41929c841d4f74191e518d0d6"
+			"bytes": 33220,
+			"sha256": "bd88bd9349864d7352b4a6ce31a5421b61bf48386894b165367826652470a6cd"
 		},
 		{
 			"path": "public/models/exercises/cable-row.png",
-			"bytes": 30895,
-			"sha256": "64a4c787cbe728e98c53823194e418e41f1cf38f2624686c1f170de8b224fdbe"
+			"bytes": 30984,
+			"sha256": "83e9e5dd7ae4200aad5fc652b235375090b6aee329e4243eac079026d88dd1a7"
 		},
 		{
 			"path": "public/models/exercises/calf-raise.png",
-			"bytes": 41184,
-			"sha256": "9cb546ec398406f5eefce12b9fb8cc66f1e64bbe844fd8dc3320fb1571bc30b0"
+			"bytes": 41449,
+			"sha256": "e1a01a8414c29e5f05ccd82d64dda5bba24fd6c55cd4a1c51140eb9cfd366d72"
 		},
 		{
 			"path": "public/models/exercises/chest-press.png",
-			"bytes": 32536,
-			"sha256": "d4de7e8c2b97902de3f0a1004c7e09e8d92141c913bb3014db228c712e9511ac"
+			"bytes": 27104,
+			"sha256": "339cc01e490387e4b611f7b1c0dd9c274276f441b898666af391d207d9364d69"
 		},
 		{
 			"path": "public/models/exercises/dumbbell-curl.png",
-			"bytes": 30888,
-			"sha256": "461f65f01897fb979adb80d36726c40122a65824f6580a5dcb8e787d270c01fe"
+			"bytes": 31598,
+			"sha256": "7b1874ca65052c5a98ef8d511d32f73e74aaeb78dce3579532283866cfb194f0"
 		},
 		{
 			"path": "public/models/exercises/goblet-squat.png",
-			"bytes": 37547,
-			"sha256": "8537b8972cad7439f99f16c81bc60c5f5806938da90476d9d7d5b9015592a2ec"
+			"bytes": 38796,
+			"sha256": "77a2b021da8c8c689aa0f23c83249a2c487824ea4f84f5b71bc834cbb2404d3a"
 		},
 		{
 			"path": "public/models/exercises/lat-pulldown.png",
-			"bytes": 24431,
-			"sha256": "aa565f1b7e9c8ed07d8f7ad06e907f908bb0972dbf4a5ff591fba0a765d77d4b"
+			"bytes": 26982,
+			"sha256": "a985a4ab47f9126b4a9d10dc7d3931a833b09b7ee2543cbbd0e8438debc9f322"
 		},
 		{
 			"path": "public/models/exercises/lateral-raise.png",
-			"bytes": 32195,
-			"sha256": "d5c8d5bf1fa1894fe248587483627b61d32ab94e889e977d8d4c5a46d9272806"
+			"bytes": 33056,
+			"sha256": "12c7b72e8a5783ab440335540c6d32b906c47ea2b37f448183644560fa8962e9"
 		},
 		{
 			"path": "public/models/exercises/romanian-deadlift.png",
-			"bytes": 39709,
-			"sha256": "b357a45152f5d3995c725e2d6e6582b02656d772d0a785d3ab49ae8153247d93"
+			"bytes": 37636,
+			"sha256": "ecb70cabdd5dd10b0b11126f18c40fe7df8db9ee878f47fc1c32cfdaba000837"
 		},
 		{
 			"path": "public/models/exercises/shoulder-press.png",
-			"bytes": 31517,
-			"sha256": "92febb5b48797541ee4035492a5450ce3c56fa6122a8ef4a0313c4ae0ca39bab"
+			"bytes": 32061,
+			"sha256": "aed9b047b9aebf3bd38155d4021220bb8eb1ec01156be8e71ed9885052dc5a3a"
 		},
 		{
 			"path": "public/models/exercises/triceps-kickback.png",
-			"bytes": 28840,
-			"sha256": "a0b3ac093718f605245e10e66eedff13c648bedf0c82136024cad34837b7d4b0"
+			"bytes": 29954,
+			"sha256": "e31cd7034edc8976e0ca70a0af7127665b03a6bd30280b5ba57982366e4e1072"
 		},
 		{
 			"path": "public/models/rhino-anatomy.glb",
-			"bytes": 2357976,
-			"sha256": "88921fe62455a896cff61303ddbfe05cc5e27710f509669f67529bec25a4001b"
+			"bytes": 4600860,
+			"sha256": "cffcf8a30db7158978842b5cfa63083c6bc94dda2ac7fc97185fc065f25ca967"
 		}
 	]
 }
