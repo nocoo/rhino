@@ -37,7 +37,7 @@
 		{
 			"binding": "DB",
 			"database_name": "rhino",
-			"database_id": "00000000-0000-0000-0000-000000000000",
+			"database_id": "fe36652a-9c84-485f-bae3-384f395e45ea",
 			"migrations_dir": "migrations"
 		}
 	],
