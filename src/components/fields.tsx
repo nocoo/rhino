@@ -1,4 +1,5 @@
-import { Input, Label } from "@nocoo/basalt";
+import { Input } from "@nocoo/basalt";
+import { Field as BasaltField } from "@nocoo/basalt/components/field";
 import {
 	Select,
 	SelectContent,
@@ -31,8 +32,7 @@ export function Field({
 }) {
 	const id = useId();
 	return (
-		<div className="field">
-			<Label htmlFor={id}>{label}</Label>
+		<BasaltField className="field" label={label} htmlFor={id} hint={hint}>
 			<Input
 				id={id}
 				type={type}
@@ -43,8 +43,7 @@ export function Field({
 				required={required}
 				onChange={(event) => onChange(event.target.value)}
 			/>
-			{hint && <span className="field-hint">{hint}</span>}
-		</div>
+		</BasaltField>
 	);
 }
 
@@ -61,20 +60,19 @@ export function Choice({
 }) {
 	const id = useId();
 	return (
-		<div className="field">
-			<Label htmlFor={id}>{label}</Label>
-			<Select value={value} onValueChange={onChange}>
+		<Select value={value} onValueChange={onChange}>
+			<BasaltField className="field" label={label} htmlFor={id}>
 				<SelectTrigger id={id}>
 					<SelectValue />
 				</SelectTrigger>
-				<SelectContent>
-					{options.map((option) => (
-						<SelectItem key={option.value} value={option.value}>
-							{option.label}
-						</SelectItem>
-					))}
-				</SelectContent>
-			</Select>
-		</div>
+			</BasaltField>
+			<SelectContent>
+				{options.map((option) => (
+					<SelectItem key={option.value} value={option.value}>
+						{option.label}
+					</SelectItem>
+				))}
+			</SelectContent>
+		</Select>
 	);
 }

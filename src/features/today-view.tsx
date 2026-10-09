@@ -1,5 +1,7 @@
 import { Button, LayerCard } from "@nocoo/basalt";
+import { StatCard, StatGrid } from "@nocoo/basalt/charts/stat-card";
 import { PageHeader } from "@nocoo/basalt/components/page-header";
+import { SectionRule } from "@nocoo/basalt/components/section-rule";
 import { ArrowRight, CalendarDays, CheckCheck, Clock3, HeartPulse, Leaf, Play } from "lucide-react";
 import { Suspense } from "react";
 import type { Page } from "../components/frame";
@@ -46,7 +48,7 @@ export function TodayView({
 			/>
 			{current && current.reviewMonth !== model.today.slice(0, 7) && (
 				<LayerCard>
-					<div className="card-footer" style={{ marginTop: 0 }}>
+					<div className="card-footer">
 						<p className="coach-note">新的一月到了。复盘一下，保留有效的训练习惯。</p>
 						<Button variant="secondary" onClick={() => navigate("plans")}>
 							月度复盘
@@ -54,15 +56,36 @@ export function TodayView({
 					</div>
 				</LayerCard>
 			)}
+			<StatGrid columns={3} className="today-metrics">
+				<StatCard
+					label="本周训练"
+					value={`${completed} / ${current?.input.weeklyFrequency ?? "—"}`}
+					subtitle="完成的真实记录"
+					icon={CheckCheck}
+				/>
+				<StatCard
+					label="有氧累积 · min"
+					value={Math.round(minutes)}
+					subtitle="中等强度等效分钟"
+					icon={Clock3}
+				/>
+				<StatCard
+					label="力量训练 · 次"
+					value={strength}
+					subtitle="目标每周 ≥ 2 次"
+					icon={HeartPulse}
+				/>
+			</StatGrid>
 			<div className="today-layout">
 				<div className="stack">
-					<div>
-						<div className="section-caption">
-							<span className="eyebrow">THIS WEEK</span>
-							<span>
+					<SectionRule
+						title="本周安排"
+						actions={
+							<span className="field-hint">
 								{start.slice(5).replace("-", ".")} — {days[6].slice(5).replace("-", ".")}
 							</span>
-						</div>
+						}
+					>
 						<div className="week-strip">
 							{days.map((day, index) => (
 								<div key={day} className={`week-day ${day === model.today ? "current" : ""}`}>
@@ -81,10 +104,10 @@ export function TodayView({
 								</div>
 							))}
 						</div>
-					</div>
+					</SectionRule>
 					{pending && (
 						<LayerCard>
-							<div className="card-footer" style={{ marginTop: 0 }}>
+							<div className="card-footer">
 								<div>
 									<strong style={{ fontSize: 14 }}>有一场训练等待继续</strong>
 									<p className="field-hint">{pending.localDate} · 已保存的训练草稿</p>
@@ -103,20 +126,18 @@ export function TodayView({
 							busy={model.busy}
 						/>
 					) : (
-						<LayerCard padding="lg">
-							<div className="empty-state">
-								<span className="pill">FIRST THINGS FIRST</span>
-								<h2>
-									你的第一场训练，
-									<br />
-									从一个小计划开始。
-								</h2>
-								<p>完善个人档案，选择每周可用的时间。Rhino 会帮你安排力量、有氧和恢复。</p>
-								<Button onClick={() => navigate(model.profile?.profile ? "plans" : "profile")}>
-									{model.profile?.profile ? "制定第一个计划" : "完善个人档案"}
-									<ArrowRight size={15} />
-								</Button>
-							</div>
+						<LayerCard>
+							<LayerCard.Empty
+								icon={<CalendarDays size={24} />}
+								title="从一个小计划开始"
+								description="完善个人档案，选择每周可用的时间。Rhino 会帮你安排力量、有氧和恢复。"
+								action={
+									<Button onClick={() => navigate(model.profile?.profile ? "plans" : "profile")}>
+										{model.profile?.profile ? "制定第一个计划" : "完善个人档案"}
+										<ArrowRight size={15} />
+									</Button>
+								}
+							/>
 						</LayerCard>
 					)}
 					<LayerCard>
@@ -133,42 +154,9 @@ export function TodayView({
 					<Suspense fallback={<LayerCard.Loading label="正在准备三维动作" />}>
 						<LazyExerciseViewer exerciseId={focus} compact />
 					</Suspense>
-					<div className="stats-grid">
-						<LayerCard>
-							<span className="stat-label">
-								<CheckCheck size={14} /> 本周训练
-							</span>
-							<div className="metric-value">
-								{completed}
-								<small>/ {current?.input.weeklyFrequency ?? "—"}</small>
-							</div>
-							<p className="stat-caption">完成的真实记录</p>
-						</LayerCard>
-						<LayerCard>
-							<span className="stat-label">
-								<Clock3 size={14} /> 有氧累积
-							</span>
-							<div className="metric-value">
-								{Math.round(minutes)}
-								<small>min</small>
-							</div>
-							<p className="stat-caption">中等强度等效分钟</p>
-						</LayerCard>
-						<LayerCard>
-							<span className="stat-label">
-								<HeartPulse size={14} /> 力量训练
-							</span>
-							<div className="metric-value">
-								{strength}
-								<small>次</small>
-							</div>
-							<p className="stat-caption">目标每周 ≥ 2 次</p>
-						</LayerCard>
-					</div>
 				</div>
 			</div>
-			<div className="section-caption">
-				<span className="eyebrow">BUILT AROUND YOU. NOT THE OTHER WAY AROUND.</span>
+			<div className="page-links">
 				<Button variant="ghost" size="sm" onClick={() => navigate("progress")}>
 					查看我的进展 <ArrowRight size={14} />
 				</Button>

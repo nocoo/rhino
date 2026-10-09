@@ -32,6 +32,40 @@ checkout is not a release guarantee.
 
 ## Shell and Information Hierarchy
 
+### Implemented Basalt Layout Correction (2026-10-09)
+
+The installed API/CSS contract is `@nocoo/basalt` **2.1.8**, standalone CSS.
+The reference composition is Life.ai's `app-frame.tsx` and `app-sidebar.tsx`
+at `5d7a44fcb520b3b057e68fb1d27fd8b242d32df4`. Basalt's own integration
+documentation was checked at `e6c754a2d2482cc2b712d4cacb8d5658479a1d46`;
+unreleased layout/density APIs from that checkout are not used here.
+
+- Keep package-owned 260/68px sidebar widths and 56px framework/header rows.
+  The 24px brand mark keeps its position during collapse. Expanded navigation
+  uses the documented 12px inset and 2px item gap; icon-only items have tooltips.
+- The content wrapper uses 12px side/bottom gutters from 768px, 8px below.
+  ContentIsland retains its native 20px desktop / 12px mobile padding, without
+  wide-screen padding overrides or an extra page-width constraint.
+- Page sections use a 24px rhythm, forms/stacks 16px. LayerCard owns header,
+  body and footer padding; Field owns label/control/hint spacing. StatGrid and
+  StatCard replace the ad-hoc metrics, and Table owns tabular spacing. A local
+  overflow wrapper protects narrow tables without shrinking their controls.
+- Forms become single-column below 480px. Measurement actions align with the
+  input baseline; equipment choices wrap. Today metrics follow the main content
+  on phones so logging is not pushed below a column of summary cards.
+- Global resets stay in the base cascade layer. Never apply an unlayered
+  `button, input, select { font: inherit }` rule: it defeats component utility
+  typography. The specialist Three.js stage retains its separate visual surface.
+
+`tests/l3/journal.spec.ts` checks geometry, stable collapse, tooltip names,
+mobile navigation/Escape focus return, breakpoint cleanup and both themes at
+360/390/768/1024/1440px. Browser screenshots are emitted under
+`test-results/l3/browser` for the five pages and prepared/active workout states.
+These checks do not certify professional movement accuracy or physical-device
+performance. This correction does not upgrade Basalt or change data contracts.
+
+### Product Hierarchy
+
 Use the supported `AppShell -> Sidebar + AppMain -> AppHeader -> ContentIsland`
 structure. One content island, compact page heading, meaningful cards. Providers
 include the Basalt theme/link/tooltip contracts and one toaster; Rhino owns

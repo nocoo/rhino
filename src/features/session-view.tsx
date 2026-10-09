@@ -47,145 +47,152 @@ export function SessionView({
 			<div className="session-layout">
 				<div className="stack">
 					{exercises.map((exercise, index) => (
-						<LayerCard key={exercise.id} padding="lg">
-							<div className="workout-heading">
-								<h2 style={{ fontSize: 19 }}>
+						<LayerCard key={exercise.id}>
+							<LayerCard.Header className="session-heading">
+								<h2 className="card-title">
 									{String(index + 1).padStart(2, "0")} · {exerciseNames[exercise.exerciseId]}
 								</h2>
 								<Button variant="ghost" size="sm" onClick={() => setSelected(exercise.exerciseId)}>
 									查看动作
 								</Button>
-							</div>
-							{prep ? (
-								<div className="form-grid" style={{ marginTop: 20 }}>
-									<Choice
-										label="训练动作"
-										value={exercise.exerciseId}
-										onChange={(value) => editor.updateExercise(index, value as StrengthExerciseId)}
-										options={EXERCISES.filter((item) =>
-											(model.profile?.profile?.preferences.equipmentIds ?? []).includes(
-												item.equipmentId,
-											),
-										).map((item) => ({ value: item.id, label: exerciseNames[item.id] }))}
-									/>
-									<Field
-										label="工作组数"
-										type="number"
-										min={1}
-										max={8}
-										value={exercise.workingSets.length}
-										onChange={(value) => editor.setCount(index, Number(value))}
-									/>
-									<Field
-										label="每组次数"
-										type="number"
-										min={1}
-										max={30}
-										value={exercise.workingSets[0].repsHigh}
-										onChange={(value) => editor.setReps(index, Number(value))}
-									/>
-								</div>
-							) : (
-								<>
-									<div className="set-row set-labels">
-										<span>组</span>
-										<span>次数</span>
-										<span>
-											负重 / kg {exercise.loadConvention === "per-hand" ? "每只" : "总重"}
-										</span>
-										<span>完成</span>
+							</LayerCard.Header>
+							<LayerCard.Body className="stack">
+								{prep ? (
+									<div className="form-grid">
+										<Choice
+											label="训练动作"
+											value={exercise.exerciseId}
+											onChange={(value) =>
+												editor.updateExercise(index, value as StrengthExerciseId)
+											}
+											options={EXERCISES.filter((item) =>
+												(model.profile?.profile?.preferences.equipmentIds ?? []).includes(
+													item.equipmentId,
+												),
+											).map((item) => ({ value: item.id, label: exerciseNames[item.id] }))}
+										/>
+										<Field
+											label="工作组数"
+											type="number"
+											min={1}
+											max={8}
+											value={exercise.workingSets.length}
+											onChange={(value) => editor.setCount(index, Number(value))}
+										/>
+										<Field
+											label="每组次数"
+											type="number"
+											min={1}
+											max={30}
+											value={exercise.workingSets[0].repsHigh}
+											onChange={(value) => editor.setReps(index, Number(value))}
+										/>
 									</div>
-									{editor.actual.exercises
-										.find((item) => item.id === exercise.id)
-										?.sets.map((set, i) => (
-											<div key={set.id}>
-												<div className="set-row">
-													<span className="mono muted">{i + 1}</span>
-													<Input
-														type="number"
-														min={0}
-														max={50}
-														aria-label={`${exerciseNames[exercise.exerciseId]}第${i + 1}组次数`}
-														value={set.reps ?? ""}
-														placeholder={String(exercise.workingSets[i].repsHigh)}
-														onChange={(event) =>
-															editor.updateSet(exercise.id, set.id, {
-																reps: event.target.value === "" ? null : Number(event.target.value),
-															})
-														}
-													/>
-													<Input
-														type="number"
-														min={0}
-														step={0.5}
-														aria-label={`${exerciseNames[exercise.exerciseId]}第${i + 1}组负重`}
-														value={set.loadKg ?? ""}
-														placeholder="未记录"
-														onChange={(event) =>
-															editor.updateSet(exercise.id, set.id, {
-																loadKg:
-																	event.target.value === "" ? null : Number(event.target.value),
-															})
-														}
-													/>
-													<Button
-														size="icon"
-														variant={set.status === "performed" ? "default" : "secondary"}
-														aria-label={`标记${exerciseNames[exercise.exerciseId]}第${i + 1}组完成`}
-														aria-pressed={set.status === "performed"}
-														onClick={() => {
-															editor.updateSet(exercise.id, set.id, {
-																status: set.status === "performed" ? "not-recorded" : "performed",
-																reps: set.reps ?? exercise.workingSets[i].repsHigh,
-															});
-															editor.startRest(exercise.restSeconds);
-														}}
-													>
-														<Check size={16} />
-													</Button>
+								) : (
+									<>
+										<div className="set-row set-labels">
+											<span>组</span>
+											<span>次数</span>
+											<span>
+												负重 / kg {exercise.loadConvention === "per-hand" ? "每只" : "总重"}
+											</span>
+											<span>完成</span>
+										</div>
+										{editor.actual.exercises
+											.find((item) => item.id === exercise.id)
+											?.sets.map((set, i) => (
+												<div key={set.id}>
+													<div className="set-row">
+														<span className="mono muted">{i + 1}</span>
+														<Input
+															type="number"
+															min={0}
+															max={50}
+															aria-label={`${exerciseNames[exercise.exerciseId]}第${i + 1}组次数`}
+															value={set.reps ?? ""}
+															placeholder={String(exercise.workingSets[i].repsHigh)}
+															onChange={(event) =>
+																editor.updateSet(exercise.id, set.id, {
+																	reps:
+																		event.target.value === "" ? null : Number(event.target.value),
+																})
+															}
+														/>
+														<Input
+															type="number"
+															min={0}
+															step={0.5}
+															aria-label={`${exerciseNames[exercise.exerciseId]}第${i + 1}组负重`}
+															value={set.loadKg ?? ""}
+															placeholder="未记录"
+															onChange={(event) =>
+																editor.updateSet(exercise.id, set.id, {
+																	loadKg:
+																		event.target.value === "" ? null : Number(event.target.value),
+																})
+															}
+														/>
+														<Button
+															size="icon"
+															variant={set.status === "performed" ? "default" : "secondary"}
+															aria-label={`标记${exerciseNames[exercise.exerciseId]}第${i + 1}组完成`}
+															aria-pressed={set.status === "performed"}
+															onClick={() => {
+																editor.updateSet(exercise.id, set.id, {
+																	status: set.status === "performed" ? "not-recorded" : "performed",
+																	reps: set.reps ?? exercise.workingSets[i].repsHigh,
+																});
+																editor.startRest(exercise.restSeconds);
+															}}
+														>
+															<Check size={16} />
+														</Button>
+													</div>
+													<div className="set-extras">
+														<Field
+															label={`第${i + 1}组余力（RIR）`}
+															type="number"
+															min={0}
+															max={10}
+															value={set.rir ?? ""}
+															onChange={(value) =>
+																editor.updateSet(exercise.id, set.id, {
+																	rir: value === "" ? null : Number(value),
+																})
+															}
+															hint="不确定可以不填"
+														/>
+														<Button
+															variant="ghost"
+															size="sm"
+															aria-pressed={set.status === "skipped"}
+															onClick={() =>
+																editor.updateSet(exercise.id, set.id, {
+																	status: set.status === "skipped" ? "not-recorded" : "skipped",
+																	reps: null,
+																	loadKg: null,
+																	rir: null,
+																})
+															}
+														>
+															{set.status === "skipped" ? "已跳过，点击撤销" : "跳过这组"}
+														</Button>
+													</div>
 												</div>
-												<div className="set-extras">
-													<Field
-														label={`第${i + 1}组余力（RIR）`}
-														type="number"
-														min={0}
-														max={10}
-														value={set.rir ?? ""}
-														onChange={(value) =>
-															editor.updateSet(exercise.id, set.id, {
-																rir: value === "" ? null : Number(value),
-															})
-														}
-														hint="不确定可以不填"
-													/>
-													<Button
-														variant="ghost"
-														size="sm"
-														aria-pressed={set.status === "skipped"}
-														onClick={() =>
-															editor.updateSet(exercise.id, set.id, {
-																status: set.status === "skipped" ? "not-recorded" : "skipped",
-																reps: null,
-																loadKg: null,
-																rir: null,
-															})
-														}
-													>
-														{set.status === "skipped" ? "已跳过，点击撤销" : "跳过这组"}
-													</Button>
-												</div>
-											</div>
-										))}
-								</>
-							)}
-							<p className="field-hint" style={{ marginTop: 12 }}>
-								组间休息 {exercise.restSeconds} 秒 · 目标保留 2–3 次余力
-							</p>
+											))}
+									</>
+								)}
+								<p className="field-hint">
+									组间休息 {exercise.restSeconds} 秒 · 目标保留 2–3 次余力
+								</p>
+							</LayerCard.Body>
 						</LayerCard>
 					))}
-					<LayerCard padding="lg">
-						<h2 className="card-title">有氧与热身</h2>
-						<div className="stack">
+					<LayerCard>
+						<LayerCard.Header>
+							<h2 className="card-title">有氧与热身</h2>
+						</LayerCard.Header>
+						<LayerCard.Body className="stack">
 							{cardio.map((segment) => (
 								<div key={segment.id} className="form-grid">
 									<div>
@@ -249,10 +256,10 @@ export function SessionView({
 									)}
 								</div>
 							))}
-						</div>
+						</LayerCard.Body>
 					</LayerCard>
 					{!prep && (
-						<LayerCard>
+						<LayerCard className="stack">
 							<Field
 								label="训练备注"
 								value={editor.actual.notes}
@@ -272,7 +279,7 @@ export function SessionView({
 						</LayerCard>
 					)}
 					<LayerCard>
-						<div className="card-footer" style={{ marginTop: 0 }}>
+						<div className="card-footer">
 							<span className="field-hint">
 								{editor.dirty ? "有尚未保存的修改" : `已保存 · v${session.version}`}
 							</span>
@@ -281,7 +288,7 @@ export function SessionView({
 									<Play size={14} /> 确认并开始
 								</Button>
 							) : (
-								<div className="form-actions" style={{ marginTop: 0 }}>
+								<div className="form-actions">
 									<Button variant="secondary" onClick={editor.performedAsPlanned}>
 										<CheckCheck size={15} /> 按计划完成
 									</Button>
@@ -303,22 +310,22 @@ export function SessionView({
 							<LazyExerciseViewer key={selected} exerciseId={selected} compact />
 						</Suspense>
 					)}
-					<LayerCard padding="lg">
-						<h2 className="card-title">
-							<Clock3 size={17} /> 组间恢复
-						</h2>
-						<div className="metric-value">
-							{String(Math.floor(editor.restSeconds / 60)).padStart(2, "0")}:
-							{String(editor.restSeconds % 60).padStart(2, "0")}
-						</div>
-						<p className="coach-note">计时只是提示。呼吸和状态恢复后，再开始下一组。</p>
-						<Button
-							variant="secondary"
-							onClick={() => editor.startRest(120)}
-							style={{ marginTop: 16 }}
-						>
-							开始 2 分钟休息
-						</Button>
+					<LayerCard>
+						<LayerCard.Header>
+							<h2 className="card-title">
+								<Clock3 size={17} /> 组间恢复
+							</h2>
+						</LayerCard.Header>
+						<LayerCard.Body className="stack">
+							<div className="metric-value">
+								{String(Math.floor(editor.restSeconds / 60)).padStart(2, "0")}:
+								{String(editor.restSeconds % 60).padStart(2, "0")}
+							</div>
+							<p className="coach-note">计时只是提示。呼吸和状态恢复后，再开始下一组。</p>
+							<Button variant="secondary" onClick={() => editor.startRest(120)}>
+								开始 2 分钟休息
+							</Button>
+						</LayerCard.Body>
 					</LayerCard>
 				</div>
 			</div>

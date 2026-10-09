@@ -49,3 +49,20 @@ No production database or deployment was involved.
 The quality gates blocked these failures rather than being lowered. Automated
 success still does not establish professional review of the authored movements,
 physical-phone performance or readiness of an undeployed production service.
+
+## 2026-10-09 - Basalt Layout Drift
+
+The first UI used Basalt components but overrode their geometry: 18-40px shell
+gutters, oversized rail branding, uninset navigation and an unlayered control
+font reset. On phones, unwrapped equipment choices collapsed into narrow text
+columns. Passing workflow tests had not established visual compliance.
+
+The correction follows the installed 2.1.8 package and the corresponding
+Life.ai shell, not unreleased APIs from the newer Basalt checkout. Card slots,
+Field, Table and statistics components now own their standard spacing. Browser
+checks measure rail/header/island/control geometry and exercise both themes,
+collapse, drawer focus and narrow-screen overflow alongside the real workflows.
+The first exact logo-position check caught a 1/64px flex-centering difference;
+an explicit compact brand row now gives identical expanded/collapsed placement.
+Inspect computed browser geometry and screenshots before claiming conformity;
+component imports and passing business tests alone are insufficient evidence.

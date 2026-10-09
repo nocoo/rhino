@@ -1,5 +1,6 @@
 import { Button, LayerCard } from "@nocoo/basalt";
 import { PageHeader } from "@nocoo/basalt/components/page-header";
+import { SectionRule } from "@nocoo/basalt/components/section-rule";
 import { ArrowUpRight, BookOpen, Info } from "lucide-react";
 import { lazy, Suspense } from "react";
 import { exerciseNames } from "../components/workout-summary";
@@ -94,8 +95,8 @@ export function LibraryView({
 							loading="lazy"
 						/>
 					</details>
-					<LayerCard padding="lg">
-						<div className="workout-heading">
+					<LayerCard>
+						<LayerCard.Header className="workout-heading">
 							<div>
 								<span className="eyebrow muted">TECHNIQUE NOTES</span>
 								<h2>{exerciseNames[selected]}</h2>
@@ -103,29 +104,29 @@ export function LibraryView({
 							<span className="pill">
 								{exercise.loadConvention === "per-hand" ? "负重按每只哑铃记录" : "负重按总重量记录"}
 							</span>
-						</div>
-						<div className="technique-grid" style={{ marginTop: 24 }}>
-							<div>
-								<h3 className="card-title">动作要点</h3>
+						</LayerCard.Header>
+						<LayerCard.Body className="technique-grid">
+							<SectionRule title="动作要点">
 								<ol className="cue-list">
 									{chineseCues[selected].map((cue) => (
 										<li key={cue}>{cue}</li>
 									))}
 								</ol>
-							</div>
-							<div>
-								<h3 className="card-title">肌群参与</h3>
-								{exercise.muscles.map((muscle) => (
-									<div key={muscle.id} className="exercise-row">
-										<span className="muscle-dot" />
-										<span style={{ fontSize: 12 }}>{muscle.name}</span>
-										<span className="muted" style={{ marginLeft: "auto", fontSize: 11 }}>
-											{muscle.role === "primary" ? "主要" : "辅助"}
-										</span>
-									</div>
-								))}
-							</div>
-						</div>
+							</SectionRule>
+							<SectionRule title="肌群参与">
+								<div>
+									{exercise.muscles.map((muscle) => (
+										<div key={muscle.id} className="exercise-row">
+											<span className="muscle-dot" />
+											<span style={{ fontSize: 12 }}>{muscle.name}</span>
+											<span className="muted" style={{ marginLeft: "auto", fontSize: 11 }}>
+												{muscle.role === "primary" ? "主要" : "辅助"}
+											</span>
+										</div>
+									))}
+								</div>
+							</SectionRule>
+						</LayerCard.Body>
 					</LayerCard>
 					<p className="coach-note">
 						<Info size={17} />{" "}
