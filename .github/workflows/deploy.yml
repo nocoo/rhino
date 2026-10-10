@@ -1,16 +1,11 @@
 name: Deploy
+run-name: Deploy CI ${{ github.event.workflow_run.id }}
 
 on:
-  workflow_dispatch:
-    inputs:
-      source-run-id:
-        description: Successful CI push run on current main
-        required: true
-        type: string
-      source-sha:
-        description: Exact SHA proven by that run
-        required: true
-        type: string
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
 
 permissions:
   contents: read
@@ -18,13 +13,18 @@ permissions:
 
 jobs:
   deploy:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
     uses: nocoo/base-ci/.github/workflows/deploy-worker.yml@8816553dc9f4544d1e8486bacb5cce630a9f14cb
     with:
       expected-workflow-path: .github/workflows/ci.yml
       expected-workflow-name: CI
       expected-branch: main
-      source-run-id: ${{ inputs.source-run-id }}
-      source-sha: ${{ inputs.source-sha }}
+      source-run-id: ${{ format('{0}', github.event.workflow_run.id) }}
+      source-sha: ${{ github.event.workflow_run.head_sha }}
       allowed-source-events: push
       require-fresh-main: true
       package-manager: bun

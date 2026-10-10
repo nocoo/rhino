@@ -68,7 +68,7 @@ bun run lint
 bun run build
 ```
 
-部署使用固定版本的公共 `nocoo/base-ci`，要求当前 main 的成功 CI 证据，不再要求逐次人工批准。自建部署必须先替换仓库中的维护者账号、D1、域名及 Access 配置；不要直接部署到现有资源。配置、迁移与恢复步骤见[发布手册](docs/08-local-and-release.md)。
+部署使用固定版本的公共 `nocoo/base-ci`：本仓库 `main` 的 push CI 全部通过后自动部署同一 SHA，无须手动触发或人工批准；PR、失败或过时的 CI 不会部署。上线后自动验证版本、revision、D1 健康和业务 API 的 Access 保护。自建部署必须先替换仓库中的维护者账号、D1、域名及 Access 配置；不要直接部署到现有资源。配置、迁移与恢复步骤见[发布手册](docs/08-local-and-release.md)。
 
 ## 测试
 

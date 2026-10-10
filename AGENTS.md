@@ -83,8 +83,11 @@ Local URL: `https://rhino.dev.hexly.ai`, Caddy to `127.0.0.1:7057`.
 Production target: `https://rhino.hexly.ai`, Access team `nocoo`.
 Use stable Wrangler 4.135.0; this project has not migrated to beta `cf`.
 base-ci is pinned to `8816553dc9f4544d1e8486bacb5cce630a9f14cb`.
-Deployment is manual, proven successful CI source only, fresh main and protected
-`production`. The confirmed production D1 is `fe36652a-9c84-485f-bae3-384f395e45ea`.
+Deployment automatically follows successful push CI on this repository's `main`,
+with exact-source proof, fresh main and protected `production`. PR, fork, failed
+and manually dispatched CI runs cannot deploy. No manual deploy dispatch or
+reviewer approval is required. The confirmed production D1 is
+`fe36652a-9c84-485f-bae3-384f395e45ea`.
 The production environment allows only main and disables admin bypass. The owner
 explicitly removed recurring reviewer approval; do not reintroduce it. Deployment
 credentials are configured, but missing credentials must still fail closed.
@@ -92,6 +95,8 @@ The existing shared Access bypass covers `/api/live`; its anonymous GET returns
 only version/revision and minimal database health, with no-store and 503 on failure.
 All business routes still require Worker JWT verification. Check `/api/profile`
 for the edge login redirect; public readiness does not prove owner authentication.
+The deployment verifier requires anonymous uncached health with the manifest
+version and proven checkout SHA, then checks the business Access redirect.
 
 Eleven motions are **unreviewed illustrative previews**, not qualified instruction.
 Catalog 1.2.0 includes the Chinese labels and corrected hinge/contact paths.

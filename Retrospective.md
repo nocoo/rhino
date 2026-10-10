@@ -181,3 +181,18 @@ shared Access policy and release gates are unchanged. Inspect path-specific
 Access precedence, not only the hostname application, before choosing a probe.
 Do not label a failed verification run as a failed upload or as a successful
 release; they are separate outcomes that need separate evidence.
+
+## 2026-10-10 - Removing Approval Was Not Continuous Delivery
+
+Removing production reviewers did not make deployment follow main: the consumer
+still required a manual workflow dispatch. The previous release also checked
+the exact public health revision outside CI, while its deployment verifier only
+checked the Access redirect. That split could mark an automatic deployment green
+without proving that the expected Worker revision was live.
+
+Deployment now follows successful same-repository main push CI, retaining the
+pinned source-proof and fresh-main guards. Its verifier checks uncached anonymous
+D1 health against the checkout SHA and manifest version before the business
+Access redirect. Regression tests reject wrong versions, stale revisions,
+unhealthy or cacheable responses and missing Access protection. Approval policy,
+automatic triggering and deployed-revision verification are separate requirements.

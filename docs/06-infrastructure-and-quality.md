@@ -132,6 +132,9 @@ Quality workflow requirements:
 
 Deployment workflow requirements:
 
+- Follow completed successful `CI` push runs on this repository's `main` using
+  `workflow_run`, without manual dispatch or reviewer approval. Reject PR/fork
+  and manually dispatched CI sources, even when their checks succeed.
 - Deploy only a proven successful CI source, with `source-run-id`, matching
   `source-sha`, canonical workflow path/name, branch, and allowed source events.
   Do not publish arbitrary PR/fork commits or treat a manually typed SHA as proof.
@@ -144,15 +147,15 @@ Deployment workflow requirements:
   `CLOUDFLARE_ACCOUNT_ID`. Use least privilege and no `secrets: inherit` shortcut.
 - Apply only reviewed migrations to the confirmed production database, with a
   verified recovery plan. Test or development credentials never enter this job.
-- Use bounded post-deployment verification for the deployed revision, Access
-  behavior, application route, and database readiness. Do not put a real user's
-  Access JWT in CI; choose an explicitly authorized verification identity or
-  human browser acceptance path before enabling automated protected probes.
+- Use bounded anonymous `/api/live` verification for HTTP 200, no-store, the
+  manifest version, proven checkout revision and database readiness. Check
+  `/api/profile` for the configured Access team's login redirect. Keep protected
+  browser acceptance separate; do not put a real user's Access JWT in CI.
 
 The inspected deploy workflow pins its internal release-source action at
 `8cbdb970c3a38240289c1e152c40dd550ac62dba`. Do not rewrite internal shared workflow
-references in a consumer project. Recheck the complete pinned workflow before
-adoption; no workflow file has been installed here yet.
+references in a consumer project. The consumer is installed at
+`.github/workflows/deploy.yml` and retains the shared source and concurrency guards.
 
 ## Planned Commands
 

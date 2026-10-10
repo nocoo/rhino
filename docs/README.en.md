@@ -68,7 +68,7 @@ bun run lint
 bun run build
 ```
 
-Deployment uses pinned public `nocoo/base-ci` workflows and successful CI evidence for current main, without recurring reviewer approval. Self-hosting requires replacing the maintainer's account, D1, domain and Access configuration before deployment; do not deploy against existing resources. Configuration, migrations and recovery are documented in the [release runbook](08-local-and-release.md).
+Deployment uses pinned public `nocoo/base-ci` workflows: successful push CI on this repository's `main` automatically deploys the same SHA, without manual dispatch or reviewer approval. PR, failed and stale CI cannot deploy. Post-deployment checks verify the version, revision, D1 health and business API Access protection. Self-hosting requires replacing the maintainer's account, D1, domain and Access configuration before deployment; do not deploy against existing resources. Configuration, migrations and recovery are documented in the [release runbook](08-local-and-release.md).
 
 ## Tests
 

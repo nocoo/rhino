@@ -142,17 +142,22 @@ Do not call this list feature-complete or publish validated coaching claims.
    GitHub environment with admin bypass disabled. Do not add recurring reviewer
    approval: the owner explicitly removed it. Naming the environment in YAML
    alone does not configure branch restrictions.
-4. Commit through Husky and push. Verify all enabled base-ci jobs on the exact
-   current-main SHA, including aggregate source proof. No manual success override.
-5. Record a D1 export/Time Travel recovery point before any later data migration;
-   review a restoration procedure. For an empty first database, document that
-   no user data exists and preserve the migration/source revision.
-6. Dispatch Deploy with the successful CI `source-run-id` and `source-sha`.
+4. Before pushing any later data migration, record a D1 export/Time Travel recovery
+   point and review a restoration procedure. For an empty first database,
+   document that no user data exists and preserve the migration/source revision.
+5. Commit through Husky and push to `main`. Verify all enabled base-ci jobs on
+   that exact SHA, including aggregate source proof. No manual success override.
+6. Successful push CI automatically triggers Deploy through `workflow_run` with
+   the completed run ID and head SHA. No dispatch or approval is required. PR,
+   fork, failed and manually dispatched CI cannot deploy; stale main fails closed.
    The proven checkout injects `DEPLOY_REVISION=HEAD`, builds, applies the reviewed
    remote migration and deploys `dist/rhino/wrangler.json`, not raw unbuilt source.
-7. Verify the unauthenticated Access redirect on `/api/profile`, then request
-   anonymous `/api/live`: exact version/revision and D1 readiness on the production
-   domain. Inspect the hosted desktop/mobile UI read-only with the owner identity.
+   The shared production lock serializes deployments without cancelling one
+   in progress.
+7. The deployment verifier checks anonymous `/api/live` for HTTP 200, no-store,
+   the manifest version and proven checkout SHA, then verifies the configured
+   Access redirect on `/api/profile`. Inspect the hosted desktop/mobile UI
+   read-only with the owner identity.
    Create/reload fixtures belong in E2E, never production. Do not log tokens.
 8. Publish a matching version tag and GitHub Release only after exact-revision
    CI and deployed verification. Do not claim a pending workflow as published.
