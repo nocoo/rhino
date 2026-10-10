@@ -196,3 +196,10 @@ D1 health against the checkout SHA and manifest version before the business
 Access redirect. Regression tests reject wrong versions, stale revisions,
 unhealthy or cacheable responses and missing Access protection. Approval policy,
 automatic triggering and deployed-revision verification are separate requirements.
+
+The first push exported HTTP proxy variables for Git, which also reached the
+pre-push tests. Wrangler printed its proxy warning before `d1 execute --json`,
+so strict JSON parsing correctly rejected the output and blocked the push.
+The owned test state was cleaned up. Scope Git's proxy with
+`git -c http.proxy=http://127.0.0.1:7890 push` and leave local test subprocesses
+free of proxy variables; do not weaken JSON parsing or bypass the hook.
