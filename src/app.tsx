@@ -2,6 +2,7 @@ import { Button, LayerCard } from "@nocoo/basalt";
 import { Component, type ReactNode, useState } from "react";
 import { Frame, type Page } from "./components/frame";
 import type { StrengthExerciseId } from "./domain/contracts";
+import { CalendarView } from "./features/calendar-view";
 import { LibraryView } from "./features/library-view";
 import { PlansView } from "./features/plans-view";
 import { ProfileView } from "./features/profile-view";
@@ -33,6 +34,7 @@ function Workspace() {
 	const model = useRhinoModel();
 	const identity = useIdentity();
 	const [page, setPage] = useState<Page>("today");
+	const [calendarDate, setCalendarDate] = useState<string | null>(null);
 	const [selected, setSelected] = useState<StrengthExerciseId>("goblet-squat");
 	const navigate = (next: Page) => {
 		if (model.active && !window.confirm("离开训练页面？请先保存未提交的修改。")) return;
@@ -76,6 +78,13 @@ function Workspace() {
 						setSelected(id);
 						setPage("library");
 					}}
+				/>
+			) : page === "calendar" ? (
+				<CalendarView
+					model={model}
+					navigate={navigate}
+					date={calendarDate ?? model.today}
+					selectDate={setCalendarDate}
 				/>
 			) : page === "plans" ? (
 				<PlansView model={model} />

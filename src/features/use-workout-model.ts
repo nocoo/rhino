@@ -33,7 +33,7 @@ export function useWorkoutModel(session: SessionRecord, model: RhinoModel) {
 		(item) => item.id === step?.id && item.endedAt === null,
 	);
 	const [now, setNow] = useState(Date.now);
-	const [overview, setOverview] = useState(false);
+	const [overview, setOverview] = useState(session.status === "active" && !session.actual?.timing);
 	const [input, setInput] = useState<StepInput | null>(null);
 	const values: StepInput =
 		input && input.id === step?.id

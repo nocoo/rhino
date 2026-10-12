@@ -80,9 +80,10 @@ function HeaderIconLink({
 	);
 }
 
-export type Page = "today" | "plans" | "library" | "progress" | "profile";
+export type Page = "today" | "calendar" | "plans" | "library" | "progress" | "profile";
 const navigation = [
 	{ id: "today", label: "今日训练", icon: Activity },
+	{ id: "calendar", label: "训练日历", icon: CalendarDays },
 	{ id: "plans", label: "训练计划", icon: CalendarDays },
 	{ id: "library", label: "动作实验室", icon: BookOpen },
 	{ id: "progress", label: "我的进展", icon: ChartNoAxesCombined },

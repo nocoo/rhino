@@ -105,6 +105,9 @@ export function TodayView({
 							))}
 						</div>
 					</SectionRule>
+					<Button variant="ghost" onClick={() => navigate("calendar")}>
+						<CalendarDays size={16} /> 打开训练日历 <ArrowRight size={14} />
+					</Button>
 					{pending && (
 						<LayerCard>
 							<div className="card-footer">

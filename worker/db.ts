@@ -267,10 +267,9 @@ export async function latestPlanRevision(db: D1Database): Promise<number> {
 	return row?.revision ?? 0;
 }
 
-export async function listPlanRevisions(db: D1Database, limit = 24): Promise<PlanRevisionRecord[]> {
+export async function listPlanRevisions(db: D1Database): Promise<PlanRevisionRecord[]> {
 	const result = await db
-		.prepare("SELECT * FROM plan_revisions ORDER BY revision DESC LIMIT ?")
-		.bind(limit)
+		.prepare("SELECT * FROM plan_revisions ORDER BY revision DESC")
 		.all<PlanRow>();
 	return result.results.map(mapPlan);
 }

@@ -67,6 +67,7 @@ export function SessionView({
 	};
 	const prep = session.status === "draft";
 	const finished = session.status === "completed" || session.status === "abandoned";
+	const manual = session.status === "active" && !session.actual?.timing;
 	const completed = workout.steps.filter((item) => stepDone(item, editor.actual)).length;
 	const showPlan = prep || workout.overview || finished;
 	const resting = workout.restSeconds > 0;
@@ -149,7 +150,7 @@ export function SessionView({
 											: "本场未计时，可回顾与修正实际记录。"
 										: editor.actual.timing
 											? "查看与调整记录期间，总用时继续累计。"
-											: "本场尚未计时，可查看与修正实际记录。"}
+											: "补记实际训练：只填写真实完成量，不生成计时；填完后结束训练并保存。"}
 							</p>
 						</div>
 						{finished && (
@@ -398,9 +399,15 @@ export function SessionView({
 							<Button
 								variant="secondary"
 								disabled={model.busy}
-								onClick={() => (finished ? leave() : workout.setOverview(false))}
+								onClick={(event) =>
+									finished
+										? leave()
+										: manual
+											? openEnding(event.currentTarget)
+											: workout.setOverview(false)
+								}
 							>
-								{finished ? "返回首页" : "继续训练"}
+								{finished ? "返回上一页" : manual ? "结束并保存" : "继续训练"}
 							</Button>
 							<Button loading={model.busy} onClick={() => void workout.saveEdits()}>
 								<Save size={16} /> 保存调整

@@ -20,6 +20,7 @@ import type {
 } from "../domain/contracts";
 import { addDays, localDateInTimeZone } from "../domain/dates";
 import { heartRateGuidance } from "../domain/metrics";
+import { emptyActual } from "../domain/session";
 import { api, put } from "../lib/api";
 
 export function useRhinoModel() {
@@ -166,29 +167,37 @@ export function useRhinoModel() {
 		}, "新计划已采用，旧版本与训练记录已保留");
 	}
 
-	async function start(target: SessionTarget) {
-		await run(async () => {
-			const data = {
-				sourcePlanRevision: plans.current?.revision ?? null,
-				localDate: today,
-				timezone: profile?.profile?.timezone ?? "Asia/Shanghai",
-				status: "draft",
-				target,
-				actual: null,
-			};
-			const metadata = mutation(data);
-			const result = await put<PutSessionResponse>(`/sessions/${metadata.resourceId}`, {
-				...data,
-				expectedVersion: 0,
-				mutationId: metadata.mutationId,
-			});
-			setActive(result.session);
-			setSessions((previous) => [
-				result.session,
-				...previous.filter((item) => item.id !== result.session.id),
-			]);
-			pending.current = null;
-		}, "训练准备已保存，开始前仍可调整");
+	async function start(
+		target: SessionTarget,
+		options?: { localDate: string; sourcePlanRevision: number; recordOnly?: boolean },
+	) {
+		await run(
+			async () => {
+				const data = {
+					sourcePlanRevision: options?.sourcePlanRevision ?? plans.current?.revision ?? null,
+					localDate: options?.localDate ?? today,
+					timezone: profile?.profile?.timezone ?? "Asia/Shanghai",
+					status: options?.recordOnly ? "active" : "draft",
+					target,
+					actual: options?.recordOnly ? emptyActual(target) : null,
+				};
+				const metadata = mutation(data);
+				const result = await put<PutSessionResponse>(`/sessions/${metadata.resourceId}`, {
+					...data,
+					expectedVersion: 0,
+					mutationId: metadata.mutationId,
+				});
+				setActive(result.session);
+				setSessions((previous) => [
+					result.session,
+					...previous.filter((item) => item.id !== result.session.id),
+				]);
+				pending.current = null;
+			},
+			options?.recordOnly
+				? "请填写实际完成量，确认后结束保存；补记不生成计时。"
+				: "训练准备已保存，开始前仍可调整",
+		);
 	}
 
 	async function saveSession(

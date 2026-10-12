@@ -271,3 +271,12 @@ start inside the button's border. Real browser hit tests at both vertical edges
 caught this on desktop and mobile. Include border width in the inset calculation
 and verify elementFromPoint, not only CSS dimensions. Also wait for the Select
 exit animation before taking a finishing-dialog screenshot.
+
+## 2026-10-12 — Calendar browser fixture collision
+
+The new calendar L3 scenario passed desktop but selected two "Continue recording"
+buttons on mobile because both projects share one disposable test database and
+seeded the same historical date. The production list correctly displayed both
+records. Scope the fixture action to one matching record and verify its date;
+never assume a shared test day has exactly one session. No daily or production
+records were touched.

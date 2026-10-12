@@ -273,3 +273,34 @@ describe("Rhino model persistence and failure recovery", () => {
 		expect(actualFromTarget({ ...target, blocks: [] }).exercises).toEqual([]);
 	});
 });
+
+it("starts a manual historical record with explicit provenance and no fabricated actuals", async () => {
+	const hook = await model();
+	const target = sessionTarget();
+	put.mockResolvedValueOnce({ session: { ...sessionRecord(), status: "active", target } });
+	await act(() =>
+		hook.result.current.start(target, {
+			localDate: "2025-09-01",
+			sourcePlanRevision: 2,
+			recordOnly: true,
+		}),
+	);
+	expect(put).toHaveBeenLastCalledWith(
+		expect.stringMatching(/^\/sessions\//),
+		expect.objectContaining({
+			localDate: "2025-09-01",
+			sourcePlanRevision: 2,
+			status: "active",
+			actual: expect.objectContaining({
+				completedAsPlanned: false,
+				exercises: [
+					expect.objectContaining({
+						sets: [expect.objectContaining({ status: "not-recorded", reps: null, loadKg: null })],
+					}),
+				],
+			}),
+		}),
+	);
+	const body = put.mock.calls.at(-1)?.[1] as { actual: object };
+	expect(body.actual).not.toHaveProperty("timing");
+});
