@@ -21,7 +21,7 @@ async function navigate(page: Page, name: string) {
 }
 
 test("automated E2E is visible, isolated and locked in UI and server", async ({ page }) => {
-	await page.goto("/");
+	await page.goto("/today");
 	const group = page.locator(".environment-switch fieldset");
 	await expect(group).toBeVisible();
 	await expect(group.getByRole("radio", { name: "E2E", exact: true })).toBeChecked();
@@ -68,7 +68,7 @@ test("every exercise has a distinct consent-gated matching video", async ({ page
 		requests++;
 		await route.fulfill({ contentType: "text/html", body: "<p>Video fixture</p>" });
 	});
-	await page.goto("/");
+	await page.goto("/today");
 	await navigate(page, "动作实验室");
 	for (const [index, exercise] of EXERCISES.entries()) {
 		await page.locator(".library-nav button").nth(index).click();
@@ -100,7 +100,7 @@ test("unknown environment stops the application before any data requests", async
 		requests++;
 		return route.abort();
 	});
-	await page.goto("/");
+	await page.goto("/today");
 	await expect(page.getByRole("alert")).toHaveText(
 		"无法确认数据环境，已停止加载。请刷新页面或重新启动开发服务。",
 	);
@@ -138,7 +138,7 @@ test("approved branding covers startup, browser icons and the navigation rail", 
 		release();
 	}
 	await page.locator(".page-body").waitFor();
-	await expect(page).toHaveTitle("Rhino · 训练与记录");
+	await expect(page).toHaveTitle("训练日历 · Rhino");
 	for (const [selector, path, type] of [
 		['link[rel="icon"][type="image/png"]', "/favicon.png", "image/png"],
 		['link[rel="icon"][href$=".ico"]', "/favicon.ico", "image/"],
@@ -198,7 +198,7 @@ test("Chinese blue shell, owner avatar and opt-in YouTube reference", async ({
 			body: '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512"><circle cx="256" cy="256" r="256" fill="steelblue"/></svg>',
 		}),
 	);
-	await page.goto("/");
+	await page.goto("/today");
 	const menu = page.getByRole("button", { name: "打开导航", exact: true });
 	if (await menu.isVisible()) await menu.click();
 	await expect(page.getByRole("img", { name: "测试用户", exact: true })).toBeVisible();
@@ -256,7 +256,7 @@ test("Chinese blue shell, owner avatar and opt-in YouTube reference", async ({
 test("profile, measurements, plan, workout and reopened progress persist", async ({
 	page,
 }, testInfo) => {
-	await page.goto("/");
+	await page.goto("/today");
 	await navigate(page, "个人档案");
 	await page.getByLabel("生日", { exact: true }).fill("1990-02-28");
 	await page.getByRole("button", { name: "保存档案", exact: true }).click();
@@ -325,7 +325,7 @@ test("failed save keeps editor input, and reduced-motion fallback remains access
 			return original.call(this, type, ...args);
 		} as typeof original;
 	});
-	await page.goto("/");
+	await page.goto("/today");
 	await navigate(page, "个人档案");
 	await page.getByLabel("体重（kg）").fill("73.25");
 	await page.route("**/api/measurements/*", async (route) => {
@@ -355,7 +355,7 @@ test("Basalt shell geometry, collapse and drawer focus match the reference", asy
 	page,
 }, testInfo) => {
 	await page.emulateMedia({ reducedMotion: "reduce" });
-	await page.goto("/");
+	await page.goto("/today");
 	await page.locator(".page-body").waitFor();
 	const mobile = testInfo.project.name === "mobile";
 	const rail = page.getByRole("complementary", { name: "主导航侧栏" });
@@ -420,7 +420,7 @@ test("all pages retain responsive spacing and usable controls in both themes", a
 	page,
 }, testInfo) => {
 	await page.emulateMedia({ reducedMotion: "reduce" });
-	await page.goto("/");
+	await page.goto("/today");
 	const widths = testInfo.project.name === "mobile" ? [360, 390] : [768, 1024, 1440];
 	const pages = ["今日训练", "训练计划", "动作实验室", "我的进展", "个人档案"];
 	for (const theme of ["light", "dark"]) {
@@ -460,7 +460,7 @@ test("all pages retain responsive spacing and usable controls in both themes", a
 });
 
 test("navigation retains Basalt blur and motion in both themes", async ({ page }, info) => {
-	await page.goto("/");
+	await page.goto("/today");
 	await page.locator(".page-body").waitFor();
 	for (const theme of ["light", "dark"]) {
 		if (theme === "dark") await page.getByRole("button", { name: "切换主题", exact: true }).click();
@@ -507,7 +507,7 @@ test("all eleven previews render with unobstructed controls and scrubbed arm vie
 	const errors: string[] = [];
 	page.on("pageerror", (error) => errors.push(error.message));
 	await page.emulateMedia({ reducedMotion: "reduce" });
-	await page.goto("/");
+	await page.goto("/today");
 	await navigate(page, "动作实验室");
 	await expect(page.locator(".library-nav button")).toHaveCount(11);
 	if (testInfo.project.name === "mobile") {
@@ -565,7 +565,7 @@ test("all eleven previews render with unobstructed controls and scrubbed arm vie
 test("five added movements can replace an old draft and persist precise per-hand loads", async ({
 	page,
 }) => {
-	await page.goto("/");
+	await page.goto("/today");
 	await navigate(page, "个人档案");
 	await page.getByLabel("生日", { exact: true }).fill("1990-02-28");
 	await page.getByRole("button", { name: "保存档案", exact: true }).click();
@@ -595,8 +595,7 @@ test("five added movements can replace an old draft and persist precise per-hand
 		},
 	});
 	expect(seeded.ok()).toBe(true);
-	await page.reload();
-	await page.getByRole("button", { name: "继续训练", exact: true }).click();
+	await page.goto(`/sessions/${id}`);
 	for (const [index, name] of names.entries()) {
 		await page.getByRole("combobox", { name: "训练动作", exact: true }).nth(index).click();
 		await page.getByRole("option", { name, exact: true }).click();

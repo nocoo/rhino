@@ -1,5 +1,48 @@
 # Calendar and Installed Experience
 
+## Routes and navigation
+
+The calendar is the default workspace. `/` is replaced with `/calendar` without
+adding a history entry. The application uses native `pushState`/`replaceState`
+and `popstate`; Basalt breadcrumb links use the same navigation adapter.
+
+| Path | Content |
+| --- | --- |
+| `/calendar?date=YYYY-MM-DD` | Month calendar and selected-day agenda |
+| `/today` | Today's recommendations |
+| `/plans` | Weekly training plans |
+| `/library/:exerciseId` | Selected exercise preview; `/library` opens the first |
+| `/progress` | Measurements and progress |
+| `/profile` | Personal profile |
+| `/sessions/:id?from=...` | Independently loaded training record and parent path |
+
+Session deep links load their record by ID, including records beyond the home
+summary's one-year range. Failed requests remain retryable, and obsolete requests
+are aborted. Unknown paths show an explicit missing-page state. Only valid local
+page paths are accepted as session parents after URL normalization and origin
+validation. Cloudflare's existing SPA asset
+fallback serves direct page requests without changing API authentication.
+
+Browser back/forward, navigation actions and breadcrumbs preserve route state.
+Unsaved training uses the existing before-unload guards for a single confirmation;
+cancelled history traversal restores the current entry without remounting the
+editor. Navigation from a saving training session is blocked until it settles.
+The framework header contains ancestors and the current title; there is no second
+breadcrumb trail inside the page.
+Changing pages or records resets the content island's scroll position; selecting
+a date or exercise keeps the current page mounted. On phones, the selected-day
+agenda precedes the monthly archive so older records do not bury today's actions.
+The skip link focuses the main landmark without creating a fragment history
+entry, so keyboard accessibility cannot bypass the navigation guard's index.
+
+The desktop calendar is capped at 1040px with a compact month grid, completed-work
+statistics, a chronological monthly record list and selected-day agenda. Plan
+details start expanded on desktop and open on demand on mobile; start/manual-record
+actions stay ahead of the details.
+Statistics distinguish completed actuals from unfinished sessions and projected
+plans. Basalt 3.0.0 public APIs were checked against its installed guides and the
+local Basalt reference at `e3071c1`.
+
 ## Workout calendar
 
 The month view queries its complete six-week window instead of relying on the

@@ -1,6 +1,6 @@
 import { expect, type Page, test } from "@playwright/test";
 import type { SessionRecord, SessionTarget } from "../../src/domain/contracts";
-import { addDays, localDateInTimeZone } from "../../src/domain/dates";
+import { localDateInTimeZone } from "../../src/domain/dates";
 import { emptyActual } from "../../src/domain/session";
 import { sessionTarget, uuid } from "../helpers/fixtures";
 import { assertMarker, type TestRun } from "../helpers/isolation";
@@ -14,14 +14,8 @@ test.beforeEach(async () => {
 });
 
 async function openRecord(page: Page, id: string) {
-	const menu = page.getByRole("button", { name: "打开导航", exact: true });
-	if (await menu.isVisible()) await menu.click();
-	await page.getByRole("button", { name: "我的进展", exact: true }).click();
-	const date = localDateInTimeZone(new Date(), "Asia/Shanghai");
-	const response = await page.request.get(`/api/sessions?from=${addDays(date, -365)}&to=${date}`);
-	const { data } = await response.json();
-	const index = data.sessions.findIndex((item: SessionRecord) => item.id === id);
-	await page.getByRole("button", { name: "查看记录", exact: true }).nth(index).click();
+	await page.goto(`/sessions/${id}`);
+	await page.locator(".workout-topbar").waitFor();
 }
 
 async function createDraft(page: Page, target: SessionTarget) {
@@ -60,7 +54,7 @@ function expectReadableBackground(background: string) {
 test("immersive timeline persists every step, survives lost responses and ends visibly", async ({
 	page,
 }, info) => {
-	await page.goto("/");
+	await page.goto("/today");
 	await page.locator(".page-body").waitFor();
 	const target = sessionTarget();
 	const strength = target.blocks[0];
@@ -247,7 +241,7 @@ test("immersive timeline persists every step, survives lost responses and ends v
 
 test("green rest expires without starting the next set or changing records", async ({ page }) => {
 	await page.clock.install();
-	await page.goto("/");
+	await page.goto("/today");
 	await page.locator(".page-body").waitFor();
 	const target = sessionTarget();
 	target.blocks = [target.blocks[0]];
@@ -282,7 +276,7 @@ test("green rest expires without starting the next set or changing records", asy
 });
 
 test("untimed active overview does not claim a running clock", async ({ page }) => {
-	await page.goto("/");
+	await page.goto("/today");
 	await page.locator(".page-body").waitFor();
 	const target = sessionTarget();
 	const id = await createDraft(page, target);
@@ -317,7 +311,7 @@ for (const theme of ["light", "dark"]) {
 		page,
 	}, info) => {
 		if (info.project.name === "desktop") await page.setViewportSize({ width: 1440, height: 900 });
-		await page.goto("/");
+		await page.goto("/today");
 		await page.locator(".page-body").waitFor();
 		const target = sessionTarget();
 		Object.assign(target.blocks[0].exercises[0], {

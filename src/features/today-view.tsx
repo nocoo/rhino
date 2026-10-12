@@ -144,7 +144,7 @@ export function TodayView({
 									</div>
 									<p className="field-hint">{pending.localDate} · 已保存的训练草稿</p>
 								</div>
-								<Button variant="secondary" onClick={() => model.setActive(pending)}>
+								<Button variant="secondary" onClick={() => model.openSession(pending)}>
 									<Play size={14} /> 继续训练
 								</Button>
 							</LayerCard.Body>

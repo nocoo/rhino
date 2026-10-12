@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 import { type ReactElement, type ReactNode, useEffect, useRef, useState } from "react";
 import { version } from "../../package.json";
+import { type Page, pageLabels } from "../domain/routes";
 import { useBrowserChrome } from "../hooks/use-browser-chrome";
 import { EnvironmentSwitch } from "./environment-switch";
 
@@ -81,10 +82,11 @@ function HeaderIconLink({
 	);
 }
 
-export type Page = "today" | "calendar" | "plans" | "library" | "progress" | "profile";
+export type { Page } from "../domain/routes";
+
 const navigation = [
-	{ id: "today", label: "今日训练", icon: Activity },
 	{ id: "calendar", label: "训练日历", icon: CalendarDays },
+	{ id: "today", label: "今日训练", icon: Activity },
 	{ id: "plans", label: "训练计划", icon: CalendarDays },
 	{ id: "library", label: "动作实验室", icon: BookOpen },
 	{ id: "progress", label: "我的进展", icon: ChartNoAxesCombined },
@@ -97,12 +99,18 @@ export function Frame({
 	children,
 	identity,
 	immersive = false,
+	title,
+	breadcrumbs,
+	contentKey,
 }: {
 	page: Page;
 	navigate: (page: Page) => void;
 	children: ReactNode;
 	identity?: { name: string | null; avatar: string | null };
 	immersive?: boolean;
+	title?: string;
+	breadcrumbs?: { href: string; label: string }[];
+	contentKey: string;
 }) {
 	useBrowserChrome();
 	const profileName = identity?.name?.trim() || "我的训练日志";
@@ -244,13 +252,21 @@ export function Frame({
 	);
 	return (
 		<AppShell className={`basalt-ui rhino-app${immersive ? " workout-immersive" : ""}`}>
-			<AppSkipLink>跳到主要内容</AppSkipLink>
+			<AppSkipLink
+				onClick={(event) => {
+					event.preventDefault();
+					document.getElementById("main-content")?.focus();
+				}}
+			>
+				跳到主要内容
+			</AppSkipLink>
 			{!mobile && rail}
 			<AppMain id="main-content">
 				<AppHeader
 					density="compact"
 					className="rhino-header"
-					title={navigation.find((item) => item.id === page)?.label}
+					title={title ?? pageLabels[page]}
+					breadcrumbs={breadcrumbs}
 					leading={
 						mobile ? (
 							<Sheet open={open} onOpenChange={setOpen}>
@@ -313,7 +329,9 @@ export function Frame({
 					}
 				/>
 				<div className="island-wrap">
-					<ContentIsland className="rhino-island">{children}</ContentIsland>
+					<ContentIsland key={contentKey} className="rhino-island">
+						{children}
+					</ContentIsland>
 				</div>
 			</AppMain>
 		</AppShell>

@@ -82,6 +82,15 @@ beforeEach(() => {
 	});
 });
 afterEach(cleanup);
+it("notifies the router when a record is opened", async () => {
+	const opened = vi.fn();
+	const hook = renderHook(() => useRhinoModel(opened));
+	await waitFor(() => expect(hook.result.current.loading).toBe(false));
+	const record = sessionRecord();
+	act(() => hook.result.current.openSession(record));
+	expect(opened).toHaveBeenCalledWith(record);
+	expect(hook.result.current.active).toBe(record);
+});
 async function model() {
 	const hook = renderHook(useRhinoModel);
 	await waitFor(() => expect(hook.result.current.loading).toBe(false));

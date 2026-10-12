@@ -94,8 +94,7 @@ export function SessionView({
 				? cardioNames[step.cardio.role]
 				: "本次安排已走完";
 	const leave = () => {
-		if (!model.busy && (!workout.dirty || window.confirm("还有未保存的修改，确定离开吗？")))
-			close();
+		if (!model.busy) close();
 	};
 	return (
 		<div

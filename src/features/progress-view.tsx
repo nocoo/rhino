@@ -213,7 +213,11 @@ export function ProgressView({
 												</span>
 											</TableCell>
 											<TableCell>
-												<Button size="sm" variant="ghost" onClick={() => model.setActive(session)}>
+												<Button
+													size="sm"
+													variant="ghost"
+													onClick={() => model.openSession(session)}
+												>
 													查看记录
 													<ArrowUpRight size={13} />
 												</Button>

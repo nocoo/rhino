@@ -33,3 +33,20 @@ export function recordedWork(session: SessionRecord) {
 			session.actual?.cardioSegments.reduce((sum, segment) => sum + segment.actualMinutes, 0) ?? 0,
 	};
 }
+
+export function monthlyActivity(month: string, sessions: SessionRecord[]) {
+	const records = sessions
+		.filter((item) => item.localDate.startsWith(month))
+		.sort(
+			(a, b) => b.localDate.localeCompare(a.localDate) || b.createdAt.localeCompare(a.createdAt),
+		);
+	const completed = records.filter((item) => item.status === "completed");
+	const actual = completed.map(recordedWork);
+	return {
+		records,
+		completed: completed.length,
+		pending: records.filter((item) => item.status === "draft" || item.status === "active").length,
+		sets: actual.reduce((sum, item) => sum + item.sets, 0),
+		minutes: actual.reduce((sum, item) => sum + item.minutes, 0),
+	};
+}

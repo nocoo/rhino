@@ -1,8 +1,10 @@
 import { Button, LayerCard } from "@nocoo/basalt";
 import { AlertTriangle, CheckCircle2, RefreshCw } from "lucide-react";
-import { Component, type ReactNode, useState } from "react";
+import { Component, type ReactNode, useEffect } from "react";
 import { Frame, type Page } from "./components/frame";
-import type { StrengthExerciseId } from "./domain/contracts";
+import { HistoryLinks } from "./components/history-links";
+import { exerciseNames } from "./components/workout-summary";
+import { calendarPath, pageLabels, parseRoute, sessionPath } from "./domain/routes";
 import { CalendarView } from "./features/calendar-view";
 import { LibraryView } from "./features/library-view";
 import { PlansView } from "./features/plans-view";
@@ -12,6 +14,8 @@ import { SessionView } from "./features/session-view";
 import { TodayView } from "./features/today-view";
 import { useIdentity } from "./features/use-identity";
 import { useRhinoModel } from "./features/use-rhino-model";
+import { confirmNavigation, useHistory } from "./hooks/use-history";
+import { useRoutedSession } from "./hooks/use-routed-session";
 
 class ErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
 	state = { failed: false };
@@ -42,75 +46,111 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean
 }
 
 function Workspace() {
-	const model = useRhinoModel();
+	const model = useRhinoModel((session) => router.navigate(sessionPath(session.id, router.href)));
 	const identity = useIdentity();
-	const [page, setPage] = useState<Page>("today");
-	const [calendarDate, setCalendarDate] = useState<string | null>(null);
-	const [selected, setSelected] = useState<StrengthExerciseId>("goblet-squat");
-	const navigate = (next: Page) => {
-		if (model.active && !window.confirm("离开训练页面？请先保存未提交的修改。")) return;
-		model.setActive(null);
-		setPage(next);
-	};
+	const router = useHistory(() => confirmNavigation(Boolean(route.sessionId && model.busy)));
+	const route = parseRoute(router.href);
+	const page = route.page;
+	const sessionRoute = useRoutedSession(route.sessionId, model.active, model.setActive);
+	const active = model.active?.id === route.sessionId ? model.active : null;
+	const navigate = (next: Page) => router.navigate(`/${next}`);
+	const breadcrumbs =
+		page === "calendar" ? [] : [{ href: "/calendar", label: pageLabels.calendar }];
+	if (route.sessionId) breadcrumbs.push({ href: route.parent, label: pageLabels[page] });
+	else if (route.exercise) breadcrumbs.push({ href: "/library", label: pageLabels.library });
+	const title =
+		route.kind === "missing"
+			? "页面不存在"
+			: route.sessionId
+				? "训练记录"
+				: route.exercise
+					? exerciseNames[route.exercise]
+					: pageLabels[page];
+	useEffect(() => {
+		document.title = `${title} · Rhino`;
+	}, [title]);
 	return (
-		<Frame
-			page={page}
-			navigate={navigate}
-			identity={identity}
-			immersive={model.active?.status === "active"}
-		>
-			{model.error && !model.active && (
-				<div role="alert" className="error-message" style={{ marginBottom: 16 }}>
-					<span className="banner-content">
-						<AlertTriangle size={15} aria-hidden="true" />
-						<span>{model.error}</span>
-					</span>
-					<Button size="sm" variant="ghost" onClick={() => void model.reload()}>
-						<RefreshCw size={13} /> 重新加载
-					</Button>
-				</div>
-			)}
-			{model.message && !model.active && (
-				<p className="status-message" role="status" style={{ marginBottom: 16 }}>
-					<CheckCircle2 size={15} aria-hidden="true" />
-					<span>{model.message}</span>
-				</p>
-			)}
-			{model.loading ? (
-				<LayerCard.Loading label="正在加载私人训练空间" />
-			) : model.active ? (
-				<SessionView
-					key={model.active.id}
-					model={model}
-					session={model.active}
-					close={() => model.setActive(null)}
-				/>
-			) : page === "today" ? (
-				<TodayView
-					model={model}
-					navigate={navigate}
-					selectExercise={(id) => {
-						setSelected(id);
-						setPage("library");
-					}}
-				/>
-			) : page === "calendar" ? (
-				<CalendarView
-					model={model}
-					navigate={navigate}
-					date={calendarDate ?? model.today}
-					selectDate={setCalendarDate}
-				/>
-			) : page === "plans" ? (
-				<PlansView model={model} />
-			) : page === "library" ? (
-				<LibraryView selected={selected} select={setSelected} />
-			) : page === "progress" ? (
-				<ProgressView model={model} openProfile={() => setPage("profile")} />
-			) : (
-				<ProfileView key={model.profile?.profile?.version ?? 0} model={model} />
-			)}
-		</Frame>
+		<HistoryLinks navigate={router.navigate}>
+			<Frame
+				page={page}
+				navigate={navigate}
+				identity={identity}
+				immersive={active?.status === "active"}
+				title={title}
+				breadcrumbs={breadcrumbs}
+				contentKey={`${page}/${route.sessionId ?? route.kind}`}
+			>
+				{model.error && !active && (
+					<div role="alert" className="error-message" style={{ marginBottom: 16 }}>
+						<span className="banner-content">
+							<AlertTriangle size={15} aria-hidden="true" />
+							<span>{model.error}</span>
+						</span>
+						<Button size="sm" variant="ghost" onClick={() => void model.reload()}>
+							<RefreshCw size={13} /> 重新加载
+						</Button>
+					</div>
+				)}
+				{model.message && !active && (
+					<p className="status-message" role="status" style={{ marginBottom: 16 }}>
+						<CheckCircle2 size={15} aria-hidden="true" />
+						<span>{model.message}</span>
+					</p>
+				)}
+				{route.kind === "missing" ? (
+					<LayerCard>
+						<h2>没有这个页面</h2>
+						<p>地址可能已失效，请返回训练日历。</p>
+						<Button onClick={() => navigate("calendar")}>返回训练日历</Button>
+					</LayerCard>
+				) : model.loading ? (
+					<LayerCard.Loading label="正在加载私人训练空间" />
+				) : route.sessionId && !active ? (
+					sessionRoute.error ? (
+						<LayerCard>
+							<p role="alert">{sessionRoute.error}</p>
+							<Button onClick={sessionRoute.retry}>重试加载训练</Button>
+							<Button variant="secondary" onClick={() => router.navigate(route.parent)}>
+								返回上一页
+							</Button>
+						</LayerCard>
+					) : (
+						<LayerCard.Loading label="正在加载训练记录" />
+					)
+				) : active ? (
+					<SessionView
+						key={active.id}
+						model={model}
+						session={active}
+						close={() => router.navigate(route.parent)}
+					/>
+				) : page === "today" ? (
+					<TodayView
+						model={model}
+						navigate={navigate}
+						selectExercise={(id) => router.navigate(`/library/${id}`)}
+					/>
+				) : page === "calendar" ? (
+					<CalendarView
+						model={model}
+						navigate={navigate}
+						date={route.date ?? model.today}
+						selectDate={(date) => router.navigate(calendarPath(date))}
+					/>
+				) : page === "plans" ? (
+					<PlansView model={model} />
+				) : page === "library" ? (
+					<LibraryView
+						selected={route.exercise ?? "goblet-squat"}
+						select={(id) => router.navigate(`/library/${id}`)}
+					/>
+				) : page === "progress" ? (
+					<ProgressView model={model} openProfile={() => navigate("profile")} />
+				) : (
+					<ProfileView key={model.profile?.profile?.version ?? 0} model={model} />
+				)}
+			</Frame>
+		</HistoryLinks>
 	);
 }
 

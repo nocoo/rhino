@@ -1,4 +1,10 @@
 import { Button, Input, LayerCard } from "@nocoo/basalt";
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from "@nocoo/basalt/components/accordion";
 import { PageHeader } from "@nocoo/basalt/components/page-header";
 import { SectionRule } from "@nocoo/basalt/components/section-rule";
 import {
@@ -44,20 +50,61 @@ export function CalendarView({
 	const slot = day?.slot;
 	const plan = day?.plan;
 	const records = calendar.sessions.filter((item) => item.localDate === calendar.selected);
-	const completed = calendar.sessions.filter(
-		(item) => item.localDate.startsWith(calendar.month) && item.status === "completed",
-	).length;
+	const activity = calendar.activity;
+	const unavailable = calendar.loading || !!calendar.error;
 	return (
 		<div className="page-body calendar-page">
 			<PageHeader
-				title="每一次，都算数。"
-				description="从安排到完成，在日历里串起你的训练。"
+				title="训练日历"
+				description="看安排，记训练，回顾每一次进步。"
 				actions={
 					<Button variant="secondary" onClick={() => navigate("plans")}>
 						<CalendarDays size={16} /> 管理计划
 					</Button>
 				}
 			/>
+			<section className="calendar-stats" aria-label="本月已完成训练统计">
+				<div>
+					<Check size={17} />
+					<span>
+						已完成
+						<strong>
+							{unavailable ? "—" : activity.completed}
+							<small>场</small>
+						</strong>
+					</span>
+				</div>
+				<div>
+					<Dumbbell size={17} />
+					<span>
+						力量记录
+						<strong>
+							{unavailable ? "—" : activity.sets}
+							<small>组</small>
+						</strong>
+					</span>
+				</div>
+				<div>
+					<Clock3 size={17} />
+					<span>
+						有氧记录
+						<strong>
+							{unavailable ? "—" : Math.round(activity.minutes)}
+							<small>分钟</small>
+						</strong>
+					</span>
+				</div>
+				<div>
+					<Play size={17} />
+					<span>
+						待继续
+						<strong>
+							{unavailable ? "—" : activity.pending}
+							<small>场</small>
+						</strong>
+					</span>
+				</div>
+			</section>
 			<div className="calendar-layout">
 				<section aria-label="训练月历" className="calendar-month">
 					<div className="calendar-toolbar">
@@ -124,6 +171,15 @@ export function CalendarView({
 										{done && <Check size={14} />}
 										{pending && <Clock3 size={12} />}
 									</span>
+									<span className="calendar-day-note" aria-hidden="true">
+										{done
+											? "已完成"
+											: pending
+												? "待继续"
+												: item.slot
+													? emphasisNames[item.slot.emphasis]
+													: ""}
+									</span>
 								</Button>
 							);
 						})}
@@ -144,7 +200,7 @@ export function CalendarView({
 							? "正在读取本月记录…"
 							: calendar.error
 								? "本月记录暂不可用"
-								: `本月已完成 ${completed} 场训练`}
+								: `本月已完成 ${activity.completed} 场训练`}
 					</p>
 					<p className="field-hint">计划按采用日期与每周安排展开；未来安排是预期，不代表完成。</p>
 				</section>
@@ -211,7 +267,7 @@ export function CalendarView({
 										</div>
 									</LayerCard.Body>
 									<LayerCard.Footer>
-										<Button variant="secondary" onClick={() => model.setActive(session)}>
+										<Button variant="secondary" onClick={() => model.openSession(session)}>
 											{session.status === "completed" || session.status === "abandoned"
 												? "查看训练结果"
 												: "继续记录"}
@@ -228,7 +284,13 @@ export function CalendarView({
 					)}
 					{slot && plan ? (
 						<>
-							<WorkoutSummary target={slot.target} subtitle={`当日计划 · v${plan.revision}`} />
+							<div className="calendar-plan-title">
+								<span className="eyebrow">当日安排 · v{plan.revision}</span>
+								<h2>{emphasisNames[slot.emphasis]}</h2>
+								<p className="field-hint">
+									约 {slot.timeBudgetMinutes} 分钟 · 按时间轴完成热身、训练与恢复
+								</p>
+							</div>
 							{calendar.selected <= model.today && (
 								<div className="calendar-start-actions">
 									{calendar.selected === model.today && (
@@ -259,6 +321,22 @@ export function CalendarView({
 									</Button>
 								</div>
 							)}
+							<Accordion
+								type="single"
+								collapsible
+								key={`${calendar.selected}-${plan.revision}`}
+								defaultValue={window.matchMedia("(min-width: 1001px)").matches ? "plan" : undefined}
+							>
+								<AccordionItem value="plan">
+									<AccordionTrigger>动作与训练安排</AccordionTrigger>
+									<AccordionContent>
+										<WorkoutSummary
+											target={slot.target}
+											subtitle={`当日计划 · v${plan.revision}`}
+										/>
+									</AccordionContent>
+								</AccordionItem>
+							</Accordion>
 						</>
 					) : (
 						<LayerCard>
@@ -277,6 +355,42 @@ export function CalendarView({
 								}
 							/>
 						</LayerCard>
+					)}
+				</section>
+				<section className="calendar-history" aria-label="本月训练记录">
+					<SectionRule title="本月记录" hint="按日期倒序" />
+					{unavailable ? (
+						<p className="field-hint">
+							{calendar.loading ? "正在读取记录…" : "记录暂不可用，请重试日历。"}
+						</p>
+					) : activity.records.length ? (
+						activity.records.map((session) => (
+							<div className="calendar-history-row" key={session.id}>
+								<Button
+									variant="ghost"
+									className="calendar-history-date"
+									aria-label={`定位到 ${session.localDate}`}
+									onClick={() => calendar.select(session.localDate)}
+								>
+									{session.localDate.slice(5)}
+								</Button>
+								<div>
+									<strong>{emphasisNames[session.target.emphasis]}</strong>
+									<span className="field-hint">{statusNames[session.status]}</span>
+								</div>
+								<Button
+									size="sm"
+									variant="secondary"
+									onClick={() => model.openSession(session)}
+									aria-label={`打开 ${session.localDate} 的训练记录`}
+								>
+									打开
+									<ArrowUpRight size={14} />
+								</Button>
+							</div>
+						))
+					) : (
+						<p className="field-hint">这个月还没有记录。选择日期开始训练，或补记实际完成量。</p>
 					)}
 				</section>
 			</div>

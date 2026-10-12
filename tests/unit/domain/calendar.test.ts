@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { calendarDays, recordedWork, shiftMonth } from "../../../src/domain/calendar";
+import {
+	calendarDays,
+	monthlyActivity,
+	recordedWork,
+	shiftMonth,
+} from "../../../src/domain/calendar";
 import type { PlanRevisionRecord } from "../../../src/domain/contracts";
 import { planInput, sessionRecord, sessionTarget, uuid } from "../../helpers/fixtures";
 
@@ -28,6 +33,22 @@ function calendarPlan(revision = 1): PlanRevisionRecord {
 }
 
 describe("workout calendar", () => {
+	it("summarizes completed actuals and sorts records without mutating the input", () => {
+		const older = { ...sessionRecord(), localDate: "2026-10-01", status: "completed" as const };
+		const newer = { ...sessionRecord(), localDate: "2026-10-12", status: "active" as const };
+		const sameDay = { ...older, localDate: newer.localDate, createdAt: "2026-10-12T23:00:00Z" };
+		const draft = { ...sessionRecord(), localDate: "2026-10-13" };
+		const records = [older, newer, sameDay, draft, { ...older, localDate: "2026-09-30" }];
+		const result = monthlyActivity("2026-10", records);
+		expect(result).toMatchObject({ completed: 2, pending: 2, sets: 0, minutes: 0 });
+		expect(result.records.map((item) => item.id)).toEqual([
+			draft.id,
+			sameDay.id,
+			newer.id,
+			older.id,
+		]);
+		expect(records[0]).toBe(older);
+	});
 	it("builds Monday-first leap and cross-year month grids", () => {
 		expect(shiftMonth("2026-12", 1)).toBe("2027-01");
 		expect(shiftMonth("2026-01", -1)).toBe("2025-12");

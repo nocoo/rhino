@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { calendarDays, shiftMonth } from "../domain/calendar";
+import { calendarDays, monthlyActivity, shiftMonth } from "../domain/calendar";
 import type { GetSessionsResponse, SessionRecord } from "../domain/contracts";
 import { isValidMonth } from "../domain/dates";
 import { api } from "../lib/api";
@@ -10,7 +10,7 @@ export function useCalendarModel(
 	selected: string,
 	setSelected: (date: string) => void,
 ) {
-	const [month, setMonth] = useState(selected.slice(0, 7));
+	const month = selected.slice(0, 7);
 	const [attempt, setAttempt] = useState(0);
 	const [result, setResult] = useState<{
 		range: string;
@@ -44,7 +44,6 @@ export function useCalendarModel(
 	const current = result?.range === range && result.attempt === attempt ? result : null;
 	function selectMonth(value: string) {
 		if (!isValidMonth(value) || value < "1000-01" || value > "9998-12") return;
-		setMonth(value);
 		setSelected(`${value}-01`);
 	}
 	return {
@@ -54,11 +53,11 @@ export function useCalendarModel(
 		loading: !current,
 		error: current?.error ?? "",
 		sessions: current?.sessions ?? [],
+		activity: monthlyActivity(month, current?.sessions ?? []),
 		select: setSelected,
 		selectMonth,
 		move: (offset: number) => selectMonth(shiftMonth(month, offset)),
 		today: () => {
-			setMonth(model.today.slice(0, 7));
 			setSelected(model.today);
 		},
 		retry: () => setAttempt((value) => value + 1),

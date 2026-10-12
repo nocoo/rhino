@@ -23,7 +23,7 @@ import { heartRateGuidance } from "../domain/metrics";
 import { emptyActual } from "../domain/session";
 import { api, put } from "../lib/api";
 
-export function useRhinoModel() {
+export function useRhinoModel(onOpenSession?: (session: SessionRecord) => void) {
 	const [profile, setProfile] = useState<GetProfileResponse | null>(null);
 	const [plans, setPlans] = useState<GetPlansResponse>({ current: null, history: [] });
 	const [measurements, setMeasurements] = useState<GetMeasurementsResponse["measurements"]>([]);
@@ -187,7 +187,7 @@ export function useRhinoModel() {
 					expectedVersion: 0,
 					mutationId: metadata.mutationId,
 				});
-				setActive(result.session);
+				openSession(result.session);
 				setSessions((previous) => [
 					result.session,
 					...previous.filter((item) => item.id !== result.session.id),
@@ -198,6 +198,10 @@ export function useRhinoModel() {
 				? "请填写实际完成量，确认后结束保存；补记不生成计时。"
 				: "训练准备已保存，开始前仍可调整",
 		);
+	}
+	function openSession(session: SessionRecord) {
+		setActive(session);
+		onOpenSession?.(session);
 	}
 
 	async function saveSession(
@@ -249,6 +253,7 @@ export function useRhinoModel() {
 		limitations,
 		active,
 		setActive,
+		openSession,
 		busy,
 		loading,
 		error,

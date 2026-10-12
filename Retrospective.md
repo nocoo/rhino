@@ -310,3 +310,32 @@ An application `h-9 w-9` override displaced Avatar's built-in token sizing, but
 those utility classes were absent from the standalone stylesheet. A small test
 image hid the resulting intrinsic-size bug. Remove the redundant override and
 test a 512px identity image against Basalt's default 36px avatar geometry.
+
+## 2026-10-13 — Route fixtures and pane targeting
+
+Native routing deliberately preserves the profile or session on reload. Older
+browser fixtures assumed every reload returned home and selected an arbitrary
+pending record. Target the created session ID explicitly and assert the new page
+title. Shared desktop/mobile fixture dates also require selecting by identity,
+not the first record on that day.
+
+Herdr's inherited current-pane context resolved to another workspace during the
+review launch. The newly created empty pane was immediately closed; no existing
+agent or file was changed. Use the verified live Rhino pane ID for control calls
+and confirm the resulting workspace and split proportions before launching work.
+
+## 2026-10-13 — Native URL and skip-link review
+
+The first parent-path check accepted a leading slash without validating the
+parsed origin. Backslashes and normalized double slashes can turn apparent local
+paths into external URLs. Validate the URL origin and keep only canonical local
+destinations. The native skip-link fragment also bypassed the router's history
+index; focus the main landmark without adding a navigation entry. Cover malformed
+parents and keyboard skip activation before cancelling dirty-editor navigation.
+
+Editing shared UI files during the Vite-backed L3 run invalidated its stable-code
+assumption; interactive controls detached or returned to their initial view while
+the runner was using them. Finish source edits before the final full browser run.
+Visual inspection also caught retained island scrolling across pages and clipped
+date labels. Reset the island at page/record boundaries and assert visible titles
+and complete label geometry, not merely successful route changes.
