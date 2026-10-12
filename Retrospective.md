@@ -220,3 +220,14 @@ current heading out of view. Explicit trigger focus restoration and a compact
 desktop timer/control grid address these defects. Keep viewport assertions for
 the heading, total clock and completion action alongside persistence checks;
 successful HTTP writes alone do not prove a usable training screen.
+
+A final browser repeat exposed a pre-existing sidebar-image race: the assertion
+read `complete` immediately after opening the mobile drawer, before the image
+finished loading. It now waits for the same readiness predicate with Playwright's
+normal assertion deadline. The same run also hit three mobile timeouts while
+host load averages exceeded 100, after earlier complete and focused runs passed.
+Do not attribute every timeout to application code, increase deadlines to hide
+it, or stop unrelated host processes. Keep the failed run distinct from earlier
+passing evidence and repeat the affected checks separately.
+The focused replay passed the corrected image check; the three mobile timeouts
+persisted. Keep mobile replay pending rather than reporting the latest run green.

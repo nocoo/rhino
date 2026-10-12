@@ -143,9 +143,11 @@ test("approved branding covers startup, browser icons and the navigation rail", 
 	await expect(logo).toHaveAttribute("src", "/logo-24.png");
 	await expect(logo).toHaveCSS("width", "24px");
 	await expect(logo).toHaveCSS("height", "24px");
-	expect(
-		await logo.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0),
-	).toBe(true);
+	await expect
+		.poll(() =>
+			logo.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0),
+		)
+		.toBe(true);
 	await expect(page.locator(".brand-name")).toHaveText("Rhino");
 	for (const theme of ["light", "dark"]) {
 		if (theme === "dark") {
