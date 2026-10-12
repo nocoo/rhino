@@ -303,3 +303,10 @@ insets remain distinct from native Safari acceptance. Inspect the screenshot as
 well as color assertions: the first landscape pass retained desktop navigation
 and left too little room for the clock. Keep touch training immersive in both
 orientations and assert a usable, scrollable content viewport.
+
+## 2026-10-12 — Sidebar avatar intrinsic sizing
+
+An application `h-9 w-9` override displaced Avatar's built-in token sizing, but
+those utility classes were absent from the standalone stylesheet. A small test
+image hid the resulting intrinsic-size bug. Remove the redundant override and
+test a 512px identity image against Basalt's default 36px avatar geometry.

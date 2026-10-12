@@ -225,7 +225,7 @@ export function Frame({
 						name={profileName}
 						email="私人训练空间"
 						avatar={
-							<Avatar className="h-9 w-9 shrink-0">
+							<Avatar>
 								{profileAvatar ? <AvatarImage src={profileAvatar} alt={profileName} /> : null}
 								<AvatarFallback>
 									{profileName.trim().slice(0, 1) || <ShieldCheck size={18} strokeWidth={1.5} />}

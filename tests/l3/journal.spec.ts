@@ -195,13 +195,16 @@ test("Chinese blue shell, owner avatar and opt-in YouTube reference", async ({
 	await page.route("https://lizheng.blog/rhino-test-avatar.svg", (route) =>
 		route.fulfill({
 			contentType: "image/svg+xml",
-			body: '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36"><circle cx="18" cy="18" r="18" fill="steelblue"/></svg>',
+			body: '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512"><circle cx="256" cy="256" r="256" fill="steelblue"/></svg>',
 		}),
 	);
 	await page.goto("/");
 	const menu = page.getByRole("button", { name: "打开导航", exact: true });
 	if (await menu.isVisible()) await menu.click();
 	await expect(page.getByRole("img", { name: "测试用户", exact: true })).toBeVisible();
+	const avatar = page.getByRole("img", { name: "测试用户", exact: true });
+	await expect(avatar).toHaveCSS("width", "36px");
+	await expect(avatar).toHaveCSS("height", "36px");
 	await page.getByRole("button", { name: "动作实验室", exact: true }).click();
 	await expect(
 		page.getByRole("link", { name: "Rhino 的 GitHub 仓库", exact: true }),
