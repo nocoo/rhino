@@ -195,7 +195,7 @@ test("Chinese blue shell, owner avatar and opt-in YouTube reference", async ({
 	const accent = await page.evaluate(() =>
 		getComputedStyle(document.documentElement).getPropertyValue("--basalt-primary"),
 	);
-	expect(accent.trim()).toBe("216 58% 36%");
+	expect(accent.trim()).toBe("215 72% 39%");
 	await page.locator(".library-nav button").nth(1).click();
 	await expect(page.getByText("腘绳肌", { exact: true })).toBeVisible();
 	const selected = page.locator('.library-item[aria-pressed="true"]');
@@ -346,14 +346,14 @@ test("Basalt shell geometry, collapse and drawer focus match the reference", asy
 		const rect = element.getBoundingClientRect();
 		return { top: rect.top, left: rect.left, padding: style.paddingLeft };
 	});
-	expect(geometry).toEqual({ top: 56, left: mobile ? 8 : 272, padding: mobile ? "12px" : "20px" });
+	expect(geometry).toEqual({ top: 52, left: mobile ? 8 : 272, padding: mobile ? "16px" : "32px" });
 	if (mobile) await menu.click();
 	await expect(rail).toHaveCSS("width", "260px");
 	const logo = await page.locator(".brand-symbol").boundingBox();
 	const item = rail.getByRole("button", { name: "今日训练", exact: true });
-	expect((await item.boundingBox())?.x).toBe(12);
+	expect((await item.boundingBox())?.x).toBe(8);
 	await expect(item).toHaveCSS("font-size", "14px");
-	await expect(item).toHaveCSS("height", "40px");
+	await expect(item).toHaveCSS("height", "34px");
 	if (mobile) {
 		await expect(page.getByRole("dialog")).toHaveCSS("width", "260px");
 		await page.keyboard.press("Escape");
@@ -385,7 +385,7 @@ test("Basalt shell geometry, collapse and drawer focus match the reference", asy
 		await expect(page.getByRole("button", { name: "收起侧栏", exact: true })).toBeFocused();
 	}
 	await expect(page.getByLabel("生日", { exact: true })).toHaveCSS("height", "36px");
-	await expect(page.getByLabel("生日", { exact: true }).locator("..")).toHaveCSS("gap", "6px");
+	await expect(page.getByLabel("生日", { exact: true }).locator("..")).toHaveCSS("gap", "8px");
 	await expect(page.locator(".profile-layout form").first().locator("..")).toHaveCSS(
 		"padding",
 		"16px",
@@ -434,6 +434,47 @@ test("all pages retain responsive spacing and usable controls in both themes", a
 						path: testInfo.outputPath(`${theme}-${index}.png`),
 						animations: "disabled",
 					});
+			}
+		}
+	}
+});
+
+test("navigation retains Basalt blur and motion in both themes", async ({ page }, info) => {
+	await page.goto("/");
+	await page.locator(".page-body").waitFor();
+	for (const theme of ["light", "dark"]) {
+		if (theme === "dark") await page.getByRole("button", { name: "切换主题", exact: true }).click();
+		for (const reducedMotion of ["no-preference", "reduce"] as const) {
+			await page.emulateMedia({ reducedMotion });
+			if (info.project.name === "mobile") {
+				const menu = page.getByRole("button", { name: "打开导航", exact: true });
+				await menu.click();
+				const overlay = page.locator(".basalt-sheet-overlay");
+				await expect(overlay).toHaveCSS("backdrop-filter", "blur(6px)");
+				await expect(page.getByRole("dialog")).toHaveCSS(
+					"animation-name",
+					reducedMotion === "reduce" ? "none" : "basalt-sheet-in",
+				);
+				if (reducedMotion === "no-preference") {
+					await expect(page.getByRole("dialog")).toHaveCSS("animation-duration", "0.35s");
+					await page.screenshot({ path: info.outputPath(`drawer-${theme}.png`) });
+				}
+				await page.keyboard.press("Escape");
+				await expect(page.getByRole("dialog")).toHaveCount(0);
+				await expect(menu).toBeFocused();
+			} else {
+				const rail = page.locator(".rhino-sidebar");
+				await expect(rail).toHaveCSS(
+					"transition-property",
+					reducedMotion === "reduce" ? "none" : "width",
+				);
+				if (reducedMotion === "no-preference")
+					await expect(rail).toHaveCSS("transition-duration", "0.18s");
+				await page.getByRole("button", { name: "收起侧栏", exact: true }).click();
+				await expect(rail).toHaveCSS("width", "68px");
+				await expect(page.locator(".sidebar-expand")).toBeFocused();
+				await page.getByRole("button", { name: "展开侧栏", exact: true }).click();
+				await expect(rail).toHaveCSS("width", "260px");
 			}
 		}
 	}

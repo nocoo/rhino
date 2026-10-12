@@ -16,7 +16,7 @@ import {
 	Play,
 	Save,
 } from "lucide-react";
-import { Suspense, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { Choice, Field } from "../components/fields";
 import { NumberStepper } from "../components/number-stepper";
 import { emphasisNames, exerciseNames } from "../components/workout-summary";
@@ -40,12 +40,18 @@ export function SessionView({
 	const workout = useWorkoutModel(session, model);
 	const { editor, step, entry } = workout;
 	const [preview, setPreview] = useState<StrengthExerciseId | null>(null);
+	const [previewOpen, setPreviewOpen] = useState(false);
 	const [ending, setEnding] = useState(false);
 	const previewTrigger = useRef<HTMLElement | null>(null);
 	const endingTrigger = useRef<HTMLElement | null>(null);
+	const pageRoot = useRef<HTMLDivElement | null>(null);
+	useEffect(() => {
+		pageRoot.current?.closest("[data-basalt-island]")?.scrollTo({ top: 0 });
+	}, []);
 	const openPreview = (id: StrengthExerciseId, trigger: HTMLElement) => {
 		previewTrigger.current = trigger;
 		setPreview(id);
+		setPreviewOpen(true);
 	};
 	const openEnding = (trigger: HTMLElement) => {
 		endingTrigger.current = trigger;
@@ -66,7 +72,13 @@ export function SessionView({
 			close();
 	};
 	return (
-		<div className={`workout-page${showPlan ? " workout-plan-page" : ""}`}>
+		<div
+			ref={pageRoot}
+			className={`workout-page${showPlan ? " workout-plan-page" : " workout-live"}`}
+			data-workout-tone={
+				showPlan ? undefined : step?.kind === "cardio" ? step.cardio.role : "strength"
+			}
+		>
 			<header className="workout-topbar">
 				<Button variant="ghost" size="sm" disabled={model.busy} onClick={leave}>
 					<ArrowLeft size={16} /> 离开
@@ -100,13 +112,22 @@ export function SessionView({
 					<>
 						<div className="workout-plan-heading">
 							<h1>
-								{prep ? "先看安排，再开始。" : finished ? "每一组，都留下记录。" : "本场计划与记录"}
+								{prep
+									? emphasisNames[editor.target.emphasis]
+									: finished
+										? "训练回顾"
+										: "本场计划与记录"}
 							</h1>
 							<p className="field-hint">
-								{emphasisNames[editor.target.emphasis]} ·{" "}
-								{finished && editor.actual.timing
-									? `总用时 ${clockLabel(workout.totalSeconds)}`
-									: "按时间顺序，从热身到放松"}
+								{prep
+									? "按时间顺序，从热身到放松；确认后开始计时。"
+									: finished
+										? editor.actual.timing
+											? `总用时 ${clockLabel(workout.totalSeconds)}`
+											: "本场未计时，可回顾与修正实际记录。"
+										: editor.actual.timing
+											? "查看与调整记录期间，总用时继续累计。"
+											: "本场尚未计时，可查看与修正实际记录。"}
 							</p>
 						</div>
 						{finished && (
@@ -160,8 +181,10 @@ export function SessionView({
 							<div className="current-heading">
 								<span className="eyebrow">
 									{step?.kind === "strength"
-										? `第 ${step.set.setIndex} / ${step.exercise.workingSets.length} 组`
-										: "有氧与恢复"}
+										? `力量训练 · 第 ${step.set.setIndex} / ${step.exercise.workingSets.length} 组`
+										: step
+											? cardioNames[step.cardio.role]
+											: "训练完成"}
 								</span>
 								<h1>{title}</h1>
 								<p>
@@ -223,7 +246,6 @@ export function SessionView({
 											max={500}
 											step={5}
 											unit={step.exercise.loadConvention === "per-hand" ? "kg/只" : "kg 总重"}
-											vertical
 											disabled={model.busy}
 											onChange={workout.setLoadKg}
 										/>
@@ -401,12 +423,7 @@ export function SessionView({
 					</Button>
 				)}
 			</footer>
-			<Dialog
-				open={preview !== null}
-				onOpenChange={(open) => {
-					if (!open) setPreview(null);
-				}}
-			>
+			<Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
 				<DialogContent
 					className="workout-preview"
 					size="lg"
@@ -429,7 +446,7 @@ export function SessionView({
 							</ol>
 						</>
 					)}
-					<Button onClick={() => setPreview(null)}>回到训练</Button>
+					<Button onClick={() => setPreviewOpen(false)}>回到训练</Button>
 				</DialogContent>
 			</Dialog>
 			<Dialog open={ending} onOpenChange={setEnding}>

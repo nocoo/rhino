@@ -231,3 +231,33 @@ it, or stop unrelated host processes. Keep the failed run distinct from earlier
 passing evidence and repeat the affected checks separately.
 The focused replay passed the corrected image check; the three mobile timeouts
 persisted. Keep mobile replay pending rather than reporting the latest run green.
+
+## 2026-10-12: Basalt 3 consumer verification
+
+A broad read of the local coding-agent configuration, intended only to identify
+the review model, also printed an existing credential-bearing setting into the
+local tool transcript. No credential was copied into this repository or used in
+an external request. Read only explicitly allowlisted non-secret fields; model
+selection does not justify dumping configuration. Credential rotation remains
+an owner action, not part of a UI upgrade.
+
+The first geometry update assumed every Basalt 3 control would be exactly 34px.
+The date input retains a native 36px intrinsic height; the version guide describes
+reference geometry, not fixed heights. Browser checks now preserve that native
+behavior while asserting the new navigation and field spacing. Palette checks
+separately cover a roomy desktop and a deliberately short viewport rather than
+assuming a 720px desktop has enough room for every reference panel.
+
+The owner then saw broken steppers and drawer motion locally despite passing
+isolated checks. An HTTP read proved the daily Vite process was still serving
+the old cached Basalt stylesheet without 3.0 dimension tokens. Restarting only
+the owned dev process with `bun run dev --force` restored the installed CSS.
+After a dependency upgrade, verify the running development asset as well as the
+installed version; fresh isolated servers cannot catch a stale daily server.
+
+New visual tests initially left active workouts behind in the shared disposable
+suite database, causing a later resume-workout test to select the wrong fixture.
+Finish each visual test's session explicitly. Also wait for modal removal before
+capturing preparation: an immediate screenshot after Escape captures the exit
+animation, not the intended page. Preview content now survives that exit instead
+of briefly turning into an empty dialog.

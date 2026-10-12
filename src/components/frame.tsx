@@ -37,7 +37,7 @@ import {
 	UserRound,
 	X,
 } from "lucide-react";
-import { type ReactElement, type ReactNode, useEffect, useState } from "react";
+import { type ReactElement, type ReactNode, useEffect, useRef, useState } from "react";
 import { version } from "../../package.json";
 import { EnvironmentSwitch } from "./environment-switch";
 
@@ -56,15 +56,17 @@ function HeaderIconLink({
 	href,
 	label,
 	children,
+	className,
 }: {
 	href: string;
 	label: string;
 	children: ReactElement;
+	className?: string;
 }) {
 	return (
 		<Tooltip delayDuration={0}>
 			<TooltipTrigger asChild>
-				<Button variant="ghost" size="icon" asChild>
+				<Button variant="ghost" size="icon" className={className} asChild>
 					<a href={href} target="_blank" rel="noopener noreferrer" aria-label={label}>
 						{children}
 						<span className="sr-only">{label}</span>
@@ -105,6 +107,7 @@ export function Frame({
 	const [mobile, setMobile] = useState(() => window.matchMedia("(max-width: 767px)").matches);
 	const [open, setOpen] = useState(false);
 	const [collapsed, setCollapsed] = useState(false);
+	const focusToggle = useRef(false);
 	useEffect(() => {
 		const query = window.matchMedia("(max-width: 767px)");
 		const change = () => {
@@ -119,11 +122,21 @@ export function Frame({
 		<Tooltip>
 			<TooltipTrigger asChild>
 				<Button
+					ref={(element) => {
+						if (element && focusToggle.current) {
+							element.focus();
+							focusToggle.current = false;
+						}
+					}}
 					variant="ghost"
 					size="icon"
 					aria-label={compact ? "展开侧栏" : "收起侧栏"}
 					aria-expanded={!compact}
-					onClick={() => setCollapsed(!collapsed)}
+					className={compact ? "sidebar-expand" : undefined}
+					onClick={() => {
+						focusToggle.current = true;
+						setCollapsed(!collapsed);
+					}}
 				>
 					{compact ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
 				</Button>
@@ -134,7 +147,7 @@ export function Frame({
 	const rail = (
 		<Sidebar collapsed={compact} className="rhino-sidebar" aria-label="主导航侧栏">
 			<SidebarHeader>
-				<div className="brand">
+				<div className={`brand${compact ? " brand-compact" : ""}`}>
 					<img
 						className="brand-symbol"
 						src="/logo-24.png"
@@ -160,11 +173,13 @@ export function Frame({
 							<X size={16} />
 						</Button>
 					)}
+					{!mobile && !compact && collapseControl}
 				</div>
 			</SidebarHeader>
+			{compact && collapseControl}
 			<SidebarNav aria-label="主要页面">
 				{!compact && <SidebarPartition>训练空间</SidebarPartition>}
-				<div className={`navigation-items${compact ? " navigation-icons" : ""}`}>
+				<div className="navigation-items">
 					{navigation.map(({ id, label, icon: Icon }) => {
 						const props = {
 							active: page === id,
@@ -191,10 +206,19 @@ export function Frame({
 					})}
 				</div>
 			</SidebarNav>
-			<SidebarFooter className="rail-footer">
-				{!compact && (
+			<SidebarFooter>
+				{compact ? (
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Avatar aria-label={profileName} role="img" tabIndex={0}>
+								{profileAvatar && <AvatarImage src={profileAvatar} alt={profileName} />}
+								<AvatarFallback>{profileName.slice(0, 1)}</AvatarFallback>
+							</Avatar>
+						</TooltipTrigger>
+						<TooltipContent side="right">{profileName}</TooltipContent>
+					</Tooltip>
+				) : (
 					<SidebarUser
-						className="rail-user"
 						name={profileName}
 						email="私人训练空间"
 						avatar={
@@ -207,23 +231,33 @@ export function Frame({
 						}
 					/>
 				)}
-				{!mobile && collapseControl}
+				<Button variant="ghost" asChild className="rail-project-link">
+					<a href="https://hexly.ai/projects/rhino" target="_blank" rel="noopener noreferrer">
+						在 Hexly 项目页查看 Rhino
+					</a>
+				</Button>
 			</SidebarFooter>
 		</Sidebar>
 	);
 	return (
-		<AppShell className={`rhino-app${immersive ? " workout-immersive" : ""}`}>
+		<AppShell className={`basalt-ui rhino-app${immersive ? " workout-immersive" : ""}`}>
 			<AppSkipLink>跳到主要内容</AppSkipLink>
 			{!mobile && rail}
 			<AppMain id="main-content">
 				<AppHeader
+					density="compact"
 					className="rhino-header"
 					title={navigation.find((item) => item.id === page)?.label}
 					leading={
 						mobile ? (
 							<Sheet open={open} onOpenChange={setOpen}>
 								<SheetTrigger asChild>
-									<Button variant="ghost" size="icon" aria-label="打开导航">
+									<Button
+										variant="ghost"
+										size="icon"
+										aria-label="打开导航"
+										onClick={(event) => event.currentTarget.focus()}
+									>
 										<Menu size={19} />
 									</Button>
 								</SheetTrigger>
@@ -244,6 +278,7 @@ export function Frame({
 								<Github size={18} strokeWidth={1.5} aria-hidden="true" />
 							</HeaderIconLink>
 							<HeaderIconLink
+								className="header-project-link"
 								href="https://hexly.ai/projects/rhino"
 								label="在 Hexly 项目页查看 Rhino"
 							>

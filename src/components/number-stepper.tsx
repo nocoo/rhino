@@ -1,5 +1,5 @@
 import { Button } from "@nocoo/basalt";
-import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export function NumberStepper({
 	label,
@@ -9,7 +9,6 @@ export function NumberStepper({
 	max,
 	step = 1,
 	unit,
-	vertical = false,
 	disabled = false,
 }: {
 	label: string;
@@ -19,11 +18,11 @@ export function NumberStepper({
 	max: number;
 	step?: number;
 	unit: string;
-	vertical?: boolean;
 	disabled?: boolean;
 }) {
+	const display = String(Number(value.toFixed(3)));
 	return (
-		<fieldset className={`number-stepper${vertical ? " vertical" : ""}`} aria-label={label}>
+		<fieldset className="number-stepper" aria-label={label}>
 			<legend className="stepper-label">{label}</legend>
 			<div className="stepper-control">
 				<Button
@@ -33,10 +32,10 @@ export function NumberStepper({
 					aria-label={`减少${label}`}
 					onClick={() => onChange(Math.max(min, value - step))}
 				>
-					{vertical ? <ChevronDown size={20} /> : <ChevronLeft size={20} />}
+					<ChevronLeft size={20} />
 				</Button>
-				<output aria-label={label}>
-					<strong>{Number(value.toFixed(3))}</strong>
+				<output aria-label={label} data-compact={display.length > 4 || undefined}>
+					<strong>{display}</strong>
 					<span>{unit}</span>
 				</output>
 				<Button
@@ -46,7 +45,7 @@ export function NumberStepper({
 					aria-label={`增加${label}`}
 					onClick={() => onChange(Math.min(max, value + step))}
 				>
-					{vertical ? <ChevronUp size={20} /> : <ChevronRight size={20} />}
+					<ChevronRight size={20} />
 				</Button>
 			</div>
 		</fieldset>

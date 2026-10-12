@@ -1,6 +1,7 @@
 import { expect, type Page, test } from "@playwright/test";
-import type { SessionRecord } from "../../src/domain/contracts";
+import type { SessionRecord, SessionTarget } from "../../src/domain/contracts";
 import { addDays, localDateInTimeZone } from "../../src/domain/dates";
+import { emptyActual } from "../../src/domain/session";
 import { sessionTarget, uuid } from "../helpers/fixtures";
 import { assertMarker, type TestRun } from "../helpers/isolation";
 
@@ -21,6 +22,27 @@ async function openRecord(page: Page, id: string) {
 	const { data } = await response.json();
 	const index = data.sessions.findIndex((item: SessionRecord) => item.id === id);
 	await page.getByRole("button", { name: "查看记录", exact: true }).nth(index).click();
+}
+
+async function createDraft(page: Page, target: SessionTarget) {
+	const id = uuid();
+	const response = await page.request.put(`/api/sessions/${id}`, {
+		headers: { Origin: new URL(page.url()).origin },
+		data: {
+			expectedVersion: 0,
+			mutationId: uuid(),
+			sourcePlanRevision: null,
+			localDate: localDateInTimeZone(new Date(), "Asia/Shanghai"),
+			timezone: "Asia/Shanghai",
+			status: "draft",
+			target,
+			actual: null,
+		},
+	});
+	expect(response.ok()).toBe(true);
+	await page.reload();
+	await openRecord(page, id);
+	return id;
 }
 
 test("immersive timeline persists every step, survives lost responses and ends visibly", async ({
@@ -52,23 +74,7 @@ test("immersive timeline persists every step, survives lost responses and ends v
 		strength,
 		target.blocks[1],
 	];
-	const id = uuid();
-	const result = await page.request.put(`/api/sessions/${id}`, {
-		headers: { Origin: new URL(page.url()).origin },
-		data: {
-			expectedVersion: 0,
-			mutationId: uuid(),
-			sourcePlanRevision: null,
-			localDate: localDateInTimeZone(new Date(), "Asia/Shanghai"),
-			timezone: "Asia/Shanghai",
-			status: "draft",
-			target,
-			actual: null,
-		},
-	});
-	expect(result.ok()).toBe(true);
-	await page.reload();
-	await openRecord(page, id);
+	const id = await createDraft(page, target);
 	if (info.project.name === "mobile") {
 		await page.getByRole("button", { name: "切换主题", exact: true }).click();
 		await expect(page.locator("html")).toHaveClass(/dark/);
@@ -80,6 +86,7 @@ test("immersive timeline persists every step, survives lost responses and ends v
 	await expect(page.getByRole("dialog")).toBeVisible();
 	await expect(page.getByRole("button", { name: "回到训练", exact: true })).toBeVisible();
 	await page.keyboard.press("Escape");
+	await expect(page.getByRole("dialog")).toHaveCount(0);
 	await page.screenshot({ path: info.outputPath("workout-preparation.png") });
 	await page.getByRole("button", { name: "确认并开始", exact: true }).click();
 	await expect(page.locator(".current-heading h1")).toHaveText("热身");
@@ -143,6 +150,9 @@ test("immersive timeline persists every step, survives lost responses and ends v
 	await expect(page.getByTestId("total-timer")).not.toHaveText("00:00");
 	await page.getByRole("button", { name: "计划 / 记录", exact: true }).click();
 	await expect(page.getByText("本场目标已锁定", { exact: false })).toBeVisible();
+	await expect(
+		page.getByText("查看与调整记录期间，总用时继续累计。", { exact: true }),
+	).toBeVisible();
 	await page.getByRole("button", { name: "继续训练", exact: true }).click();
 	await page.getByRole("button", { name: "结束训练", exact: true }).click();
 	await page.getByRole("button", { name: "确认结束并保存", exact: true }).click();
@@ -154,3 +164,191 @@ test("immersive timeline persists every step, survives lost responses and ends v
 	expect(ended.actual?.exercises[0].sets[1].status).toBe("not-recorded");
 	expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
 });
+
+test("untimed active overview does not claim a running clock", async ({ page }) => {
+	await page.goto("/");
+	await page.locator(".page-body").waitFor();
+	const target = sessionTarget();
+	const id = await createDraft(page, target);
+	const response = await page.request.put(`/api/sessions/${id}`, {
+		headers: { Origin: new URL(page.url()).origin },
+		data: {
+			expectedVersion: 1,
+			mutationId: uuid(),
+			sourcePlanRevision: null,
+			localDate: localDateInTimeZone(new Date(), "Asia/Shanghai"),
+			timezone: "Asia/Shanghai",
+			status: "active",
+			target,
+			actual: emptyActual(target),
+		},
+	});
+	expect(response.ok()).toBe(true);
+	await page.reload();
+	await openRecord(page, id);
+	await page.getByRole("button", { name: "计划 / 记录", exact: true }).click();
+	await expect(
+		page.getByText("本场尚未计时，可查看与修正实际记录。", { exact: true }),
+	).toBeVisible();
+	const saved = (await (await page.request.get(`/api/sessions/${id}`)).json()).data
+		.session as SessionRecord;
+	expect(saved.actual?.timing).toBeUndefined();
+	await page.getByRole("button", { name: "结束训练", exact: true }).click();
+	await page.getByRole("button", { name: "确认结束并保存", exact: true }).click();
+	await expect(page.getByText("训练已记录。下一次，继续。", { exact: true })).toBeVisible();
+});
+
+for (const theme of ["light", "dark"]) {
+	test(`workout palette is readable and centered in ${theme} with short-screen scrolling`, async ({
+		page,
+	}, info) => {
+		if (info.project.name === "desktop") await page.setViewportSize({ width: 1440, height: 900 });
+		await page.goto("/");
+		await page.locator(".page-body").waitFor();
+		const target = sessionTarget();
+		Object.assign(target.blocks[0].exercises[0], {
+			exerciseId: "dumbbell-curl",
+			name: "Dumbbell curl",
+			loadConvention: "per-hand",
+		});
+		target.blocks[0].exercises[0].workingSets[0].loadKg = 12.345;
+		const cardio = target.blocks[1].cardio;
+		if (!cardio) throw new Error("Missing cardio fixture");
+		target.blocks = [
+			{
+				kind: "preparation",
+				durationMinutes: 1,
+				exercises: [],
+				cardio: { ...cardio, id: uuid(), role: "preparation", plannedMinutes: 1 },
+			},
+			...target.blocks,
+			{
+				kind: "recovery",
+				durationMinutes: 1,
+				exercises: [],
+				cardio: { ...cardio, id: uuid(), role: "recovery", plannedMinutes: 1 },
+			},
+		];
+		await createDraft(page, target);
+		if (theme === "dark") await page.getByRole("button", { name: "切换主题", exact: true }).click();
+		const viewport = page.viewportSize();
+		if (!viewport) throw new Error("Missing viewport");
+		for (const width of info.project.name === "mobile"
+			? [320, 375, viewport.width]
+			: [viewport.width]) {
+			await page.setViewportSize({ ...viewport, width });
+			const steppers = await page
+				.locator(".session-plan .stepper-control")
+				.evaluateAll((controls) =>
+					controls.map((control) => {
+						const [left, right] = [...control.querySelectorAll("button")].map((button) =>
+							button.getBoundingClientRect(),
+						);
+						const output = control.querySelector("output")?.getBoundingClientRect();
+						return {
+							horizontal:
+								Math.abs(left.y - right.y) < 1 &&
+								left.right <= (output?.left ?? 0) &&
+								(output?.right ?? Infinity) <= right.left,
+							targets: [left.width, left.height, right.width, right.height],
+							fits: control.scrollWidth <= control.clientWidth,
+						};
+					}),
+				);
+			for (const stepper of steppers) {
+				expect(stepper.horizontal).toBe(true);
+				expect(stepper.fits).toBe(true);
+				expect(Math.min(...stepper.targets)).toBeGreaterThanOrEqual(44);
+			}
+		}
+		await expect(page.getByRole("button", { name: "离开", exact: true })).toBeInViewport();
+		await page.screenshot({ path: info.outputPath(`preparation-${theme}.png`) });
+		await page.getByRole("button", { name: "确认并开始", exact: true }).click();
+		const colors = new Set<string>();
+		for (const tone of ["preparation", "strength", "main", "recovery"]) {
+			await expect(page.locator(".workout-live")).toHaveAttribute("data-workout-tone", tone);
+			await expect(page.getByTestId("step-timer")).toHaveCSS("color", "rgb(255, 255, 255)");
+			const geometry = await page.locator(".workout-stage").evaluate((stage) => {
+				const content = document.querySelector(".workout-content") as HTMLElement;
+				const clock = stage.querySelector(".workout-clock") as HTMLElement;
+				const text = clock.querySelector("div") as HTMLElement;
+				const rect = stage.getBoundingClientRect(),
+					frame = content.getBoundingClientRect();
+				return {
+					overflow: content.scrollHeight > content.clientHeight + 1,
+					centerOffset: Math.abs((rect.top + rect.bottom - frame.top - frame.bottom) / 2),
+					clockOffset: Math.abs(
+						text.getBoundingClientRect().height - clock.getBoundingClientRect().height,
+					),
+					background: getComputedStyle(stage.closest(".workout-live") as HTMLElement)
+						.backgroundColor,
+				};
+			});
+			expect(geometry.overflow).toBe(false);
+			expect(geometry.centerOffset).toBeLessThan(2);
+			expect(geometry.clockOffset).toBeLessThan(2);
+			colors.add(geometry.background);
+			const channels = geometry.background.match(/\d+/g)?.slice(0, 3).map(Number);
+			if (!channels) throw new Error("Missing workout background");
+			const luminance = channels
+				.map((channel) => {
+					const value = ((channel * 0.92 + 255 * 0.08) * 0.92 + 255 * 0.08) / 255;
+					return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+				})
+				.reduce((sum, value, i) => sum + value * [0.2126, 0.7152, 0.0722][i], 0);
+			expect(1.05 / (luminance + 0.05)).toBeGreaterThanOrEqual(4.5);
+			await page.screenshot({ path: info.outputPath(`workout-${theme}-${tone}.png`) });
+			if (tone === "recovery") break;
+			if (tone === "preparation") {
+				await expect(page.getByTestId("step-timer")).not.toHaveText("00:00");
+				await page.getByRole("button", { name: "完成本段并保存", exact: true }).click();
+			} else if (tone === "strength") {
+				await page.getByRole("button", { name: "开始下一组 / 段", exact: true }).click();
+				await page.getByRole("button", { name: "完成本组并保存", exact: true }).click();
+			} else {
+				page.once("dialog", (dialog) => dialog.accept());
+				await page.getByRole("button", { name: "跳过本组 / 段", exact: false }).click();
+			}
+		}
+		expect(colors.size).toBe(4);
+		await page.setViewportSize({ width: 375, height: 420 });
+		await expect(page.getByRole("button", { name: "结束训练", exact: true })).toBeInViewport();
+		await expect(
+			page.getByRole("button", { name: "开始下一组 / 段", exact: true }),
+		).toBeInViewport();
+		const content = page.locator(".workout-content");
+		expect(await content.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(
+			true,
+		);
+		await page.getByRole("combobox", { name: "实际强度", exact: true }).scrollIntoViewIfNeeded();
+		await expect(page.getByRole("combobox", { name: "实际强度", exact: true })).toBeInViewport();
+		expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(
+			false,
+		);
+		await page.getByRole("button", { name: "计划 / 记录", exact: true }).click();
+		await expect(
+			page.getByText("查看与调整记录期间，总用时继续累计。", { exact: true }),
+		).toBeVisible();
+		const minutes = page.locator('.session-plan output[aria-label="实际分钟"]').first();
+		await expect(minutes.locator("strong")).toHaveText(/^0\.\d+$/);
+		const load = page.locator('.recorded-set output[aria-label="第1组负重"]');
+		await expect(load.locator("strong")).toHaveText("12.345");
+		await expect(load.locator("span")).toHaveText("kg/只");
+		await load.scrollIntoViewIfNeeded();
+		await expect(load.locator("span")).toBeVisible();
+		const fits = await page
+			.locator(".session-plan .stepper-control output")
+			.evaluateAll((outputs) =>
+				outputs.every((output) => {
+					const text = output.querySelector("strong")?.getBoundingClientRect();
+					const box = output.getBoundingClientRect();
+					return text && text.left >= box.left - 1 && text.right <= box.right + 1;
+				}),
+			);
+		expect(fits).toBe(true);
+		await page.getByRole("button", { name: "继续训练", exact: true }).click();
+		await page.getByRole("button", { name: "结束训练", exact: true }).click();
+		await page.getByRole("button", { name: "确认结束并保存", exact: true }).click();
+		await expect(page.getByText("训练已记录。下一次，继续。", { exact: true })).toBeVisible();
+	});
+}

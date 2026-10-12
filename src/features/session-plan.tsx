@@ -3,7 +3,7 @@ import { Eye } from "lucide-react";
 import { Choice } from "../components/fields";
 import { NumberStepper } from "../components/number-stepper";
 import { emphasisNames, exerciseNames } from "../components/workout-summary";
-import { EXERCISES } from "../data/exercises";
+import { EXERCISES, getExercise } from "../data/exercises";
 import type { SessionRecord, StrengthExerciseId } from "../domain/contracts";
 import type { RhinoModel } from "./use-rhino-model";
 import type { WorkoutModel } from "./use-workout-model";
@@ -33,9 +33,9 @@ export function SessionPlan({
 		) ?? -1;
 	let elapsed = 0;
 	return (
-		<div className="session-plan stack">
+		<div className={`session-plan stack${prep ? " session-plan-prep" : ""}`}>
 			{prep && plan && (
-				<LayerCard>
+				<LayerCard className="plan-selector" padding="sm">
 					<Choice
 						disabled={model.busy}
 						label="切换本次训练计划"
@@ -65,23 +65,22 @@ export function SessionPlan({
 				elapsed += block.durationMinutes;
 				return (
 					<section key={block.cardio?.id ?? `strength-${blockIndex}`} className="timeline-block">
-						<div className="timeline-label">
+						<header className="timeline-label">
 							<span className="mono">{String(offset).padStart(2, "0")}′</span>
 							<span>
 								{block.kind === "strength" ? "力量训练" : cardioNames[block.cardio?.role ?? "main"]}{" "}
 								· 约 {block.durationMinutes} 分钟
 							</span>
-						</div>
+						</header>
 						{block.cardio ? (
-							<LayerCard className="timeline-card">
-								<strong>
-									{cardioNames[block.cardio.role]} ·{" "}
-									{block.cardio.modality === "cycling" ? "骑行" : "轻松活动"}
-								</strong>
-								<p className="field-hint">
-									目标 {block.cardio.plannedMinutes} 分钟 ·{" "}
-									{block.cardio.plannedIntensity === "easy" ? "轻松强度" : "按状态控制强度"}
-								</p>
+							<LayerCard className="timeline-card cardio-plan-row" padding="sm">
+								<div className="cardio-plan-label">
+									<strong>{block.cardio.modality === "cycling" ? "骑行" : "轻松活动"}</strong>
+									<p className="field-hint">
+										{!prep && `目标 ${block.cardio.plannedMinutes} 分钟 · `}
+										{block.cardio.plannedIntensity === "easy" ? "轻松强度" : "按状态控制强度"}
+									</p>
+								</div>
 								<NumberStepper
 									label={prep ? "计划分钟" : "实际分钟"}
 									value={
@@ -104,26 +103,18 @@ export function SessionPlan({
 							</LayerCard>
 						) : (
 							block.exercises.map((exercise) => (
-								<LayerCard key={exercise.id} className="timeline-card">
-									<div className="card-footer">
-										<h2 className="card-title">{exerciseNames[exercise.exerciseId]}</h2>
-										<Button
-											variant="ghost"
-											size="sm"
-											onClick={(event) => preview(exercise.exerciseId, event.currentTarget)}
-										>
-											<Eye size={15} /> 动作预览
-										</Button>
-									</div>
-									<p className="field-hint">
-										{exercise.workingSets.length} 组 × {exercise.workingSets[0].repsHigh} 次 ·
-										组间休息 {exercise.restSeconds} 秒
-										{exercise.warmUpSetCount > 0
-											? ` · 另有 ${exercise.warmUpSetCount} 组轻负重适应`
-											: ""}
-									</p>
-									{prep ? (
-										<>
+								<LayerCard
+									key={exercise.id}
+									className="timeline-card exercise-plan-card"
+									padding="sm"
+								>
+									<div className="exercise-plan-heading">
+										<img
+											className="plan-exercise-poster"
+											src={getExercise(exercise.exerciseId).asset.posterPath}
+											alt="未审核动作示意"
+										/>
+										{prep ? (
 											<Choice
 												disabled={model.busy}
 												label="训练动作"
@@ -142,27 +133,48 @@ export function SessionPlan({
 														),
 												).map((item) => ({ value: item.id, label: exerciseNames[item.id] }))}
 											/>
-											<div className="stepper-pair">
-												<NumberStepper
-													label="工作组数"
-													value={exercise.workingSets.length}
-													min={1}
-													max={8}
-													unit="组"
-													disabled={model.busy}
-													onChange={(value) => editor.setCount(exercises.indexOf(exercise), value)}
-												/>
-												<NumberStepper
-													label="每组次数"
-													value={exercise.workingSets[0].repsHigh}
-													min={1}
-													max={30}
-													unit="次"
-													disabled={model.busy}
-													onChange={(value) => editor.setReps(exercises.indexOf(exercise), value)}
-												/>
-											</div>
-										</>
+										) : (
+											<h2 className="card-title">{exerciseNames[exercise.exerciseId]}</h2>
+										)}
+										<Button
+											variant="ghost"
+											size="icon"
+											aria-label="动作预览"
+											className="plan-preview-button"
+											onClick={(event) => preview(exercise.exerciseId, event.currentTarget)}
+										>
+											<Eye size={18} />
+										</Button>
+									</div>
+									<p className="field-hint">
+										{!prep &&
+											`${exercise.workingSets.length} 组 × ${exercise.workingSets[0].repsHigh} 次 · `}
+										组间休息 {exercise.restSeconds} 秒
+										{exercise.warmUpSetCount > 0
+											? ` · 另有 ${exercise.warmUpSetCount} 组轻负重适应`
+											: ""}
+									</p>
+									{prep ? (
+										<div className="stepper-pair">
+											<NumberStepper
+												label="工作组数"
+												value={exercise.workingSets.length}
+												min={1}
+												max={8}
+												unit="组"
+												disabled={model.busy}
+												onChange={(value) => editor.setCount(exercises.indexOf(exercise), value)}
+											/>
+											<NumberStepper
+												label="每组次数"
+												value={exercise.workingSets[0].repsHigh}
+												min={1}
+												max={30}
+												unit="次"
+												disabled={model.busy}
+												onChange={(value) => editor.setReps(exercises.indexOf(exercise), value)}
+											/>
+										</div>
 									) : (
 										editor.actual.exercises
 											.find((item) => item.id === exercise.id)

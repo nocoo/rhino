@@ -30,7 +30,7 @@ async function start() {
 			<AccentProvider
 				defaultAccent="primary"
 				persist={false}
-				paletteOverrides={{ primary: { light: "216 58% 36%", dark: "214 65% 70%" } }}
+				paletteOverrides={{ primary: { light: "215 72% 39%", dark: "210 80% 74%" } }}
 			>
 				<LinkProvider>
 					<TooltipProvider>

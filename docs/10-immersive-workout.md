@@ -3,6 +3,62 @@
 Implementation revision: 2026-10-12. This is a local preview for owner acceptance,
 not a release or professional exercise review.
 
+## Basalt 3 Presentation
+
+The application pins the published `@nocoo/basalt` 3.0.0 artifact. Integration
+and compatibility guides were checked against the installed package and upstream
+revision `e3071c168e148381848b021d802f0972a3f7c0e7`. Standalone CSS remains the
+only stylesheet contract. Sidebar owns its 260/68px geometry, navigation insets
+and collapse animation. Collapse sits in the expanded header; expand sits under
+the collapsed mark, with keyboard focus preserved when the control moves. The
+mobile Sheet retains the package's 6px backdrop blur, 350/250ms entry/exit and
+reduced-motion behavior. The shell owns safe-area padding once.
+
+The pinned 3.0.0 stylesheet resolves normal rail motion to 180ms; read its token,
+not older 300ms documentation. After upgrading, restart Vite with `--force`:
+a long-running server can retain the former dependency stylesheet even though
+the installed package and isolated test servers already use the new artifact.
+
+Brand controls use AccentProvider's supported primary override: HSL
+`215 72% 39%` in light mode and `210 80% 74%` in dark mode. Training uses a
+separate, theme-independent blue-family palette with white foregrounds:
+
+| Phase | HSL background | CSS token suffix |
+| --- | --- | --- |
+| Strength | `215 72% 34%` | `strength` |
+| Preparation | `192 72% 28%` | `preparation` |
+| Main cardio | `202 78% 32%` | `main` |
+| Recovery | `205 32% 32%` | `recovery` |
+
+These `--rhino-training-*` tokens apply only to the specialist live workout
+surface, not library cards, modal roots, menus or charts. A bounded 8% white
+highlight adds depth without reducing text contrast below 4.5:1; hints use 90%
+white. Labels continue to identify phases independently of color. White primary
+actions use the current phase as their foreground. Preparation and record review
+retain ordinary Basalt surfaces.
+
+The timer's text block is centered inside its ring. The active stage centers in
+the available content height; short screens scroll only that region while exit,
+finish and save actions stay outside it. Desktop keeps a bounded colored panel
+and reference column instead of covering the entire monitor. Clocks still show
+elapsed time; this presentation update does not introduce countdown completion
+or change persisted training data.
+
+Preparation uses compact chronological rows: cardio labels and minute controls
+share one row; strength pairs an uncropped illustrative thumbnail with the
+exercise selector and preview action, followed by rest guidance and set/repetition
+controls. All number steppers use left/right buttons with at least 44px targets,
+including live load entry. Long fractional values use compact typography without
+changing storage precision; narrow record rows stack to retain readable per-hand
+load units. Redundant unit suffixes are omitted only in preparation where the
+mobile label already says sets or repetitions. Group headings use the 22px row line
+with 8px separation from their content. Avenir Next/DIN display preferences fall
+back to the existing Basalt fonts; no remote font request is introduced.
+Entering a session resets the island scroll once, without resetting it on edits
+or timer ticks. Preview content remains intact through its closing animation.
+Untimed active records explicitly say timing has not started; opening an overview
+never creates inferred timestamps.
+
 ## Interaction
 
 - Preparation follows the target block order, with estimated start offsets.
