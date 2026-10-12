@@ -12,7 +12,7 @@ import type { StrengthExerciseId } from "../domain/contracts";
 export const LazyExerciseViewer = lazy(() =>
 	import("../components/exercise-viewer").then((module) => ({ default: module.ExerciseViewer })),
 );
-const chineseCues: Record<StrengthExerciseId, [string, string, string]> = {
+export const chineseCues: Record<StrengthExerciseId, [string, string, string]> = {
 	"goblet-squat": [
 		"双手将哑铃贴近胸前，双脚约与肩同宽。",
 		"髋部向后下方移动，膝盖沿脚尖方向，脚跟保持着地。",

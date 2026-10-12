@@ -258,18 +258,25 @@ test("profile, measurements, plan, workout and reopened progress persist", async
 	await navigate(page, "今日训练");
 	await page.getByRole("button", { name: "开始训练", exact: true }).click();
 	await expect(page.getByRole("button", { name: "确认并开始", exact: true })).toBeVisible();
+	await page.getByRole("combobox", { name: "切换本次训练计划", exact: true }).click();
+	await page.getByRole("option", { name: /^方案 2 ·/ }).click();
+	await expect(page.getByRole("combobox", { name: "切换本次训练计划", exact: true })).toContainText(
+		"方案 2",
+	);
 	await page.screenshot({
 		path: testInfo.outputPath("session-preparation.png"),
 		animations: "disabled",
 	});
 	await page.getByRole("button", { name: "确认并开始", exact: true }).click();
-	await expect(page.getByRole("button", { name: "按计划完成", exact: true })).toBeVisible();
+	await expect(page.getByRole("button", { name: "结束训练", exact: true })).toBeVisible();
 	await page.screenshot({
 		path: testInfo.outputPath("session-active.png"),
 		animations: "disabled",
 	});
-	await page.getByRole("button", { name: "按计划完成", exact: true }).click();
-	await page.getByRole("button", { name: "保存训练", exact: true }).click();
+	await page.getByRole("button", { name: "增加实际分钟", exact: true }).click();
+	await page.getByRole("button", { name: "完成本段并保存", exact: true }).click();
+	await page.getByRole("button", { name: "结束训练", exact: true }).click();
+	await page.getByRole("button", { name: "确认结束并保存", exact: true }).click();
 	await expect(page.getByText("训练已记录。下一次，继续。", { exact: true })).toBeVisible();
 	await page.reload();
 	await navigate(page, "我的进展");
@@ -532,10 +539,13 @@ test("five added movements can replace an old draft and persist precise per-hand
 		await page.getByRole("option", { name, exact: true }).click();
 	}
 	await page.getByRole("button", { name: "确认并开始", exact: true }).click();
-	await page.getByRole("button", { name: "按计划完成", exact: true }).click();
-	for (const name of names)
-		await page.getByLabel(`${name}第1组负重`, { exact: true }).fill("2.375");
-	await page.getByRole("button", { name: "保存训练", exact: true }).click();
+	for (const [index] of names.entries()) {
+		if (index > 0) await page.getByRole("button", { name: "开始下一组 / 段", exact: true }).click();
+		await page.getByRole("button", { name: "选用 15 kg", exact: true }).click();
+		await page.getByRole("button", { name: "完成本组并保存", exact: true }).click();
+	}
+	await page.getByRole("button", { name: "结束训练", exact: true }).click();
+	await page.getByRole("button", { name: "确认结束并保存", exact: true }).click();
 	await expect(page.getByText("训练已记录。下一次，继续。", { exact: true })).toBeVisible();
 	await page.reload();
 	const response = await page.request.get(`/api/sessions?from=${addDays(date, -365)}&to=${date}`);
@@ -550,11 +560,28 @@ test("five added movements can replace an old draft and persist precise per-hand
 		expect(item).toMatchObject({ catalogVersion: CATALOG_VERSION, loadConvention: "per-hand" });
 		expect(item.workingSets[0].loadKg).toBeNull();
 	}
-	expect(saved.actual?.exercises.map((item) => item.sets[0].loadKg)).toEqual(
-		names.map(() => 2.375),
-	);
+	expect(saved.actual?.exercises.map((item) => item.sets[0].loadKg)).toEqual(names.map(() => 15));
+	if (!saved.actual) throw new Error("Missing actuals");
+	for (const item of saved.actual.exercises) item.sets[0].loadKg = 2.375;
+	const corrected = await page.request.put(`/api/sessions/${id}`, {
+		headers: { Origin: new URL(page.url()).origin },
+		data: {
+			expectedVersion: saved.version,
+			mutationId: uuid(),
+			sourcePlanRevision: saved.sourcePlanRevision,
+			localDate: saved.localDate,
+			timezone: saved.timezone,
+			status: saved.status,
+			target: saved.target,
+			actual: saved.actual,
+		},
+	});
+	expect(corrected.ok()).toBe(true);
+	await page.reload();
 	await navigate(page, "我的进展");
 	await page.getByRole("button", { name: "查看记录", exact: true }).nth(position).click();
-	for (const name of names)
-		await expect(page.getByLabel(`${name}第1组负重`, { exact: true })).toHaveValue("2.375");
+	await expect(page.getByText("实际 2.375 kg", { exact: true })).toHaveCount(5);
+	await page.getByRole("button", { name: "增加第1组负重", exact: true }).first().click();
+	await expect(page.getByText("实际 7.375 kg", { exact: true })).toBeVisible();
+	await page.getByRole("button", { name: "保存调整", exact: true }).click();
 });

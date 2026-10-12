@@ -19,6 +19,7 @@ export function Field({
 	max,
 	step,
 	required,
+	disabled,
 }: {
 	label: string;
 	value: string | number;
@@ -29,6 +30,7 @@ export function Field({
 	max?: number;
 	step?: number | "any";
 	required?: boolean;
+	disabled?: boolean;
 }) {
 	const id = useId();
 	return (
@@ -41,6 +43,7 @@ export function Field({
 				max={max}
 				step={step}
 				required={required}
+				disabled={disabled}
 				onChange={(event) => onChange(event.target.value)}
 			/>
 		</BasaltField>
@@ -52,15 +55,17 @@ export function Choice({
 	value,
 	onChange,
 	options,
+	disabled,
 }: {
 	label: string;
 	value: string;
 	onChange: (value: string) => void;
 	options: { value: string; label: string }[];
+	disabled?: boolean;
 }) {
 	const id = useId();
 	return (
-		<Select value={value} onValueChange={onChange}>
+		<Select value={value} onValueChange={onChange} disabled={disabled}>
 			<BasaltField className="field" label={label} htmlFor={id}>
 				<SelectTrigger id={id}>
 					<SelectValue />

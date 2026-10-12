@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { actualFromTarget, useRhinoModel } from "../../../src/features/use-rhino-model";
+import { useRhinoModel } from "../../../src/features/use-rhino-model";
 import * as client from "../../../src/lib/api";
 import {
+	actualFromTarget,
 	planInput,
 	profileValues,
 	sessionRecord,

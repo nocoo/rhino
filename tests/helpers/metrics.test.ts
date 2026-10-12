@@ -3,8 +3,7 @@ import type { MeasurementRecord, ProfileRecord } from "../../src/domain/contract
 import * as hash from "../../src/domain/hash";
 import * as metrics from "../../src/domain/metrics";
 import * as saves from "../../src/domain/saves";
-import { actualFromTarget } from "../../src/features/use-rhino-model";
-import { profileValues, sessionRecord, uuid } from "./fixtures";
+import { actualFromTarget, profileValues, sessionRecord, uuid } from "./fixtures";
 
 const measurement = (
 	kind: "height" | "weight",

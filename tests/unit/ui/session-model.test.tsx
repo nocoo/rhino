@@ -2,13 +2,30 @@
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { CATALOG_VERSION } from "../../../src/domain/contracts";
-import { actualFromTarget } from "../../../src/features/use-rhino-model";
 import { useSessionModel } from "../../../src/features/use-session-model";
-import { sessionRecord, uuid } from "../../helpers/fixtures";
+import { actualFromTarget, sessionRecord, uuid } from "../../helpers/fixtures";
 
 afterEach(() => {
 	cleanup();
 	vi.useRealTimers();
+});
+it("selects an exact plan snapshot without normalizing its time budget and locks started targets", () => {
+	const session = sessionRecord();
+	const { result, rerender } = renderHook(({ record }) => useSessionModel(record), {
+		initialProps: { record: session },
+	});
+	const alternative = sessionRecord().target;
+	alternative.timeBudgetMinutes = 90;
+	act(() => result.current.selectTarget(alternative));
+	expect(result.current.target).toEqual(alternative);
+	alternative.timeBudgetMinutes = 100;
+	expect(result.current.target.timeBudgetMinutes).toBe(90);
+	const started = { ...session, status: "active" as const };
+	rerender({ record: started });
+	act(() => result.current.selectTarget(alternative));
+	act(() => result.current.setReps(0, 20));
+	expect(result.current.target).toEqual(started.target);
+	expect(result.current.dirty).toBe(false);
 });
 it("keeps target edits isolated from the original plan and resets actuals", () => {
 	const session = sessionRecord();
@@ -70,13 +87,10 @@ it("updates selected actuals without rewriting other sets or segments", () => {
 	act(() => result.current.updateCardio(cardio.id, 12));
 	expect(result.current.actual.cardioSegments[0]?.actualMinutes).toBe(12);
 	expect(result.current.actual.cardioSegments[1]?.actualMinutes).toBe(30);
-	act(() => result.current.performedAsPlanned());
-	expect(result.current.actual.completedAsPlanned).toBe(true);
-	expect(result.current.actual.cardioSegments[0]?.actualMinutes).toBe(30);
 	act(() => result.current.setActual({ ...result.current.actual, painFlag: true }));
 	expect(result.current.actual.painFlag).toBe(true);
 });
-it("warns only on dirty unload and cleans owned rest timers", () => {
+it("warns only on dirty unload and cleans its listener", () => {
 	vi.useFakeTimers();
 	vi.setSystemTime(new Date("2026-10-09T01:00:00Z"));
 	const session = sessionRecord();
@@ -84,18 +98,10 @@ it("warns only on dirty unload and cleans owned rest timers", () => {
 	const clean = new Event("beforeunload", { cancelable: true });
 	window.dispatchEvent(clean);
 	expect(clean.defaultPrevented).toBe(false);
-	act(() => result.current.performedAsPlanned());
+	act(() => result.current.setReps(0, 10));
 	const dirty = new Event("beforeunload", { cancelable: true });
 	window.dispatchEvent(dirty);
 	expect(dirty.defaultPrevented).toBe(true);
-	act(() => result.current.startRest(3));
-	expect(result.current.restSeconds).toBe(3);
-	act(() => vi.advanceTimersByTime(1500));
-	expect(result.current.restSeconds).toBe(2);
-	act(() => vi.advanceTimersByTime(3000));
-	expect(result.current.restSeconds).toBe(0);
-	act(() => result.current.startRest(1));
-	expect(result.current.restSeconds).toBe(1);
 	unmount();
 	expect(vi.getTimerCount()).toBe(0);
 	const after = new Event("beforeunload", { cancelable: true });

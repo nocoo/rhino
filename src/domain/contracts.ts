@@ -286,6 +286,21 @@ export const cardioSegmentActualSchema = z.strictObject({
 });
 
 export const sessionActualSchema = z.strictObject({
+	timing: z
+		.strictObject({
+			startedAt: utcInstantSchema,
+			endedAt: utcInstantSchema.nullable(),
+			steps: z
+				.array(
+					z.strictObject({
+						id: uuidSchema,
+						startedAt: utcInstantSchema,
+						endedAt: utcInstantSchema.nullable(),
+					}),
+				)
+				.max(80),
+		})
+		.optional(),
 	exercises: z.array(strengthExerciseActualSchema).max(8),
 	cardioSegments: z.array(cardioSegmentActualSchema).max(6),
 	painFlag: z.boolean(),

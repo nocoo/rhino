@@ -6,6 +6,7 @@ import type {
 	WorkingSetActual,
 } from "./contracts";
 import { ApiError } from "./contracts";
+import { workoutSteps } from "./workout";
 
 const TRANSITIONS: Record<SessionStatus, readonly SessionStatus[]> = {
 	draft: ["draft", "active", "abandoned"],
@@ -108,6 +109,32 @@ export function validateSessionActual(
 	}
 	if (!actual) {
 		return;
+	}
+	if (actual.timing) {
+		const timing = actual.timing;
+		const ids = new Set(workoutSteps(target).map((step) => step.id));
+		let previousEnd = Date.parse(timing.startedAt);
+		for (const [index, step] of timing.steps.entries()) {
+			if (
+				!ids.delete(step.id) ||
+				Date.parse(step.startedAt) < previousEnd ||
+				(step.endedAt !== null && Date.parse(step.endedAt) < Date.parse(step.startedAt)) ||
+				(step.endedAt === null && index !== timing.steps.length - 1) ||
+				(timing.endedAt !== null &&
+					(step.endedAt === null || Date.parse(step.endedAt) > Date.parse(timing.endedAt)))
+			) {
+				throw new ApiError(400, "validation_failed", "Invalid workout step timing");
+			}
+			previousEnd = Date.parse(step.endedAt ?? step.startedAt);
+		}
+		if (
+			status === "draft" ||
+			(timing.endedAt !== null && Date.parse(timing.endedAt) < Date.parse(timing.startedAt)) ||
+			(status === "active" && timing.endedAt !== null) ||
+			((status === "completed" || status === "abandoned") && timing.endedAt === null)
+		) {
+			throw new ApiError(400, "validation_failed", "Workout timing must match session status");
+		}
 	}
 	const exerciseTargets = new Map(
 		target.blocks.flatMap((block) => block.exercises).map((exercise) => [exercise.id, exercise]),

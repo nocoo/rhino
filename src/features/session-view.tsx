@@ -1,14 +1,32 @@
-import { Button, Input, LayerCard } from "@nocoo/basalt";
-import { PageHeader } from "@nocoo/basalt/components/page-header";
-import { ArrowLeft, Check, CheckCheck, Clock3, Play, Save } from "lucide-react";
-import { Suspense, useState } from "react";
+import {
+	Button,
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogTitle,
+	LayerCard,
+} from "@nocoo/basalt";
+import {
+	ArrowLeft,
+	BookOpen,
+	Check,
+	ChevronRight,
+	Flag,
+	ListChecks,
+	Play,
+	Save,
+} from "lucide-react";
+import { Suspense, useRef, useState } from "react";
 import { Choice, Field } from "../components/fields";
+import { NumberStepper } from "../components/number-stepper";
 import { emphasisNames, exerciseNames } from "../components/workout-summary";
-import { EXERCISES } from "../data/exercises";
+import { getExercise } from "../data/exercises";
 import type { CardioIntensity, SessionRecord, StrengthExerciseId } from "../domain/contracts";
-import { LazyExerciseViewer } from "./library-view";
+import { clockLabel, stepDone } from "../domain/workout";
+import { chineseCues, LazyExerciseViewer } from "./library-view";
+import { cardioNames, SessionPlan } from "./session-plan";
 import type { RhinoModel } from "./use-rhino-model";
-import { useSessionModel } from "./use-session-model";
+import { useWorkoutModel } from "./use-workout-model";
 
 export function SessionView({
 	model,
@@ -19,316 +37,448 @@ export function SessionView({
 	session: SessionRecord;
 	close: () => void;
 }) {
-	const editor = useSessionModel(session);
-	const exercises = editor.target.blocks.flatMap((block) => block.exercises);
-	const [selected, setSelected] = useState<StrengthExerciseId>(
-		exercises[0]?.exerciseId ?? "goblet-squat",
-	);
+	const workout = useWorkoutModel(session, model);
+	const { editor, step, entry } = workout;
+	const [preview, setPreview] = useState<StrengthExerciseId | null>(null);
+	const [ending, setEnding] = useState(false);
+	const previewTrigger = useRef<HTMLElement | null>(null);
+	const endingTrigger = useRef<HTMLElement | null>(null);
+	const openPreview = (id: StrengthExerciseId, trigger: HTMLElement) => {
+		previewTrigger.current = trigger;
+		setPreview(id);
+	};
+	const openEnding = (trigger: HTMLElement) => {
+		endingTrigger.current = trigger;
+		setEnding(true);
+	};
 	const prep = session.status === "draft";
-	const save = (status: SessionRecord["status"]) =>
-		void model.saveSession(session, status, editor.target, prep ? null : editor.actual);
-	const cardio = editor.target.blocks.flatMap((block) => (block.cardio ? [block.cardio] : []));
+	const finished = session.status === "completed" || session.status === "abandoned";
+	const completed = workout.steps.filter((item) => stepDone(item, editor.actual)).length;
+	const showPlan = prep || workout.overview || finished;
+	const title =
+		step?.kind === "strength"
+			? exerciseNames[step.exercise.exerciseId]
+			: step
+				? cardioNames[step.cardio.role]
+				: "本次安排已走完";
+	const leave = () => {
+		if (!model.busy && (!workout.dirty || window.confirm("还有未保存的修改，确定离开吗？")))
+			close();
+	};
 	return (
-		<div className="page-body">
-			<PageHeader
-				title={prep ? "准备好，再开始。" : emphasisNames[editor.target.emphasis]}
-				description={`${session.localDate} · ${prep ? "本次调整不会修改周计划" : "只记录实际完成的训练，部分完成也有价值"}`}
-				actions={
+		<div className={`workout-page${showPlan ? " workout-plan-page" : ""}`}>
+			<header className="workout-topbar">
+				<Button variant="ghost" size="sm" disabled={model.busy} onClick={leave}>
+					<ArrowLeft size={16} /> 离开
+				</Button>
+				<div>
+					<strong>{prep ? "训练准备" : finished ? "训练回顾" : "训练进行中"}</strong>
+					<span className="field-hint">{session.localDate}</span>
+				</div>
+				{session.status === "active" ? (
 					<Button
-						variant="ghost"
-						onClick={() => {
-							if (!editor.dirty || window.confirm("还有未保存的修改，确定离开吗？")) close();
-						}}
+						variant="secondary"
+						size="sm"
+						disabled={model.busy}
+						onClick={(event) => openEnding(event.currentTarget)}
 					>
-						<ArrowLeft size={15} /> 返回
+						<Flag size={15} /> 结束训练
 					</Button>
-				}
-			/>
-			<div className="session-layout">
-				<div className="stack">
-					{exercises.map((exercise, index) => (
-						<LayerCard key={exercise.id}>
-							<LayerCard.Header className="session-heading">
-								<h2 className="card-title">
-									{String(index + 1).padStart(2, "0")} · {exerciseNames[exercise.exerciseId]}
-								</h2>
-								<Button variant="ghost" size="sm" onClick={() => setSelected(exercise.exerciseId)}>
-									查看动作
-								</Button>
-							</LayerCard.Header>
-							<LayerCard.Body className="stack">
-								{prep ? (
-									<div className="form-grid">
-										<Choice
-											label="训练动作"
-											value={exercise.exerciseId}
-											onChange={(value) =>
-												editor.updateExercise(index, value as StrengthExerciseId)
-											}
-											options={EXERCISES.filter((item) =>
-												(model.profile?.profile?.preferences.equipmentIds ?? []).includes(
-													item.equipmentId,
-												),
-											).map((item) => ({ value: item.id, label: exerciseNames[item.id] }))}
-										/>
-										<Field
-											label="工作组数"
-											type="number"
-											min={1}
-											max={8}
-											value={exercise.workingSets.length}
-											onChange={(value) => editor.setCount(index, Number(value))}
-										/>
-										<Field
-											label="每组次数"
-											type="number"
-											min={1}
-											max={30}
-											value={exercise.workingSets[0].repsHigh}
-											onChange={(value) => editor.setReps(index, Number(value))}
-										/>
-									</div>
-								) : (
-									<>
-										<div className="set-row set-labels">
-											<span>组</span>
-											<span>次数</span>
-											<span>
-												负重 / kg {exercise.loadConvention === "per-hand" ? "每只" : "总重"}
-											</span>
-											<span>完成</span>
-										</div>
-										{editor.actual.exercises
-											.find((item) => item.id === exercise.id)
-											?.sets.map((set, i) => (
-												<div key={set.id}>
-													<div className="set-row">
-														<span className="mono muted">{i + 1}</span>
-														<Input
-															type="number"
-															min={0}
-															max={50}
-															aria-label={`${exerciseNames[exercise.exerciseId]}第${i + 1}组次数`}
-															value={set.reps ?? ""}
-															placeholder={String(exercise.workingSets[i].repsHigh)}
-															onChange={(event) =>
-																editor.updateSet(exercise.id, set.id, {
-																	reps:
-																		event.target.value === "" ? null : Number(event.target.value),
-																})
-															}
-														/>
-														<Input
-															type="number"
-															min={0}
-															step={0.5}
-															aria-label={`${exerciseNames[exercise.exerciseId]}第${i + 1}组负重`}
-															value={set.loadKg ?? ""}
-															placeholder="未记录"
-															onChange={(event) =>
-																editor.updateSet(exercise.id, set.id, {
-																	loadKg:
-																		event.target.value === "" ? null : Number(event.target.value),
-																})
-															}
-														/>
-														<Button
-															size="icon"
-															variant={set.status === "performed" ? "default" : "secondary"}
-															aria-label={`标记${exerciseNames[exercise.exerciseId]}第${i + 1}组完成`}
-															aria-pressed={set.status === "performed"}
-															onClick={() => {
-																editor.updateSet(exercise.id, set.id, {
-																	status: set.status === "performed" ? "not-recorded" : "performed",
-																	reps: set.reps ?? exercise.workingSets[i].repsHigh,
-																});
-																editor.startRest(exercise.restSeconds);
-															}}
-														>
-															<Check size={16} />
-														</Button>
-													</div>
-													<div className="set-extras">
-														<Field
-															label={`第${i + 1}组余力（RIR）`}
-															type="number"
-															min={0}
-															max={10}
-															value={set.rir ?? ""}
-															onChange={(value) =>
-																editor.updateSet(exercise.id, set.id, {
-																	rir: value === "" ? null : Number(value),
-																})
-															}
-															hint="不确定可以不填"
-														/>
-														<Button
-															variant="ghost"
-															size="sm"
-															aria-pressed={set.status === "skipped"}
-															onClick={() =>
-																editor.updateSet(exercise.id, set.id, {
-																	status: set.status === "skipped" ? "not-recorded" : "skipped",
-																	reps: null,
-																	loadKg: null,
-																	rir: null,
-																})
-															}
-														>
-															{set.status === "skipped" ? "已跳过，点击撤销" : "跳过这组"}
-														</Button>
-													</div>
-												</div>
-											))}
-									</>
-								)}
-								<p className="field-hint">
-									组间休息 {exercise.restSeconds} 秒 · 目标保留 2–3 次余力
+				) : (
+					<span className="pill">
+						{prep ? `${editor.target.timeBudgetMinutes} 分钟` : "已结束"}
+					</span>
+				)}
+			</header>
+			{model.error && (
+				<div role="alert" className="error-message">
+					{model.error} · 请检查后重试；已保存的记录会保留。
+				</div>
+			)}
+			<div className="workout-content">
+				{showPlan ? (
+					<>
+						<div className="workout-plan-heading">
+							<h1>
+								{prep ? "先看安排，再开始。" : finished ? "每一组，都留下记录。" : "本场计划与记录"}
+							</h1>
+							<p className="field-hint">
+								{emphasisNames[editor.target.emphasis]} ·{" "}
+								{finished && editor.actual.timing
+									? `总用时 ${clockLabel(workout.totalSeconds)}`
+									: "按时间顺序，从热身到放松"}
+							</p>
+						</div>
+						{finished && (
+							<p role="status" className="status-message">
+								{model.message || "训练已保存，可以回顾与修正实际记录。"}
+							</p>
+						)}
+						<SessionPlan workout={workout} session={session} model={model} preview={openPreview} />
+						{!prep && (
+							<LayerCard className="stack">
+								<Field
+									disabled={model.busy}
+									label="训练备注"
+									value={editor.actual.notes}
+									onChange={(notes) => editor.setActual({ ...editor.actual, notes })}
+								/>
+								<Choice
+									disabled={model.busy}
+									label="训练时有疼痛或明显不适吗？"
+									value={editor.actual.painFlag ? "yes" : "no"}
+									onChange={(value) =>
+										editor.setActual({ ...editor.actual, painFlag: value === "yes" })
+									}
+									options={[
+										{ value: "no", label: "没有" },
+										{ value: "yes", label: "有，停止并复盘" },
+									]}
+								/>
+							</LayerCard>
+						)}
+					</>
+				) : (
+					<div className="workout-stage-layout">
+						<section className="workout-stage" aria-label="当前训练">
+							<div className="workout-progress">
+								<span>
+									进度 {completed} / {workout.steps.length}
+								</span>
+								<span>
+									总用时{" "}
+									<strong className="mono" data-testid="total-timer">
+										{editor.actual.timing ? clockLabel(workout.totalSeconds) : "未计时"}
+									</strong>
+								</span>
+							</div>
+							<div className="workout-progress-track">
+								<div
+									style={{ width: `${(completed / Math.max(1, workout.steps.length)) * 100}%` }}
+								/>
+							</div>
+							<div className="current-heading">
+								<span className="eyebrow">
+									{step?.kind === "strength"
+										? `第 ${step.set.setIndex} / ${step.exercise.workingSets.length} 组`
+										: "有氧与恢复"}
+								</span>
+								<h1>{title}</h1>
+								<p>
+									{step?.kind === "strength"
+										? `${step.exercise.workingSets.length} 组 × 每组 ${step.set.repsLow === step.set.repsHigh ? step.set.repsHigh : `${step.set.repsLow}–${step.set.repsHigh}`} 次`
+										: step
+											? `目标 ${step.cardio.plannedMinutes} 分钟 · ${step.cardio.modality === "cycling" ? "骑行" : "轻松活动"}`
+											: "按实际完成量结束，不补填未完成的训练。"}
 								</p>
-							</LayerCard.Body>
-						</LayerCard>
-					))}
-					<LayerCard>
-						<LayerCard.Header>
-							<h2 className="card-title">有氧与热身</h2>
-						</LayerCard.Header>
-						<LayerCard.Body className="stack">
-							{cardio.map((segment) => (
-								<div key={segment.id} className="form-grid">
-									<div>
-										<strong style={{ fontSize: 13 }}>
-											{
-												{ preparation: "轻松热身", main: "主要有氧", recovery: "放松恢复" }[
-													segment.role
-												]
-											}
-										</strong>
-										<p className="field-hint">
-											计划 {segment.plannedMinutes} 分钟 ·{" "}
-											{segment.plannedIntensity === "moderate"
-												? "中等强度"
-												: segment.plannedIntensity === "vigorous"
-													? "高强度"
-													: "轻松强度"}
-										</p>
-									</div>
-									{prep && (
-										<Field
-											label="计划分钟"
-											type="number"
-											min={1}
-											max={150}
-											value={segment.plannedMinutes}
-											onChange={(value) => editor.setCardioTarget(segment.id, Number(value))}
-										/>
-									)}
-									{!prep && (
-										<Field
-											label="实际分钟"
-											type="number"
-											min={0}
-											max={180}
-											step={1}
-											value={
-												editor.actual.cardioSegments.find((item) => item.id === segment.id)
-													?.actualMinutes ?? 0
-											}
-											onChange={(value) => editor.updateCardio(segment.id, Number(value))}
-										/>
-									)}
-									{!prep && (
-										<Choice
-											label="实际强度"
-											value={
-												editor.actual.cardioSegments.find((item) => item.id === segment.id)
-													?.intensity ?? "unknown"
-											}
-											onChange={(value) =>
-												editor.setCardioIntensity(segment.id, value as CardioIntensity)
-											}
-											options={[
-												{ value: "unknown", label: "未记录" },
-												{ value: "easy", label: "轻松" },
-												{ value: "moderate", label: "中等（能说话，难唱歌）" },
-												{ value: "vigorous", label: "较高（只能说短句）" },
-											]}
-										/>
-									)}
+							</div>
+							<div className={`workout-clock${entry && !entry.endedAt ? " running" : ""}`}>
+								<svg viewBox="0 0 200 200" aria-hidden="true">
+									<circle className="clock-track" cx="100" cy="100" r="92" />
+									<circle
+										className="clock-sweep"
+										cx="100"
+										cy="100"
+										r="92"
+										pathLength="60"
+										strokeDasharray={`${workout.stepSeconds % 60 || (workout.stepSeconds > 0 ? 60 : 0)} 60`}
+									/>
+								</svg>
+								<div>
+									<span className="field-hint">
+										{entry
+											? step?.kind === "strength"
+												? "当前组用时"
+												: "当前段用时"
+											: workout.restSeconds > 0
+												? "组间恢复"
+												: "准备开始"}
+									</span>
+									<strong className="mono" data-testid="step-timer">
+										{clockLabel(entry ? workout.stepSeconds : workout.restSeconds)}
+									</strong>
+									<span className="field-hint">
+										{entry
+											? "专注动作，按自己的节奏"
+											: workout.restSeconds > 0
+												? "恢复好即可继续，不强制等待"
+												: "准备好后开始计时"}
+									</span>
 								</div>
-							))}
-						</LayerCard.Body>
-					</LayerCard>
-					{!prep && (
-						<LayerCard className="stack">
-							<Field
-								label="训练备注"
-								value={editor.actual.notes}
-								onChange={(value) => editor.setActual({ ...editor.actual, notes: value })}
-							/>
-							<Choice
-								label="训练时有疼痛或明显不适吗？"
-								value={editor.actual.painFlag ? "yes" : "no"}
-								onChange={(value) =>
-									editor.setActual({ ...editor.actual, painFlag: value === "yes" })
-								}
-								options={[
-									{ value: "no", label: "没有" },
-									{ value: "yes", label: "有，停止并复盘" },
-								]}
-							/>
-						</LayerCard>
-					)}
-					<LayerCard>
-						<div className="card-footer">
-							<span className="field-hint">
-								{editor.dirty ? "有尚未保存的修改" : `已保存 · v${session.version}`}
-							</span>
-							{prep ? (
-								<Button loading={model.busy} onClick={() => save("active")}>
-									<Play size={14} /> 确认并开始
+							</div>
+							{step?.kind === "strength" ? (
+								<>
+									<div className="stepper-pair workout-inputs">
+										<NumberStepper
+											label="本组次数"
+											value={workout.reps}
+											max={50}
+											unit="次"
+											disabled={model.busy}
+											onChange={workout.setReps}
+										/>
+										<NumberStepper
+											label="本组负重"
+											value={workout.loadKg ?? 15}
+											max={500}
+											step={5}
+											unit={step.exercise.loadConvention === "per-hand" ? "kg/只" : "kg 总重"}
+											vertical
+											disabled={model.busy}
+											onChange={workout.setLoadKg}
+										/>
+									</div>
+									<div className="load-confirmation">
+										{workout.loadKg === null ? (
+											<Button
+												size="sm"
+												variant="ghost"
+												disabled={model.busy}
+												onClick={() => workout.setLoadKg(15)}
+											>
+												选用 15 kg
+											</Button>
+										) : (
+											<Button
+												size="sm"
+												variant="ghost"
+												disabled={model.busy}
+												onClick={() => workout.setLoadKg(null)}
+											>
+												清除负重
+											</Button>
+										)}
+										<span className="field-hint">
+											{workout.loadKg === null
+												? "未选负重不写入；15 kg 是快捷预设，非安全建议"
+												: "每档 5 kg，按实际器械与自身状态选择"}
+										</span>
+									</div>
+									<Button
+										className="workout-cues-button"
+										variant="ghost"
+										onClick={(event) => openPreview(step.exercise.exerciseId, event.currentTarget)}
+									>
+										<BookOpen size={16} /> 回顾动作要领
+									</Button>
+								</>
+							) : step ? (
+								<div className="cardio-controls">
+									<NumberStepper
+										label="实际分钟"
+										value={workout.minutes ?? Math.min(180, Math.floor(workout.stepSeconds / 60))}
+										max={180}
+										unit="分钟"
+										disabled={model.busy}
+										onChange={workout.setMinutes}
+									/>
+									<Choice
+										disabled={model.busy}
+										label="实际强度"
+										value={workout.intensity}
+										onChange={(value) => workout.setIntensity(value as CardioIntensity)}
+										options={[
+											{ value: "unknown", label: "未记录强度" },
+											{ value: "easy", label: "轻松" },
+											{ value: "moderate", label: "中等，能说话" },
+											{ value: "vigorous", label: "较高，只能说短句" },
+										]}
+									/>
+									<p className="field-hint">
+										{workout.minutes === null
+											? "完成后自动记录精确用时；左右键可修正分钟。"
+											: "保存调整后的分钟数，原始计时仍保留。"}
+									</p>
+								</div>
+							) : null}
+						</section>
+						<aside className="workout-context">
+							{step?.kind === "strength" && (
+								<>
+									<img
+										src={getExercise(step.exercise.exerciseId).asset.posterPath}
+										alt={`${title}静态动作预览（未审核示意）`}
+									/>
+									<ol className="cue-list">
+										{chineseCues[step.exercise.exerciseId].map((cue) => (
+											<li key={cue}>{cue}</li>
+										))}
+									</ol>
+									<p className="field-hint">
+										动作预览尚未经专业审核。疼痛或不确定时停止并咨询专业人员。
+									</p>
+								</>
+							)}
+							<h2 className="card-title">本场时间轴</h2>
+							<div className="workout-mini-timeline">
+								{editor.target.blocks.map((block, i) => (
+									<span key={block.cardio?.id ?? i}>
+										{block.cardio
+											? cardioNames[block.cardio.role]
+											: `力量 · ${block.exercises.length} 个动作`}
+										<small>{block.durationMinutes} 分钟</small>
+									</span>
+								))}
+							</div>
+						</aside>
+					</div>
+				)}
+			</div>
+			<footer className="workout-actions">
+				<div className="workout-save-state" role="status">
+					{model.busy
+						? "正在保存，请稍候…"
+						: workout.dirty
+							? "有未保存的调整"
+							: `已保存 · v${session.version}`}
+				</div>
+				<div className="workout-action-row">
+					{prep ? (
+						<>
+							<Button
+								variant="secondary"
+								disabled={model.busy}
+								onClick={() => void workout.saveDraft()}
+							>
+								<Save size={16} /> 保存准备
+							</Button>
+							<Button loading={model.busy} onClick={() => void workout.begin()}>
+								<Play size={16} /> 确认并开始
+							</Button>
+						</>
+					) : showPlan ? (
+						<>
+							<Button
+								variant="secondary"
+								disabled={model.busy}
+								onClick={() => (finished ? leave() : workout.setOverview(false))}
+							>
+								{finished ? "返回首页" : "继续训练"}
+							</Button>
+							<Button loading={model.busy} onClick={() => void workout.saveEdits()}>
+								<Save size={16} /> 保存调整
+							</Button>
+						</>
+					) : (
+						<>
+							<Button
+								variant="secondary"
+								disabled={model.busy}
+								onClick={() => workout.setOverview(true)}
+							>
+								<ListChecks size={16} /> 计划 / 记录
+							</Button>
+							{step ? (
+								<Button
+									loading={model.busy}
+									onClick={() => void (entry ? workout.record() : workout.startCurrent())}
+								>
+									{entry ? <Check size={18} /> : <Play size={18} />}
+									{entry
+										? step.kind === "strength"
+											? "完成本组并保存"
+											: "完成本段并保存"
+										: "开始下一组 / 段"}
 								</Button>
 							) : (
-								<div className="form-actions">
-									<Button variant="secondary" onClick={editor.performedAsPlanned}>
-										<CheckCheck size={15} /> 按计划完成
-									</Button>
-									<Button
-										loading={model.busy}
-										disabled={session.status === "abandoned"}
-										onClick={() => save("completed")}
-									>
-										<Save size={15} /> 保存训练
-									</Button>
-								</div>
+								<Button onClick={(event) => openEnding(event.currentTarget)}>
+									<Flag size={16} /> 结束训练
+								</Button>
 							)}
-						</div>
-					</LayerCard>
-				</div>
-				<div className="stack">
-					{!!exercises.length && (
-						<Suspense fallback={<LayerCard.Loading label="加载动作" />}>
-							<LazyExerciseViewer key={selected} exerciseId={selected} compact />
-						</Suspense>
+						</>
 					)}
-					<LayerCard>
-						<LayerCard.Header>
-							<h2 className="card-title">
-								<Clock3 size={17} /> 组间恢复
-							</h2>
-						</LayerCard.Header>
-						<LayerCard.Body className="stack">
-							<div className="metric-value">
-								{String(Math.floor(editor.restSeconds / 60)).padStart(2, "0")}:
-								{String(editor.restSeconds % 60).padStart(2, "0")}
-							</div>
-							<p className="coach-note">计时只是提示。呼吸和状态恢复后，再开始下一组。</p>
-							<Button variant="secondary" onClick={() => editor.startRest(120)}>
-								开始 2 分钟休息
-							</Button>
-						</LayerCard.Body>
-					</LayerCard>
 				</div>
-			</div>
+				{!showPlan && step && (
+					<Button
+						variant="ghost"
+						size="sm"
+						disabled={model.busy}
+						onClick={() => {
+							if (window.confirm("跳过当前组 / 段？不会记为完成。")) void workout.record(true);
+						}}
+					>
+						跳过本组 / 段 <ChevronRight size={13} />
+					</Button>
+				)}
+			</footer>
+			<Dialog
+				open={preview !== null}
+				onOpenChange={(open) => {
+					if (!open) setPreview(null);
+				}}
+			>
+				<DialogContent
+					className="workout-preview"
+					size="lg"
+					onCloseAutoFocus={(event) => {
+						event.preventDefault();
+						previewTrigger.current?.focus();
+					}}
+				>
+					<DialogTitle>{preview ? exerciseNames[preview] : "动作预览"}</DialogTitle>
+					<DialogDescription>未审核示意，不是专业指导。查看期间训练计时继续。</DialogDescription>
+					{preview && (
+						<>
+							<Suspense fallback={<LayerCard.Loading label="加载动作预览" />}>
+								<LazyExerciseViewer key={preview} exerciseId={preview} compact />
+							</Suspense>
+							<ol className="cue-list">
+								{chineseCues[preview].map((cue) => (
+									<li key={cue}>{cue}</li>
+								))}
+							</ol>
+						</>
+					)}
+					<Button onClick={() => setPreview(null)}>回到训练</Button>
+				</DialogContent>
+			</Dialog>
+			<Dialog open={ending} onOpenChange={setEnding}>
+				<DialogContent
+					onCloseAutoFocus={(event) => {
+						event.preventDefault();
+						endingTrigger.current?.focus();
+					}}
+				>
+					<DialogTitle>结束这场训练？</DialogTitle>
+					<DialogDescription>
+						已记录 {completed} / {workout.steps.length}{" "}
+						组或段。正在进行但尚未保存的这一组不会自动计入，已保存记录会保留。
+					</DialogDescription>
+					<p className="metric-value">{clockLabel(workout.totalSeconds)}</p>
+					{model.error && (
+						<p role="alert" className="error-message">
+							{model.error}
+						</p>
+					)}
+					<Field
+						disabled={model.busy}
+						label="训练备注"
+						value={editor.actual.notes}
+						onChange={(notes) => editor.setActual({ ...editor.actual, notes })}
+					/>
+					<Choice
+						disabled={model.busy}
+						label="有疼痛或明显不适吗？"
+						value={editor.actual.painFlag ? "yes" : "no"}
+						onChange={(value) => editor.setActual({ ...editor.actual, painFlag: value === "yes" })}
+						options={[
+							{ value: "no", label: "没有" },
+							{ value: "yes", label: "有，停止并复盘" },
+						]}
+					/>
+					<Button
+						loading={model.busy}
+						onClick={async () => {
+							if (await workout.finish()) setEnding(false);
+						}}
+					>
+						<Flag size={16} /> 确认结束并保存
+					</Button>
+					<Button variant="ghost" disabled={model.busy} onClick={() => setEnding(false)}>
+						继续训练
+					</Button>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

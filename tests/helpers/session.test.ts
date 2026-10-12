@@ -7,8 +7,7 @@ import {
 	suggestProgression,
 	validateSessionActual,
 } from "../../src/domain/session";
-import { actualFromTarget } from "../../src/features/use-rhino-model";
-import { sessionTarget, uuid } from "./fixtures";
+import { actualFromTarget, sessionTarget, uuid } from "./fixtures";
 
 it("enforces workout transitions and actual identity", () => {
 	const target = sessionTarget();

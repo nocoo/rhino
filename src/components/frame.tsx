@@ -92,11 +92,13 @@ export function Frame({
 	navigate,
 	children,
 	identity,
+	immersive = false,
 }: {
 	page: Page;
 	navigate: (page: Page) => void;
 	children: ReactNode;
 	identity?: { name: string | null; avatar: string | null };
+	immersive?: boolean;
 }) {
 	const profileName = identity?.name?.trim() || "我的训练日志";
 	const profileAvatar = identity?.avatar?.trim() || null;
@@ -210,7 +212,7 @@ export function Frame({
 		</Sidebar>
 	);
 	return (
-		<AppShell className="rhino-app">
+		<AppShell className={`rhino-app${immersive ? " workout-immersive" : ""}`}>
 			<AppSkipLink>跳到主要内容</AppSkipLink>
 			{!mobile && rail}
 			<AppMain id="main-content">

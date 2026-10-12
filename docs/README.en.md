@@ -17,7 +17,8 @@ This is a personal preview, not professional coaching or medical care. The 3D mo
 ## Features
 
 - **Training plans:** generate weekly strength/cardio sessions from frequency, time, equipment and priorities, including cardio-only cycling. Adopting a refreshed monthly plan preserves immutable previous revisions.
-- **Workout records:** replace movements and adjust sets, repetitions and cardio duration before starting. Log actual repetitions, load, reps in reserve (RIR), skipped sets and cardio intensity afterward, without counting planned work as performed work.
+- **Immersive workouts:** switch the session option, preview movements and adjust sets, repetitions and minutes with steppers before starting. Mobile follows warm-up, strength, cardio and recovery with total/step clocks, per-step saves, technique dialogs and a visible finish action. Desktop retains a separate reference area.
+- **Actual records:** preserve repetitions, load, reps in reserve (RIR), skipped sets and cardio intensity. Correct actual records without counting planned work as performed work. The optional 15 kg shortcut is not a safe-load recommendation.
 - **Exercise laboratory:** eleven strength movements with 3D illustrations, muscle regions, Chinese cues and static phase posters. Every movement has an attributed YouTube reference; third-party content connects only after explicit loading.
 - **Personal progress:** record dated height and weight and inspect trend curves. Preserve input precision, use historical height for BMI, and derive uncertain heart-rate estimates from birthday, with support for clinician-provided ranges.
 - **Reliable saves:** store personal records in D1, check update conflicts and preserve the original target snapshot after a workout starts. BMI is not a diagnosis; an age-based formula is neither a safety ceiling nor a strength-load prescription.
@@ -30,7 +31,7 @@ Curls, kickbacks, lateral raises, bent-over rows and calf raises are selectable 
 1. Open the [website](https://rhino.hexly.ai) and authenticate through Cloudflare Access as the allowed owner.
 2. Set birthday, equipment and training preferences in the profile, then record height and weight.
 3. Preview and adopt a weekly plan. Select a session for the day and adjust it before starting.
-4. Record performed sets and cardio afterward; review records and trends in the progress view.
+4. Save each performed set or cardio segment during training, then explicitly finish the workout. Review records and trends in the progress view.
 
 Personal pages and business APIs require the owner identity. In the current source, anonymous `GET /api/live` exposes only the application name, version, revision and minimal database health, never personal records; unavailable storage returns 503. Source changes are not necessarily deployed: check [Releases](https://github.com/nocoo/rhino/releases) and [deployment results](https://github.com/nocoo/rhino/actions/workflows/deploy.yml).
 

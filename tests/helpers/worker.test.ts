@@ -1,11 +1,10 @@
 import { join } from "node:path";
 import { afterAll, beforeAll, expect, it, vi } from "vitest";
 import { getPlatformProxy } from "wrangler";
-import { actualFromTarget } from "../../src/features/use-rhino-model";
 import type { WorkerEnv } from "../../worker/env";
 import worker from "../../worker/index";
 import { exerciseApi } from "./api-scenarios";
-import { sessionTarget, uuid } from "./fixtures";
+import { actualFromTarget, sessionTarget, uuid } from "./fixtures";
 import { createIdentity } from "./identity";
 import {
 	assertOwnedPath,

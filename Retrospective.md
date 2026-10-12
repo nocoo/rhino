@@ -203,3 +203,20 @@ so strict JSON parsing correctly rejected the output and blocked the push.
 The owned test state was cleaned up. Scope Git's proxy with
 `git -c http.proxy=http://127.0.0.1:7890 push` and leave local test subprocesses
 free of proxy variables; do not weaken JSON parsing or bypass the hook.
+
+## 2026-10-12 - Verify Pane Context and Workout Viewport
+
+The inherited Herdr environment identified a different workspace than the live
+Rhino controller. Using `--current` created an empty pane in that other space.
+Only that newly created pane was immediately closed; no existing process was
+touched. Subsequent commands used the controller's explicitly verified live pane
+ID. Check inherited IDs against the agent inventory before layout operations.
+The documented Pi Sol alias also returned 404; the task was moved to the available
+Luna runner rather than changing shared model configuration.
+
+Initial workout browser checks caught missing focus restoration on dialogs opened
+outside a DialogTrigger, and screenshots exposed desktop controls scrolling the
+current heading out of view. Explicit trigger focus restoration and a compact
+desktop timer/control grid address these defects. Keep viewport assertions for
+the heading, total clock and completion action alongside persistence checks;
+successful HTTP writes alone do not prove a usable training screen.

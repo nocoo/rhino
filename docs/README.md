@@ -18,6 +18,7 @@ current implementation and open acceptance gates; none certifies medical safety.
 | [07 Delivery and Decisions](07-delivery-and-decisions.md) | Approval choices and independently verifiable implementation stages |
 | [08 Local and Release](08-local-and-release.md) | Current local setup, implementation limits, production and recovery runbook |
 | [09 Video References](09-video-references.md) | Attributed external movement demonstrations and verification limits |
+| [10 Immersive Workout](10-immersive-workout.md) | Mobile timeline, durable clocks, step recording and completion |
 
 ## Reading Conventions
 

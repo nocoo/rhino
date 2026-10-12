@@ -12,8 +12,7 @@ import {
 	type PutProfileResponse,
 	type PutSessionResponse,
 } from "../../src/domain/contracts";
-import { actualFromTarget } from "../../src/features/use-rhino-model";
-import { planInput, profileValues, sessionTarget, uuid } from "./fixtures";
+import { actualFromTarget, planInput, profileValues, sessionTarget, uuid } from "./fixtures";
 
 export type ApiHarness = {
 	request: (path: string, init?: RequestInit) => Promise<Response>;

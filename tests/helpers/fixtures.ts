@@ -2,6 +2,7 @@ import {
 	defaultGuidance,
 	defaultPreferences,
 	type PlanInput,
+	type SessionActual,
 	type SessionRecord,
 	type SessionTarget,
 } from "../../src/domain/contracts";
@@ -77,3 +78,36 @@ export const sessionRecord = (): SessionRecord => ({
 	createdAt: "2026-10-09T01:00:00Z",
 	updatedAt: "2026-10-09T01:00:00Z",
 });
+
+export function actualFromTarget(target: SessionTarget): SessionActual {
+	return {
+		exercises: target.blocks.flatMap((block) =>
+			block.exercises.map((exercise) => ({
+				id: exercise.id,
+				sets: exercise.workingSets.map((set) => ({
+					id: set.id,
+					status: "performed" as const,
+					reps: set.repsHigh,
+					loadKg: set.loadKg,
+					rir: null,
+				})),
+			})),
+		),
+		cardioSegments: target.blocks.flatMap((block) =>
+			block.cardio
+				? [
+						{
+							id: block.cardio.id,
+							role: block.cardio.role,
+							actualMinutes: block.cardio.plannedMinutes,
+							intensity: block.cardio.plannedIntensity,
+						},
+					]
+				: [],
+		),
+		painFlag: false,
+		perceivedEffort: null,
+		completedAsPlanned: true,
+		notes: "",
+	};
+}

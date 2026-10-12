@@ -9,7 +9,6 @@ import type {
 } from "../domain/contracts";
 import { estimateStrengthMinutes } from "../domain/planning";
 import { emptyActual } from "../domain/session";
-import { actualFromTarget } from "./use-rhino-model";
 
 export function useSessionModel(session: SessionRecord) {
 	const [target, setTarget] = useState<SessionTarget>(() => structuredClone(session.target));
@@ -17,8 +16,11 @@ export function useSessionModel(session: SessionRecord) {
 		structuredClone(session.actual ?? emptyActual(session.target)),
 	);
 	const [dirty, setDirty] = useState(false);
-	const [restUntil, setRestUntil] = useState<number | null>(null);
-	const [restSeconds, setRestSeconds] = useState(0);
+	useEffect(() => {
+		setTarget(structuredClone(session.target));
+		setActual(structuredClone(session.actual ?? emptyActual(session.target)));
+		setDirty(false);
+	}, [session]);
 	useEffect(() => {
 		const warn = (event: BeforeUnloadEvent) => {
 			if (dirty) event.preventDefault();
@@ -26,13 +28,12 @@ export function useSessionModel(session: SessionRecord) {
 		window.addEventListener("beforeunload", warn);
 		return () => window.removeEventListener("beforeunload", warn);
 	}, [dirty]);
-	useEffect(() => {
-		if (restUntil === null) return;
-		const tick = () => setRestSeconds(Math.max(0, Math.ceil((restUntil - Date.now()) / 1000)));
-		tick();
-		const interval = window.setInterval(tick, 500);
-		return () => window.clearInterval(interval);
-	}, [restUntil]);
+	function selectTarget(next: SessionTarget) {
+		if (session.status !== "draft") return;
+		setTarget(structuredClone(next));
+		setActual(emptyActual(next));
+		setDirty(true);
+	}
 	function changeTarget(next: SessionTarget) {
 		for (const block of next.blocks) {
 			if (block.kind === "strength")
@@ -41,9 +42,7 @@ export function useSessionModel(session: SessionRecord) {
 		const duration = next.blocks.reduce((sum, block) => sum + block.durationMinutes, 0);
 		if (duration > 180) return;
 		next.timeBudgetMinutes = Math.max(20, duration);
-		setTarget(next);
-		setActual(emptyActual(next));
-		setDirty(true);
+		selectTarget(next);
 	}
 	function updateExercise(index: number, id: StrengthExerciseId) {
 		const next = structuredClone(target);
@@ -134,15 +133,10 @@ export function useSessionModel(session: SessionRecord) {
 		next.timeBudgetMinutes = Math.max(20, total);
 		changeTarget(next);
 	}
-	function performedAsPlanned() {
-		setActual(actualFromTarget(target));
-		setDirty(true);
-	}
 	return {
 		target,
 		actual,
 		dirty,
-		restSeconds,
 		updateExercise,
 		setCount,
 		setReps,
@@ -150,9 +144,8 @@ export function useSessionModel(session: SessionRecord) {
 		updateCardio,
 		setCardioIntensity,
 		setCardioTarget,
-		performedAsPlanned,
+		selectTarget,
 		setDirty,
-		startRest: (seconds: number) => setRestUntil(Date.now() + seconds * 1000),
 		setActual: (next: typeof actual) => {
 			setActual(next);
 			setDirty(true);

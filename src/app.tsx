@@ -40,8 +40,13 @@ function Workspace() {
 		setPage(next);
 	};
 	return (
-		<Frame page={page} navigate={navigate} identity={identity}>
-			{model.error && (
+		<Frame
+			page={page}
+			navigate={navigate}
+			identity={identity}
+			immersive={model.active?.status === "active"}
+		>
+			{model.error && !model.active && (
 				<div role="alert" className="error-message" style={{ marginBottom: 20 }}>
 					{model.error}
 					<Button size="sm" variant="ghost" onClick={() => void model.reload()}>
@@ -49,7 +54,7 @@ function Workspace() {
 					</Button>
 				</div>
 			)}
-			{model.message && (
+			{model.message && !model.active && (
 				<p className="status-message" role="status" style={{ marginBottom: 16 }}>
 					{model.message}
 				</p>
@@ -58,7 +63,7 @@ function Workspace() {
 				<LayerCard.Loading label="正在加载私人训练空间" />
 			) : model.active ? (
 				<SessionView
-					key={`${model.active.id}-${model.active.version}`}
+					key={model.active.id}
 					model={model}
 					session={model.active}
 					close={() => model.setActive(null)}

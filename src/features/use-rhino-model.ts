@@ -183,6 +183,10 @@ export function useRhinoModel() {
 				mutationId: metadata.mutationId,
 			});
 			setActive(result.session);
+			setSessions((previous) => [
+				result.session,
+				...previous.filter((item) => item.id !== result.session.id),
+			]);
 			pending.current = null;
 		}, "训练准备已保存，开始前仍可调整");
 	}
@@ -192,7 +196,8 @@ export function useRhinoModel() {
 		status: SessionRecord["status"],
 		target: SessionTarget,
 		actual: SessionActual | null,
-	) {
+	): Promise<SessionRecord | null> {
+		let saved: SessionRecord | null = null;
 		await run(
 			async () => {
 				const data = {
@@ -210,11 +215,18 @@ export function useRhinoModel() {
 					mutationId: metadata.mutationId,
 				});
 				setActive(result.session);
+				saved = result.session;
+				setSessions((previous) => [
+					result.session,
+					...previous.filter((item) => item.id !== session.id),
+				]);
 				pending.current = null;
-				await reload();
+				if (status === "completed")
+					await reload().catch(() => setError("训练已保存，统计刷新失败，请稍后刷新页面。"));
 			},
 			status === "completed" ? "训练已记录。下一次，继续。" : "训练已保存",
 		);
+		return saved;
 	}
 
 	return {
@@ -244,36 +256,3 @@ export function useRhinoModel() {
 }
 
 export type RhinoModel = ReturnType<typeof useRhinoModel>;
-
-export function actualFromTarget(target: SessionTarget): SessionActual {
-	return {
-		exercises: target.blocks.flatMap((block) =>
-			block.exercises.map((exercise) => ({
-				id: exercise.id,
-				sets: exercise.workingSets.map((set) => ({
-					id: set.id,
-					status: "performed" as const,
-					reps: set.repsHigh,
-					loadKg: set.loadKg,
-					rir: null,
-				})),
-			})),
-		),
-		cardioSegments: target.blocks.flatMap((block) =>
-			block.cardio
-				? [
-						{
-							id: block.cardio.id,
-							role: block.cardio.role,
-							actualMinutes: block.cardio.plannedMinutes,
-							intensity: block.cardio.plannedIntensity,
-						},
-					]
-				: [],
-		),
-		painFlag: false,
-		perceivedEffort: null,
-		completedAsPlanned: true,
-		notes: "",
-	};
-}
