@@ -31,6 +31,7 @@ export const API_ROUTES = [
 	{ method: "GET", path: "/api/sessions" },
 	{ method: "GET", path: "/api/sessions/:id" },
 	{ method: "PUT", path: "/api/sessions/:id" },
+	{ method: "DELETE", path: "/api/sessions/:id" },
 	{ method: "GET", path: "/api/progress" },
 ] as const;
 
@@ -332,6 +333,10 @@ export const putSessionRequestSchema = mutationMetaSchema.extend({
 	actual: sessionActualSchema.nullable(),
 });
 
+export const deleteSessionRequestSchema = z.strictObject({
+	expectedVersion: versionSchema,
+});
+
 export const planInputSchema = z.strictObject({
 	timezone: timeZoneSchema,
 	reviewMonth: monthSchema,
@@ -515,6 +520,7 @@ export type CardioSegmentActual = z.infer<typeof cardioSegmentActualSchema>;
 export type SessionActual = z.infer<typeof sessionActualSchema>;
 export type SessionRecord = z.infer<typeof sessionRecordSchema>;
 export type PutSessionRequest = z.infer<typeof putSessionRequestSchema>;
+export type DeleteSessionRequest = z.infer<typeof deleteSessionRequestSchema>;
 export type PlanInput = z.infer<typeof planInputSchema>;
 export type WeeklySlot = z.infer<typeof weeklySlotSchema>;
 export type PlanRationale = z.infer<typeof planRationaleSchema>;
@@ -581,6 +587,10 @@ export type GetSessionsResponse = {
 export type PutSessionResponse = {
 	session: SessionRecord;
 	warnings: Warning[];
+};
+
+export type DeleteSessionResponse = {
+	id: string;
 };
 
 export type GetProgressResponse = {

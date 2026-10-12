@@ -39,7 +39,7 @@ test("calendar reads older months and preserves selection after record review", 
 	await openCalendar(page);
 	await page.getByLabel("日历月份", { exact: true }).fill(date.slice(0, 7));
 	await page.getByRole("button", { name: new RegExp(`^${date}`) }).click();
-	await page.getByRole("button", { name: "继续记录", exact: true }).first().click();
+	await page.getByRole("button", { name: "修改训练记录", exact: true }).first().click();
 	await expect(page.locator(".workout-topbar")).toContainText(date);
 	await page.getByRole("button", { name: "离开", exact: true }).click();
 	await expect(page.getByRole("button", { name: new RegExp(`^${date}`) })).toHaveAttribute(
@@ -92,7 +92,7 @@ test("calendar manually records actuals without inventing a timer or performed s
 	await expect(page.locator(".workout-topbar")).toContainText("训练回顾");
 	await page.getByRole("button", { name: "返回上一页", exact: true }).click();
 	await expect(
-		page.getByRole("button", { name: "查看训练结果", exact: true }).first(),
+		page.getByRole("button", { name: "修改训练记录", exact: true }).first(),
 	).toBeVisible();
 	const result = await (await page.request.get(`/api/sessions?from=${today}&to=${today}`)).json();
 	const manual = result.data.sessions.find(
@@ -118,7 +118,7 @@ test("calendar manually records actuals without inventing a timer or performed s
 	await page
 		.locator(".calendar-record")
 		.filter({ hasText: `计划 v${adopted.revision}` })
-		.getByRole("button", { name: "查看训练结果", exact: true })
+		.getByRole("button", { name: "修改训练记录", exact: true })
 		.click();
 	await expect(intensity).toContainText("中等，能说话");
 	await intensity.click();

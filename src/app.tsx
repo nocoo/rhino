@@ -10,6 +10,7 @@ import { LibraryView } from "./features/library-view";
 import { PlansView } from "./features/plans-view";
 import { ProfileView } from "./features/profile-view";
 import { ProgressView } from "./features/progress-view";
+import { SessionReview } from "./features/session-review";
 import { SessionView } from "./features/session-view";
 import { TodayView } from "./features/today-view";
 import { useIdentity } from "./features/use-identity";
@@ -46,7 +47,9 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean
 }
 
 function Workspace() {
-	const model = useRhinoModel((session) => router.navigate(sessionPath(session.id, router.href)));
+	const model = useRhinoModel((session, mode) =>
+		router.navigate(sessionPath(session.id, route.sessionId ? route.parent : router.href, mode)),
+	);
 	const identity = useIdentity();
 	const router = useHistory(() => confirmNavigation(Boolean(route.sessionId && model.busy)));
 	const route = parseRoute(router.href);
@@ -62,7 +65,11 @@ function Workspace() {
 		route.kind === "missing"
 			? "页面不存在"
 			: route.sessionId
-				? "训练记录"
+				? route.sessionMode === "view"
+					? "训练详情"
+					: route.sessionMode === "edit"
+						? "修改训练"
+						: "训练记录"
 				: route.exercise
 					? exerciseNames[route.exercise]
 					: pageLabels[page];
@@ -75,10 +82,10 @@ function Workspace() {
 				page={page}
 				navigate={navigate}
 				identity={identity}
-				immersive={active?.status === "active"}
+				immersive={active?.status === "active" && route.sessionMode !== "view"}
 				title={title}
 				breadcrumbs={breadcrumbs}
-				contentKey={`${page}/${route.sessionId ?? route.kind}`}
+				contentKey={`${page}/${route.sessionId ?? route.kind}/${route.sessionMode ?? ""}`}
 			>
 				{model.error && !active && (
 					<div role="alert" className="error-message" style={{ marginBottom: 16 }}>
@@ -117,11 +124,18 @@ function Workspace() {
 					) : (
 						<LayerCard.Loading label="正在加载训练记录" />
 					)
+				) : active && route.sessionMode === "view" ? (
+					<SessionReview
+						session={active}
+						model={model}
+						close={() => router.navigate(route.parent)}
+					/>
 				) : active ? (
 					<SessionView
-						key={active.id}
+						key={`${active.id}/${route.sessionMode}`}
 						model={model}
 						session={active}
+						editing={route.sessionMode === "edit"}
 						close={() => router.navigate(route.parent)}
 					/>
 				) : page === "today" ? (

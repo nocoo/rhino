@@ -47,6 +47,10 @@ it("preserves valid session ancestors without allowing nested or external parent
 	])
 		expect(parseRoute(sessionPath(id, from)).parent).toBe("/calendar");
 	expect(parseRoute(`/sessions/${id}`).parent).toBe("/calendar");
+	for (const mode of ["view", "edit", "workout"] as const) {
+		expect(parseRoute(sessionPath(id, "/calendar", mode)).sessionMode).toBe(mode);
+	}
+	expect(parseRoute(`/sessions/${id}?mode=unknown`).sessionMode).toBe("workout");
 	expect(parseRoute(sessionPath(id, "/today/../progress#main-content")).parent).toBe(
 		"/progress#main-content",
 	);

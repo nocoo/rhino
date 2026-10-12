@@ -8,7 +8,7 @@ import { deleteMeasurement, getMeasurements, putMeasurement } from "./routes/mea
 import { getPlans, previewPlans, putPlan } from "./routes/plans";
 import { getProfile, putProfile } from "./routes/profile";
 import { getProgress } from "./routes/progress";
-import { getSession, getSessions, putSession } from "./routes/sessions";
+import { deleteSession, getSession, getSessions, putSession } from "./routes/sessions";
 
 const MUTATING = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
@@ -117,6 +117,9 @@ export async function handleApi(
 	}
 	if (sessionMatch?.[1] && request.method === "PUT") {
 		return putSession(request, env, sessionMatch[1]);
+	}
+	if (sessionMatch?.[1] && request.method === "DELETE") {
+		return deleteSession(request, env, sessionMatch[1]);
 	}
 	if (path === "/api/progress" && request.method === "GET") {
 		return getProgress(url, env);

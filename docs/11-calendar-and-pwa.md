@@ -16,6 +16,10 @@ and `popstate`; Basalt breadcrumb links use the same navigation adapter.
 | `/profile` | Personal profile |
 | `/sessions/:id?from=...` | Independently loaded training record and parent path |
 
+Session links accept `mode=view` for read-only details and `mode=edit` for the
+existing plan/actuals editor. Omitting the mode resumes the workout flow. Switching
+modes retains the original parent, including the selected calendar date.
+
 Session deep links load their record by ID, including records beyond the home
 summary's one-year range. Failed requests remain retryable, and obsolete requests
 are aborted. Unknown paths show an explicit missing-page state. Only valid local
@@ -57,6 +61,23 @@ Date cells distinguish scheduled plans, completed records and unfinished records
 Selecting a date exposes every session on that day. Returning from the session
 editor retains the selected date. Previous/next month, direct month input and
 Today provide cross-month navigation. Errors never masquerade as empty results.
+
+Selected-day records use a compact Basalt table instead of individual cards.
+Each row contains the training name, status, creation time, actual work and plan
+provenance. Three always-visible, 44px icon actions open, edit or delete the
+record. Titles use 14px medium text; supporting text uses 12px regular text.
+The month grid geometry is unchanged.
+
+Deletion requires explicit confirmation and the record's current version.
+`DELETE /api/sessions/:id` accepts `{expectedVersion}` under the existing owner,
+Origin and JSON checks. A stale version returns 409 without deleting anything;
+the dialog offers reloading the record. Successful deletion refreshes the calendar
+and progress totals. Repeating a successful deletion is safe after a lost response.
+Migration `0002_session_tombstones.sql` retains only deleted IDs, not workout
+payloads, and prevents delayed create retries from resurrecting deleted records.
+Apply this migration before running the new API; rolling back application code
+must not re-enable unguarded session insertion. This change does not introduce a
+recycle bin or delete plans.
 
 A scheduled date up to today supports manual recording. This creates an active
 record with empty actuals and no timer, opens the actuals editor, and requires an

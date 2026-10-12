@@ -2,31 +2,21 @@ import { Button, Input, LayerCard } from "@nocoo/basalt";
 import { PageHeader } from "@nocoo/basalt/components/page-header";
 import { SectionRule } from "@nocoo/basalt/components/section-rule";
 import {
-	ArrowUpRight,
 	CalendarDays,
 	Check,
 	ChevronLeft,
 	ChevronRight,
 	ClipboardPen,
 	Clock3,
-	Dumbbell,
 	Leaf,
 	Play,
 } from "lucide-react";
 import type { Page } from "../components/frame";
 import { emphasisNames, WorkoutSummary } from "../components/workout-summary";
-import { recordedWork } from "../domain/calendar";
 import { WEEKDAY_LABELS, weekdayOf } from "../domain/dates";
+import { SessionRecordList } from "./session-record-list";
 import { useCalendarModel } from "./use-calendar-model";
 import type { RhinoModel } from "./use-rhino-model";
-
-const statusNames = { draft: "准备中", active: "进行中", completed: "已完成", abandoned: "已结束" };
-const statusPillClass = {
-	draft: "pill pill-warning",
-	active: "pill pill-warning",
-	completed: "pill pill-success",
-	abandoned: "pill pill-muted",
-};
 
 export function CalendarView({
 	model,
@@ -174,51 +164,7 @@ export function CalendarView({
 							</LayerCard.Body>
 						</LayerCard>
 					) : records.length ? (
-						records.map((session) => {
-							const actual = recordedWork(session);
-							return (
-								<LayerCard key={session.id} className="calendar-record">
-									<LayerCard.Header>
-										<div className="card-footer">
-											<span className={statusPillClass[session.status]}>
-												{session.status === "completed" ? (
-													<Check size={14} />
-												) : (
-													<Clock3 size={14} />
-												)}
-												{statusNames[session.status]}
-											</span>
-											<span className="pill pill-muted mono">
-												{session.sourcePlanRevision
-													? `计划 v${session.sourcePlanRevision}`
-													: "独立训练"}
-											</span>
-										</div>
-										<h2 className="card-title" style={{ marginTop: 8 }}>
-											{emphasisNames[session.target.emphasis]}
-										</h2>
-									</LayerCard.Header>
-									<LayerCard.Body>
-										<div className="calendar-actual">
-											<span>
-												<Dumbbell size={15} /> {actual.sets} 组
-											</span>
-											<span>
-												<Clock3 size={15} /> 有氧 {Math.round(actual.minutes * 10) / 10} 分钟
-											</span>
-										</div>
-									</LayerCard.Body>
-									<LayerCard.Footer>
-										<Button variant="secondary" onClick={() => model.openSession(session)}>
-											{session.status === "completed" || session.status === "abandoned"
-												? "查看训练结果"
-												: "继续记录"}
-											<ArrowUpRight size={16} />
-										</Button>
-									</LayerCard.Footer>
-								</LayerCard>
-							);
-						})
+						<SessionRecordList records={records} model={model} calendar={calendar} />
 					) : (
 						<div className="coach-callout">
 							<p className="field-hint">当天尚无训练记录；计划不会自动计入完成量。</p>

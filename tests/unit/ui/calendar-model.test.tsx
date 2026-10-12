@@ -15,6 +15,8 @@ afterEach(() => {
 const model = {
 	today: "2026-10-12",
 	plans: { current: null, history: [] },
+	deleteSession: vi.fn(),
+	busy: false,
 } as unknown as RhinoModel;
 function setup() {
 	return renderHook(() => {
@@ -39,6 +41,29 @@ it("navigates arbitrary months, validates bounds and selects today", async () =>
 	act(() => hook.result.current.today());
 	await waitFor(() => expect(hook.result.current.loading).toBe(false));
 	expect(hook.result.current.selected).toBe(model.today);
+});
+
+it("confirms an exact record, keeps failed deletion open and refreshes on success", async () => {
+	const record = sessionRecord();
+	vi.mocked(api).mockResolvedValue({ sessions: [record] });
+	const hook = setup();
+	await waitFor(() => expect(hook.result.current.loading).toBe(false));
+	await act(async () => hook.result.current.confirmDelete());
+	expect(model.deleteSession).not.toHaveBeenCalled();
+	act(() => hook.result.current.setDeleting(record));
+	model.busy = true;
+	await act(async () => hook.result.current.confirmDelete());
+	expect(model.deleteSession).not.toHaveBeenCalled();
+	model.busy = false;
+	vi.mocked(model.deleteSession).mockResolvedValueOnce(false);
+	await act(async () => hook.result.current.confirmDelete());
+	expect(hook.result.current.deleting).toBe(record);
+	vi.mocked(model.deleteSession).mockResolvedValueOnce(true);
+	vi.mocked(api).mockResolvedValueOnce({ sessions: [] });
+	await act(async () => hook.result.current.confirmDelete());
+	await waitFor(() => expect(hook.result.current.loading).toBe(false));
+	expect(hook.result.current.deleting).toBeNull();
+	expect(hook.result.current.sessions).toEqual([]);
 });
 it("discards stale requests, reports failures and retries without false empty success", async () => {
 	let resolve!: (data: unknown) => void;

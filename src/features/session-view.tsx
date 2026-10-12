@@ -41,12 +41,14 @@ export function SessionView({
 	model,
 	session,
 	close,
+	editing = false,
 }: {
 	model: RhinoModel;
 	session: SessionRecord;
 	close: () => void;
+	editing?: boolean;
 }) {
-	const workout = useWorkoutModel(session, model);
+	const workout = useWorkoutModel(session, model, editing);
 	const { editor, step, entry } = workout;
 	const [preview, setPreview] = useState<StrengthExerciseId | null>(null);
 	const [previewOpen, setPreviewOpen] = useState(false);

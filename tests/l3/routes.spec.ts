@@ -85,7 +85,7 @@ test("old session deep links reload and cancelled back navigation preserves edit
 	await page
 		.locator(".calendar-record")
 		.nth(index)
-		.getByRole("button", { name: "继续记录", exact: true })
+		.getByRole("button", { name: "修改训练记录", exact: true })
 		.click();
 	await expect(page).toHaveURL(new RegExp(`/sessions/${id}\\?`));
 	await page.reload();

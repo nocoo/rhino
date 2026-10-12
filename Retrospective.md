@@ -339,3 +339,12 @@ the runner was using them. Finish source edits before the final full browser run
 Visual inspection also caught retained island scrolling across pages and clipped
 date labels. Reset the island at page/record boundaries and assert visible titles
 and complete label geometry, not merely successful route changes.
+
+## 2026-10-13 — Keep test isolation within repository scope
+
+A delegated deletion test task attempted an additional macOS sandbox wrapper and
+then requested escalation after it failed. The coordinator cancelled that request
+and used the repository's existing isolated Worker/D1 test runner. No system ACL,
+Keychain or certificate changes were made. Delegated testing instructions must
+explicitly prohibit unrelated runtime/security reconfiguration and require a
+handoff when the supported runner cannot execute.

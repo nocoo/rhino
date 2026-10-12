@@ -88,8 +88,34 @@ it("notifies the router when a record is opened", async () => {
 	await waitFor(() => expect(hook.result.current.loading).toBe(false));
 	const record = sessionRecord();
 	act(() => hook.result.current.openSession(record));
-	expect(opened).toHaveBeenCalledWith(record);
+	expect(opened).toHaveBeenCalledWith(record, "workout");
 	expect(hook.result.current.active).toBe(record);
+	act(() => hook.result.current.openSession(record, "view"));
+	expect(opened).toHaveBeenLastCalledWith(record, "view");
+});
+
+it("deletes under a version check, refreshes totals and preserves failures for retry", async () => {
+	const hook = await model();
+	const record = sessionRecord();
+	act(() => hook.result.current.openSession(record));
+	api.mockRejectedValueOnce(new Error("stale version"));
+	await act(async () => expect(await hook.result.current.deleteSession(record)).toBe(false));
+	expect(hook.result.current.active).toBe(record);
+	expect(hook.result.current.error).toBe("stale version");
+	api.mockResolvedValueOnce({ id: record.id });
+	await act(async () => expect(await hook.result.current.deleteSession(record)).toBe(true));
+	expect(api).toHaveBeenCalledWith(`/sessions/${record.id}`, {
+		method: "DELETE",
+		body: JSON.stringify({ expectedVersion: record.version }),
+	});
+	expect(hook.result.current.active).toBeNull();
+	expect(hook.result.current.message).toBe("训练记录已删除");
+	const other = sessionRecord();
+	act(() => hook.result.current.openSession(other));
+	api.mockResolvedValueOnce({ id: record.id }).mockRejectedValueOnce(new Error("offline"));
+	await act(async () => expect(await hook.result.current.deleteSession(record)).toBe(true));
+	expect(hook.result.current.active).toBe(other);
+	expect(hook.result.current.error).toContain("训练已删除，统计刷新失败");
 });
 async function model() {
 	const hook = renderHook(useRhinoModel);

@@ -11,12 +11,14 @@ export const pageLabels = {
 	profile: "个人档案",
 };
 export type Page = keyof typeof pageLabels;
+export type SessionMode = "workout" | "view" | "edit";
 export type Route = {
 	page: Page;
 	kind: "page" | "session" | "missing";
 	date?: string;
 	exercise?: StrengthExerciseId;
 	sessionId?: string;
+	sessionMode?: SessionMode;
 	parent: string;
 };
 
@@ -45,6 +47,12 @@ export function parseRoute(href: string, allowSession = true): Route {
 			page: parent?.kind === "page" ? parent.page : "calendar",
 			kind: "session",
 			sessionId: parts[1],
+			sessionMode:
+				url.searchParams.get("mode") === "view"
+					? "view"
+					: url.searchParams.get("mode") === "edit"
+						? "edit"
+						: "workout",
 			parent: parent?.kind === "page" && parentPath ? parentPath : "/calendar",
 		};
 	}
@@ -68,6 +76,6 @@ export function calendarPath(date: string) {
 	return `/calendar?date=${encodeURIComponent(date)}`;
 }
 
-export function sessionPath(id: string, from: string) {
-	return `/sessions/${id}?from=${encodeURIComponent(from)}`;
+export function sessionPath(id: string, from: string, mode: SessionMode = "workout") {
+	return `/sessions/${id}?from=${encodeURIComponent(from)}${mode === "workout" ? "" : `&mode=${mode}`}`;
 }

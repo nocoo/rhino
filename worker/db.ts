@@ -369,7 +369,9 @@ export async function insertSession(
 			`INSERT INTO sessions (
 				id, source_plan_revision, local_date, timezone, status, target_json, actual_json,
 				version, last_mutation_id, last_mutation_hash, created_at, updated_at
-			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO NOTHING`,
+			) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+			WHERE NOT EXISTS (SELECT 1 FROM session_tombstones WHERE id = ?)
+			ON CONFLICT(id) DO NOTHING`,
 		)
 		.bind(
 			record.id,
@@ -384,9 +386,36 @@ export async function insertSession(
 			contentHash,
 			record.createdAt,
 			record.updatedAt,
+			record.id,
 		)
 		.run();
 	return (result.meta.changes ?? 0) > 0;
+}
+
+export async function deleteSession(
+	db: D1Database,
+	id: string,
+	expectedVersion: number,
+): Promise<{ deleted: number; currentVersion: number | null }> {
+	const results = await db.batch<{ deleted: number; currentVersion: number | null }>([
+		db
+			.prepare(
+				`INSERT INTO session_tombstones (id)
+				SELECT id FROM sessions WHERE id = ? AND version = ?
+				ON CONFLICT(id) DO NOTHING`,
+			)
+			.bind(id, expectedVersion),
+		db.prepare("DELETE FROM sessions WHERE id = ? AND version = ?").bind(id, expectedVersion),
+		db
+			.prepare(
+				`SELECT EXISTS (SELECT 1 FROM session_tombstones WHERE id = ?) AS deleted,
+				(SELECT version FROM sessions WHERE id = ?) AS currentVersion`,
+			)
+			.bind(id, id),
+	]);
+	const result = results[2]?.results[0];
+	if (!result) throw new Error("Missing session deletion result");
+	return result;
 }
 
 export async function updateSession(

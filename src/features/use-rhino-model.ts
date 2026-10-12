@@ -20,10 +20,11 @@ import type {
 } from "../domain/contracts";
 import { addDays, localDateInTimeZone } from "../domain/dates";
 import { heartRateGuidance } from "../domain/metrics";
+import type { SessionMode } from "../domain/routes";
 import { emptyActual } from "../domain/session";
 import { api, put } from "../lib/api";
 
-export function useRhinoModel(onOpenSession?: (session: SessionRecord) => void) {
+export function useRhinoModel(onOpenSession?: (session: SessionRecord, mode: SessionMode) => void) {
 	const [profile, setProfile] = useState<GetProfileResponse | null>(null);
 	const [plans, setPlans] = useState<GetPlansResponse>({ current: null, history: [] });
 	const [measurements, setMeasurements] = useState<GetMeasurementsResponse["measurements"]>([]);
@@ -199,9 +200,24 @@ export function useRhinoModel(onOpenSession?: (session: SessionRecord) => void) 
 				: "训练准备已保存，开始前仍可调整",
 		);
 	}
-	function openSession(session: SessionRecord) {
+	function openSession(session: SessionRecord, mode: SessionMode = "workout") {
 		setActive(session);
-		onOpenSession?.(session);
+		onOpenSession?.(session, mode);
+	}
+
+	async function deleteSession(session: SessionRecord): Promise<boolean> {
+		let deleted = false;
+		await run(async () => {
+			await api(`/sessions/${session.id}`, {
+				method: "DELETE",
+				body: JSON.stringify({ expectedVersion: session.version }),
+			});
+			deleted = true;
+			setSessions((previous) => previous.filter((item) => item.id !== session.id));
+			setActive((previous) => (previous?.id === session.id ? null : previous));
+			await reload().catch(() => setError("训练已删除，统计刷新失败，请重新加载。"));
+		}, "训练记录已删除");
+		return deleted;
 	}
 
 	async function saveSession(
@@ -254,6 +270,7 @@ export function useRhinoModel(onOpenSession?: (session: SessionRecord) => void) 
 		active,
 		setActive,
 		openSession,
+		deleteSession,
 		busy,
 		loading,
 		error,

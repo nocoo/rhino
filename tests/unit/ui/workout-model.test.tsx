@@ -35,6 +35,17 @@ const deferred = <T,>() => {
 };
 
 describe("workout model progression", () => {
+	it("opens edit intent at the overview even for timed active workouts", () => {
+		const session = sessionRecord();
+		session.status = "active";
+		session.actual = {
+			...emptyActual(session.target),
+			timing: { startedAt: session.createdAt, endedAt: null, steps: [] },
+		};
+		const { model } = saveModel();
+		const hook = renderHook(() => useWorkoutModel(session, model, true));
+		expect(hook.result.current.overview).toBe(true);
+	});
 	it("begins with timers but no inferred work, records input, then closes the workout", async () => {
 		vi.useFakeTimers();
 		vi.setSystemTime(new Date("2026-10-09T01:00:00.000Z"));

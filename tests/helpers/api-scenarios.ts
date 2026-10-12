@@ -289,6 +289,23 @@ export async function exerciseApi(harness: ApiHarness): Promise<void> {
 	const progress = await call<GetProgressResponse>("GET", `/api/progress?${range}`);
 	assert.ok(progress.weeklyTotals.some((week) => week.completedSessions === 1));
 	assert.ok(progress.measurements.find((row) => row.id === weightId)?.bmi);
+	await call("DELETE", `/api/sessions/${sessionId}`, { expectedVersion: 2 }, 409);
+	assert.deepEqual(
+		await call("DELETE", `/api/sessions/${sessionId}`, { expectedVersion: saved.session.version }),
+		{ id: sessionId },
+	);
+	assert.deepEqual(
+		await call("DELETE", `/api/sessions/${sessionId}`, { expectedVersion: saved.session.version }),
+		{ id: sessionId },
+	);
+	await call("GET", `/api/sessions/${sessionId}`, undefined, 404);
+	await call("PUT", `/api/sessions/${sessionId}`, session, 409);
+	assert.equal(
+		(await call<GetProgressResponse>("GET", `/api/progress?${range}`)).sessions.some(
+			(row) => row.id === sessionId,
+		),
+		false,
+	);
 	const deleted = await call<{ affectedBmiDates: string[] }>(
 		"DELETE",
 		`/api/measurements/${heightId}`,

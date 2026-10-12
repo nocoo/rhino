@@ -1752,8 +1752,7 @@
 	border-radius: 50%;
 	background: currentColor;
 }
-.calendar-legend,
-.calendar-actual {
+.calendar-legend {
 	display: flex;
 	flex-wrap: wrap;
 	gap: var(--rhino-gap);
@@ -1765,8 +1764,7 @@
 	padding-top: 8px;
 	border-top: 1px dashed var(--rhino-rule);
 }
-.calendar-legend > :where(span),
-.calendar-actual > :where(span) {
+.calendar-legend > :where(span) {
 	display: inline-flex;
 	align-items: center;
 	gap: var(--basalt-space-sm);
@@ -1785,6 +1783,56 @@
 	font-family: var(--rhino-display-font);
 	font-weight: 600;
 	margin-bottom: var(--basalt-space-sm);
+}
+.session-record-list {
+	table-layout: fixed;
+	font-size: var(--basalt-text-base);
+}
+.session-record-title {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: var(--basalt-space-sm) var(--basalt-space-lg);
+}
+.session-record-title > :first-child {
+	font-weight: 500;
+}
+.session-record-title > :last-child,
+.session-record-meta {
+	font-size: var(--basalt-text-sm);
+	font-weight: 400;
+	color: hsl(var(--basalt-muted-foreground));
+}
+.session-record-meta {
+	display: flex;
+	flex-wrap: wrap;
+	column-gap: var(--basalt-space-sm);
+	margin-top: var(--basalt-space-xs);
+	font-variant-numeric: tabular-nums;
+}
+.session-record-meta > * {
+	white-space: nowrap;
+}
+.session-record-action-cell {
+	width: calc(3 * var(--basalt-size-touch) + 2 * var(--basalt-space-table-x));
+}
+.session-record-actions {
+	display: flex;
+	justify-content: flex-end;
+}
+.session-record-actions button {
+	width: var(--basalt-size-touch);
+	height: var(--basalt-size-touch);
+	flex-shrink: 0;
+}
+.record-delete {
+	color: hsl(var(--basalt-destructive));
+}
+.session-review table {
+	table-layout: fixed;
+}
+.session-review td {
+	overflow-wrap: anywhere;
 }
 .calendar-start-actions {
 	display: flex;

@@ -1,0 +1,3 @@
+CREATE TABLE session_tombstones (
+	id TEXT PRIMARY KEY NOT NULL
+) WITHOUT ROWID;

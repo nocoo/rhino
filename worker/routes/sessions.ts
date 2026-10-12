@@ -1,6 +1,7 @@
 import {
 	ApiError,
 	dateRangeQuerySchema,
+	deleteSessionRequestSchema,
 	parseWithSchema,
 	putSessionRequestSchema,
 	uuidSchema,
@@ -29,6 +30,23 @@ export async function getSession(env: WorkerEnv, id: string): Promise<Response> 
 		throw new ApiError(404, "not_found", "Session not found");
 	}
 	return jsonOk({ session });
+}
+
+export async function deleteSession(
+	request: Request,
+	env: WorkerEnv,
+	id: string,
+): Promise<Response> {
+	parseWithSchema(uuidSchema, id, "Session id");
+	const payload = parseWithSchema(deleteSessionRequestSchema, await readJsonBody(request));
+	const result = await db.deleteSession(env.DB, id, payload.expectedVersion);
+	if (result.deleted) return jsonOk({ id });
+	if (result.currentVersion === null) {
+		throw new ApiError(404, "not_found", "Session not found");
+	}
+	throw new ApiError(409, "conflict", "Stored version does not match expectedVersion", {
+		currentVersion: result.currentVersion,
+	});
 }
 
 export async function putSession(request: Request, env: WorkerEnv, id: string): Promise<Response> {
