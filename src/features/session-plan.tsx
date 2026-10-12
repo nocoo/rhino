@@ -4,11 +4,17 @@ import { Choice } from "../components/fields";
 import { NumberStepper } from "../components/number-stepper";
 import { emphasisNames, exerciseNames } from "../components/workout-summary";
 import { EXERCISES, getExercise } from "../data/exercises";
-import type { SessionRecord, StrengthExerciseId } from "../domain/contracts";
+import type { CardioIntensity, SessionRecord, StrengthExerciseId } from "../domain/contracts";
 import type { RhinoModel } from "./use-rhino-model";
 import type { WorkoutModel } from "./use-workout-model";
 
 export const cardioNames = { preparation: "热身", main: "主要有氧", recovery: "放松恢复" };
+export const cardioIntensityOptions = [
+	{ value: "unknown", label: "未记录强度" },
+	{ value: "easy", label: "轻松" },
+	{ value: "moderate", label: "中等，能说话" },
+	{ value: "vigorous", label: "较高，只能说短句" },
+];
 
 export function SessionPlan({
 	workout,
@@ -100,6 +106,21 @@ export function SessionPlan({
 										}
 									}}
 								/>
+								{!prep && (
+									<Choice
+										label={`${cardioNames[block.cardio.role]}实际强度`}
+										disabled={model.busy}
+										value={
+											editor.actual.cardioSegments.find((item) => item.id === block.cardio?.id)
+												?.intensity ?? "unknown"
+										}
+										onChange={(value) => {
+											if (block.cardio)
+												editor.setCardioIntensity(block.cardio.id, value as CardioIntensity);
+										}}
+										options={cardioIntensityOptions}
+									/>
+								)}
 							</LayerCard>
 						) : (
 							block.exercises.map((exercise) => (

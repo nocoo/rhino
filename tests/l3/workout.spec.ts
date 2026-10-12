@@ -120,6 +120,27 @@ test("immersive timeline persists every step, survives lost responses and ends v
 		await expect(
 			page.getByRole("button", { name: "完成本段并保存", exact: true }),
 		).toBeInViewport();
+		const portrait = page.viewportSize();
+		await page.setViewportSize({ width: 844, height: 390 });
+		await page.addStyleTag({
+			content: "[data-basalt-shell] { padding-inline: 47px; }",
+		});
+		await expect(page.locator("html")).toHaveCSS("background-color", background);
+		await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute("content", background);
+		await expect(page.locator("[data-basalt-shell]")).toHaveCSS(
+			"background-color",
+			"rgba(0, 0, 0, 0)",
+		);
+		await expect(page.locator(".rhino-header")).toBeHidden();
+		await expect(page.locator(".rhino-app > .rhino-sidebar")).toBeHidden();
+		expect(
+			await page.locator(".workout-content").evaluate((el) => el.clientHeight),
+		).toBeGreaterThan(80);
+		await page.locator(".workout-clock").scrollIntoViewIfNeeded();
+		await expect(page.locator(".workout-clock")).toBeInViewport();
+		await page.screenshot({ path: info.outputPath("workout-landscape-safe-area.png") });
+		await page.addStyleTag({ content: "[data-basalt-shell] { padding-inline: 0; }" });
+		if (portrait) await page.setViewportSize(portrait);
 	}
 
 	await expect.poll(() => page.getByTestId("total-timer").textContent()).not.toBe("00:00");

@@ -289,3 +289,17 @@ provider. No review ran. The provider identifies this route as
 After stopping an interactive agent, verify the shell is ready before starting
 another: terminal keyboard-protocol teardown briefly prefixed the next command.
 Neither a settled pane nor a launch command alone proves review completion.
+
+## 2026-10-12 — Manual cardio and landscape review gaps
+
+The manual-record route reused the overview, which exposed cardio minutes but
+not intensity. Records stayed unknown and could not contribute to equivalent
+cardio totals. Expose the existing intensity editor in both manual and completed
+records; verify persistence, reopening, correction and the resulting API totals.
+Portrait-only checks also missed phase gutters reverting on landscape phones.
+Use touch capability alongside the narrow breakpoint for paint, leave safe-area
+geometry with Basalt, and exercise rotation explicitly. Simulated Chromium
+insets remain distinct from native Safari acceptance. Inspect the screenshot as
+well as color assertions: the first landscape pass retained desktop navigation
+and left too little room for the clock. Keep touch training immersive in both
+orientations and assert a usable, scrollable content viewport.

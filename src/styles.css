@@ -959,6 +959,9 @@
 	grid-template-columns: minmax(0, 1fr) minmax(148px, 0.8fr);
 	align-items: center;
 }
+.cardio-plan-row > .field {
+	grid-column: 1 / -1;
+}
 :where(.session-plan-prep) .cardio-plan-row .stepper-label {
 	position: absolute;
 	width: 1px;
@@ -1218,7 +1221,7 @@
 		margin: 0 auto;
 	}
 }
-@media (max-width: 767px) {
+@media (max-width: 767px), (hover: none) and (pointer: coarse) {
 	:root[data-workout-tone] {
 		--rhino-active-tone: var(--rhino-training-strength);
 		background: hsl(var(--rhino-active-tone));
@@ -1238,6 +1241,7 @@
 	:root[data-workout-tone] .rhino-app {
 		background: transparent;
 	}
+	.workout-immersive > .rhino-sidebar,
 	.workout-immersive .rhino-header {
 		display: none;
 	}

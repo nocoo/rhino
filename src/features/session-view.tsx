@@ -33,7 +33,7 @@ import type { CardioIntensity, SessionRecord, StrengthExerciseId } from "../doma
 import { clockLabel, stepDone } from "../domain/workout";
 import { useWorkoutChrome } from "../hooks/use-browser-chrome";
 import { chineseCues, LazyExerciseViewer } from "./library-view";
-import { cardioNames, SessionPlan } from "./session-plan";
+import { cardioIntensityOptions, cardioNames, SessionPlan } from "./session-plan";
 import type { RhinoModel } from "./use-rhino-model";
 import { useWorkoutModel } from "./use-workout-model";
 
@@ -326,12 +326,7 @@ export function SessionView({
 										label="实际强度"
 										value={workout.intensity}
 										onChange={(value) => workout.setIntensity(value as CardioIntensity)}
-										options={[
-											{ value: "unknown", label: "未记录强度" },
-											{ value: "easy", label: "轻松" },
-											{ value: "moderate", label: "中等，能说话" },
-											{ value: "vigorous", label: "较高，只能说短句" },
-										]}
+										options={cardioIntensityOptions}
 									/>
 									<p className="field-hint">
 										{workout.minutes === null

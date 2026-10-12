@@ -20,12 +20,16 @@ record with empty actuals and no timer, opens the actuals editor, and requires a
 explicit finish confirmation. It never copies planned repetitions or cardio into
 performed work. Normal timed training starts only for today. Completed sessions
 remain correctable under the existing version checks.
+Manual and completed records expose actual cardio intensity, defaulting to unknown;
+only explicitly recorded moderate/vigorous minutes contribute to equivalent totals.
 
 ## Safari and home-screen installation
 
 `viewport-fit=cover` and Basalt's `100dvh` shell remain the only viewport/safe-area
 geometry owner. The workout phase paints the document and shell safety gutters,
 including landscape left/right insets, without padding the controls twice.
+Touch devices retain the immersive training layout when rotated; desktop pointer
+devices keep the framed workspace.
 `theme-color` tracks the resolved phase or light/dark surface. Browser chrome can
 still follow Safari's own tint preferences; web content cannot force toolbar
 visibility. Active workouts use their own phase color (green for rest).

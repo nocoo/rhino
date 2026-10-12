@@ -82,6 +82,11 @@ test("calendar manually records actuals without inventing a timer or performed s
 	await expect(page.locator(".workout-plan-heading")).toContainText("补记实际训练");
 	await expect(page.getByTestId("total-timer")).toHaveCount(0);
 	await page.getByRole("button", { name: "增加第1组次数", exact: true }).first().click();
+	const intensity = page.getByRole("combobox", { name: /实际强度$/ }).first();
+	await expect(intensity).toContainText("未记录强度");
+	await page.getByRole("button", { name: "增加实际分钟", exact: true }).first().click();
+	await intensity.click();
+	await page.getByRole("option", { name: "中等，能说话", exact: true }).click();
 	await page.getByRole("button", { name: "结束并保存", exact: true }).click();
 	await page.getByRole("button", { name: "确认结束并保存", exact: true }).click();
 	await expect(page.locator(".workout-topbar")).toContainText("训练回顾");
@@ -100,6 +105,34 @@ test("calendar manually records actuals without inventing a timer or performed s
 			.flatMap((exercise: { sets: { status: string }[] }) => exercise.sets)
 			.filter((set: { status: string }) => set.status === "performed"),
 	).toHaveLength(1);
+	expect(manual.actual.cardioSegments[0]).toMatchObject({
+		actualMinutes: 1,
+		intensity: "moderate",
+	});
+	const progress = await (await page.request.get(`/api/progress?from=${today}&to=${today}`)).json();
+	expect(
+		progress.data.sessions.find((item: { id: string }) => item.id === manual.id),
+	).toMatchObject({
+		moderateEquivalentMinutes: 1,
+	});
+	await page
+		.locator(".calendar-record")
+		.filter({ hasText: `计划 v${adopted.revision}` })
+		.getByRole("button", { name: "查看训练结果", exact: true })
+		.click();
+	await expect(intensity).toContainText("中等，能说话");
+	await intensity.click();
+	await page.getByRole("option", { name: "较高，只能说短句", exact: true }).click();
+	await page.getByRole("button", { name: "保存调整", exact: true }).click();
+	await expect(page.locator(".workout-save-state")).toContainText("已保存");
+	const corrected = await (
+		await page.request.get(`/api/progress?from=${today}&to=${today}`)
+	).json();
+	expect(
+		corrected.data.sessions.find((item: { id: string }) => item.id === manual.id),
+	).toMatchObject({
+		moderateEquivalentMinutes: 2,
+	});
 });
 
 test("installed metadata uses approved icons and preserves online-only data access", async ({

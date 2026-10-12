@@ -11,7 +11,7 @@ export function useBrowserChrome() {
 		};
 		const observer = new MutationObserver(update);
 		observer.observe(root, { attributes: true, attributeFilter: ["class", "data-workout-tone"] });
-		const mobile = window.matchMedia("(max-width: 767px)");
+		const mobile = window.matchMedia("(max-width: 767px), (hover: none) and (pointer: coarse)");
 		mobile.addEventListener("change", update);
 		update();
 		return () => {
