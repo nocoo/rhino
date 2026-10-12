@@ -3,18 +3,26 @@ import {
 	Dialog,
 	DialogContent,
 	DialogDescription,
+	DialogFooter,
+	DialogHeader,
 	DialogTitle,
 	LayerCard,
 } from "@nocoo/basalt";
 import {
 	ArrowLeft,
+	Bike,
 	BookOpen,
 	Check,
 	ChevronRight,
+	Dumbbell,
 	Flag,
+	Flame,
+	Leaf,
 	ListChecks,
 	Play,
 	Save,
+	Timer,
+	Wind,
 } from "lucide-react";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { Choice, Field } from "../components/fields";
@@ -61,6 +69,14 @@ export function SessionView({
 	const finished = session.status === "completed" || session.status === "abandoned";
 	const completed = workout.steps.filter((item) => stepDone(item, editor.actual)).length;
 	const showPlan = prep || workout.overview || finished;
+	const resting = workout.restSeconds > 0;
+	const PhaseIcon = resting
+		? Leaf
+		: step?.kind === "strength"
+			? Dumbbell
+			: step?.kind === "cardio"
+				? { preparation: Flame, main: Bike, recovery: Wind }[step.cardio.role]
+				: Check;
 	const title =
 		step?.kind === "strength"
 			? exerciseNames[step.exercise.exerciseId]
@@ -76,7 +92,13 @@ export function SessionView({
 			ref={pageRoot}
 			className={`workout-page${showPlan ? " workout-plan-page" : " workout-live"}`}
 			data-workout-tone={
-				showPlan ? undefined : step?.kind === "cardio" ? step.cardio.role : "strength"
+				showPlan
+					? undefined
+					: resting
+						? "rest"
+						: step?.kind === "cardio"
+							? step.cardio.role
+							: "strength"
 			}
 		>
 			<header className="workout-topbar">
@@ -167,6 +189,7 @@ export function SessionView({
 									进度 {completed} / {workout.steps.length}
 								</span>
 								<span>
+									<Timer size={14} aria-hidden="true" />
 									总用时{" "}
 									<strong className="mono" data-testid="total-timer">
 										{editor.actual.timing ? clockLabel(workout.totalSeconds) : "未计时"}
@@ -180,14 +203,16 @@ export function SessionView({
 							</div>
 							<div className="current-heading">
 								<span className="eyebrow">
+									<PhaseIcon size={18} strokeWidth={1.5} aria-hidden="true" />
 									{step?.kind === "strength"
-										? `力量训练 · 第 ${step.set.setIndex} / ${step.exercise.workingSets.length} 组`
+										? `${resting ? "下一组" : "力量训练"} · 第 ${step.set.setIndex} / ${step.exercise.workingSets.length} 组`
 										: step
 											? cardioNames[step.cardio.role]
 											: "训练完成"}
 								</span>
-								<h1>{title}</h1>
+								<h1>{resting ? "组间休息" : title}</h1>
 								<p>
+									{resting && `接下来 · ${title} · `}
 									{step?.kind === "strength"
 										? `${step.exercise.workingSets.length} 组 × 每组 ${step.set.repsLow === step.set.repsHigh ? step.set.repsHigh : `${step.set.repsLow}–${step.set.repsHigh}`} 次`
 										: step
@@ -224,7 +249,7 @@ export function SessionView({
 										{entry
 											? "专注动作，按自己的节奏"
 											: workout.restSeconds > 0
-												? "恢复好即可继续，不强制等待"
+												? "自然呼吸，恢复好即可继续"
 												: "准备好后开始计时"}
 									</span>
 								</div>
@@ -451,49 +476,65 @@ export function SessionView({
 			</Dialog>
 			<Dialog open={ending} onOpenChange={setEnding}>
 				<DialogContent
+					className="workout-ending"
 					onCloseAutoFocus={(event) => {
 						event.preventDefault();
 						endingTrigger.current?.focus();
 					}}
 				>
-					<DialogTitle>结束这场训练？</DialogTitle>
-					<DialogDescription>
-						已记录 {completed} / {workout.steps.length}{" "}
-						组或段。正在进行但尚未保存的这一组不会自动计入，已保存记录会保留。
-					</DialogDescription>
-					<p className="metric-value">{clockLabel(workout.totalSeconds)}</p>
+					<DialogHeader>
+						<DialogTitle>结束这场训练？</DialogTitle>
+						<DialogDescription className="workout-ending-description">
+							已记录 {completed} / {workout.steps.length}{" "}
+							组或段。正在进行但尚未保存的这一组不会自动计入，已保存记录会保留。
+						</DialogDescription>
+					</DialogHeader>
+					<div className="workout-ending-time">
+						<span className="field-hint">
+							<Timer size={16} aria-hidden="true" /> 总用时
+						</span>
+						<strong className="metric-value">
+							{editor.actual.timing ? clockLabel(workout.totalSeconds) : "未计时"}
+						</strong>
+					</div>
 					{model.error && (
 						<p role="alert" className="error-message">
 							{model.error}
 						</p>
 					)}
-					<Field
-						disabled={model.busy}
-						label="训练备注"
-						value={editor.actual.notes}
-						onChange={(notes) => editor.setActual({ ...editor.actual, notes })}
-					/>
-					<Choice
-						disabled={model.busy}
-						label="有疼痛或明显不适吗？"
-						value={editor.actual.painFlag ? "yes" : "no"}
-						onChange={(value) => editor.setActual({ ...editor.actual, painFlag: value === "yes" })}
-						options={[
-							{ value: "no", label: "没有" },
-							{ value: "yes", label: "有，停止并复盘" },
-						]}
-					/>
-					<Button
-						loading={model.busy}
-						onClick={async () => {
-							if (await workout.finish()) setEnding(false);
-						}}
-					>
-						<Flag size={16} /> 确认结束并保存
-					</Button>
-					<Button variant="ghost" disabled={model.busy} onClick={() => setEnding(false)}>
-						继续训练
-					</Button>
+					<div className="form-stack">
+						<Field
+							disabled={model.busy}
+							label="训练备注"
+							value={editor.actual.notes}
+							onChange={(notes) => editor.setActual({ ...editor.actual, notes })}
+						/>
+						<Choice
+							disabled={model.busy}
+							label="有疼痛或明显不适吗？"
+							value={editor.actual.painFlag ? "yes" : "no"}
+							onChange={(value) =>
+								editor.setActual({ ...editor.actual, painFlag: value === "yes" })
+							}
+							options={[
+								{ value: "no", label: "没有" },
+								{ value: "yes", label: "有，停止并复盘" },
+							]}
+						/>
+					</div>
+					<DialogFooter className="workout-ending-actions">
+						<Button variant="ghost" disabled={model.busy} onClick={() => setEnding(false)}>
+							继续训练
+						</Button>
+						<Button
+							loading={model.busy}
+							onClick={async () => {
+								if (await workout.finish()) setEnding(false);
+							}}
+						>
+							<Flag size={16} /> 确认结束并保存
+						</Button>
+					</DialogFooter>
 				</DialogContent>
 			</Dialog>
 		</div>

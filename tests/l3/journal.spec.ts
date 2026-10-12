@@ -27,6 +27,23 @@ test("automated E2E is visible, isolated and locked in UI and server", async ({ 
 	await expect(group.getByRole("radio", { name: "E2E", exact: true })).toBeChecked();
 	await expect(group.getByRole("radio", { name: "Local", exact: true })).toBeDisabled();
 	await expect(group.getByRole("radio", { name: "Prod", exact: true })).toBeDisabled();
+	const segmentGeometry = await group
+		.getByRole("radio", { name: "E2E", exact: true })
+		.evaluate((button) => {
+			const rect = button.getBoundingClientRect();
+			return {
+				height: rect.height,
+				width: rect.width,
+				touchable: [-21, 21].every((offset) =>
+					button.contains(
+						document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2 + offset),
+					),
+				),
+			};
+		});
+	expect(segmentGeometry.height).toBe(28);
+	expect(segmentGeometry.width).toBeGreaterThanOrEqual(44);
+	expect(segmentGeometry.touchable).toBe(true);
 	const descriptor = await (await page.request.get("/__local/environment")).json();
 	expect(descriptor).toMatchObject({ local: true, mode: "e2e", automated: true, locked: true });
 	for (const mode of ["local", "prod"]) {

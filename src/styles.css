@@ -13,6 +13,7 @@
 		--rhino-training-preparation: 192 72% 28%;
 		--rhino-training-main: 202 78% 32%;
 		--rhino-training-recovery: 205 32% 32%;
+		--rhino-training-rest: 158 48% 25%;
 		--rhino-training-white: 0 0% 100%;
 		--rhino-display-font: "Avenir Next", "DIN Alternate", var(--basalt-font-display);
 		font-family: var(--basalt-font-sans);
@@ -64,6 +65,19 @@
 .environment-switch [data-slot="segment-control-viewport"] {
 	overflow: visible;
 	padding-bottom: 0;
+}
+.environment-switch button[role="radio"] {
+	min-height: var(--basalt-size-control-sm);
+	height: var(--basalt-size-control-sm);
+	line-height: var(--basalt-leading-action-sm);
+}
+.environment-switch button[role="radio"]::before {
+	inset-block: calc(
+		(var(--basalt-size-control-sm) - var(--basalt-size-touch)) /
+		2 -
+		var(--basalt-border-width)
+	);
+	inset-inline: 0;
 }
 .environment-error {
 	position: absolute;
@@ -712,6 +726,14 @@
 	color: var(--rhino-ink);
 	font-size: 19px;
 }
+.workout-progress > span:last-child,
+.current-heading .eyebrow,
+.workout-ending-time > span {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--basalt-space-md);
+}
 .workout-progress-track {
 	height: 3px;
 	background: hsl(var(--basalt-secondary));
@@ -949,13 +971,13 @@
 }
 .exercise-plan-heading {
 	display: grid;
-	grid-template-columns: 56px minmax(0, 1fr) var(--workout-touch);
+	grid-template-columns: var(--workout-touch) minmax(0, 1fr) var(--workout-touch);
 	align-items: center;
 	gap: var(--basalt-space-lg);
 }
 .plan-exercise-poster {
-	width: 56px;
-	height: 56px;
+	width: var(--workout-touch);
+	height: var(--workout-touch);
 	object-fit: contain;
 	border-radius: var(--basalt-radius);
 	background: var(--rhino-stage);
@@ -964,8 +986,12 @@
 	min-width: var(--workout-touch);
 	min-height: var(--workout-touch);
 }
-.exercise-plan-heading .field {
-	--basalt-space-field-gap: 2px;
+.exercise-plan-heading .field > label {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
 }
 .session-plan .stepper-label {
 	margin-bottom: 4px;
@@ -1005,6 +1031,33 @@
 .workout-preview .cue-list {
 	font-size: 12px;
 }
+.workout-ending {
+	display: grid;
+	gap: var(--basalt-space-layout);
+}
+.workout-ending-time {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--basalt-space-layout-sm);
+	padding: var(--basalt-space-layout-sm);
+	background: hsl(var(--basalt-secondary));
+	border-radius: var(--basalt-radius);
+}
+.workout-ending-time .metric-value {
+	font-size: var(--basalt-text-3xl);
+	margin: 0;
+}
+.workout-ending-description {
+	font-size: var(--basalt-text-base);
+	line-height: var(--basalt-line-body);
+}
+.workout-ending-actions {
+	margin-top: 0;
+}
+.workout-ending-actions button {
+	min-height: var(--basalt-size-touch);
+}
 .workout-immersive .rhino-island {
 	display: flex;
 	flex-direction: column;
@@ -1036,7 +1089,12 @@
 	--rhino-blue: hsl(var(--rhino-training-white));
 	color: var(--rhino-ink);
 	background:
-		radial-gradient(ellipse at 85% 0%, hsl(var(--rhino-training-white) / 0.08), transparent 65%),
+		repeating-radial-gradient(
+			ellipse at 100% 0%,
+			hsl(var(--rhino-training-white) / 0.025) 0 1px,
+			transparent 1px 24px
+		),
+		radial-gradient(ellipse at 85% 0%, hsl(var(--rhino-training-white) / 0.05), transparent 65%),
 		hsl(var(--workout-tone));
 	border-radius: var(--basalt-radius);
 	padding: var(--rhino-gap);
@@ -1049,6 +1107,9 @@
 }
 .workout-live[data-workout-tone="recovery"] {
 	--workout-tone: var(--rhino-training-recovery);
+}
+.workout-live[data-workout-tone="rest"] {
+	--workout-tone: var(--rhino-training-rest);
 }
 .workout-live .workout-stage-layout {
 	min-height: 100%;
@@ -1229,13 +1290,6 @@
 	}
 	.session-plan .stepper-control output:not([data-compact]) strong {
 		font-size: 24px;
-	}
-	.exercise-plan-heading {
-		grid-template-columns: 44px minmax(0, 1fr) var(--workout-touch);
-	}
-	.plan-exercise-poster {
-		width: 44px;
-		height: 52px;
 	}
 }
 @media (max-width: 359px) {

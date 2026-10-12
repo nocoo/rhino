@@ -29,10 +29,12 @@ separate, theme-independent blue-family palette with white foregrounds:
 | Preparation | `192 72% 28%` | `preparation` |
 | Main cardio | `202 78% 32%` | `main` |
 | Recovery | `205 32% 32%` | `recovery` |
+| Inter-set rest | `158 48% 25%` | `rest` |
 
 These `--rhino-training-*` tokens apply only to the specialist live workout
-surface, not library cards, modal roots, menus or charts. A bounded 8% white
-highlight adds depth without reducing text contrast below 4.5:1; hints use 90%
+surface, not library cards, modal roots, menus or charts. Static contour lines
+at 2.5% white and a bounded 5% highlight add depth with a combined wash below 8%,
+without reducing text contrast below 4.5:1; hints use 90%
 white. Labels continue to identify phases independently of color. White primary
 actions use the current phase as their foreground. Preparation and record review
 retain ordinary Basalt surfaces.
@@ -58,6 +60,19 @@ Entering a session resets the island scroll once, without resetting it on edits
 or timer ticks. Preview content remains intact through its closing animation.
 Untimed active records explicitly say timing has not started; opening an overview
 never creates inferred timestamps.
+
+The exercise row shares one centerline for its thumbnail, selector and preview
+action. The redundant field label is visually hidden, not removed from assistive
+technology. The header environment segment paints 28px items inside a 32px pill;
+its pseudo-element hit regions retain 44px height, including border compensation.
+The finishing dialog groups its header, elapsed summary, fields and actions with
+16px section gaps and the package's responsive footer instead of inline buttons.
+
+An existing positive rest countdown switches the live screen to green, a leaf
+icon and an explicit rest heading while retaining the next task's prescription.
+Starting early or reaching zero returns to the next task's palette; the end of
+rest never starts a set or records performed work automatically. Other phases
+use restrained Lucide markers. The CSS texture adds no assets or animation.
 
 ## Interaction
 

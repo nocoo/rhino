@@ -261,3 +261,13 @@ Finish each visual test's session explicitly. Also wait for modal removal before
 capturing preparation: an immediate screenshot after Escape captures the exit
 animation, not the intended page. Preview content now survives that exit instead
 of briefly turning into an empty dialog.
+
+## 2026-10-12: Compact segment hit-region verification
+
+The compact header applies a 44px minimum directly to nested segment buttons,
+inflating the entire pill. Separating painted height from the pseudo-element hit
+region initially produced only 42px of effective hit height: absolute offsets
+start inside the button's border. Real browser hit tests at both vertical edges
+caught this on desktop and mobile. Include border width in the inset calculation
+and verify elementFromPoint, not only CSS dimensions. Also wait for the Select
+exit animation before taking a finishing-dialog screenshot.

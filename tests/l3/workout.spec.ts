@@ -45,6 +45,18 @@ async function createDraft(page: Page, target: SessionTarget) {
 	return id;
 }
 
+function expectReadableBackground(background: string) {
+	const channels = background.match(/\d+/g)?.slice(0, 3).map(Number);
+	if (!channels) throw new Error("Missing workout background");
+	const luminance = channels
+		.map((channel) => {
+			const value = ((channel * 0.92 + 255 * 0.08) * 0.92 + 255 * 0.08) / 255;
+			return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+		})
+		.reduce((sum, value, i) => sum + value * [0.2126, 0.7152, 0.0722][i], 0);
+	expect(1.05 / (luminance + 0.05)).toBeGreaterThanOrEqual(4.5);
+}
+
 test("immersive timeline persists every step, survives lost responses and ends visibly", async ({
 	page,
 }, info) => {
@@ -155,14 +167,80 @@ test("immersive timeline persists every step, survives lost responses and ends v
 	).toBeVisible();
 	await page.getByRole("button", { name: "继续训练", exact: true }).click();
 	await page.getByRole("button", { name: "结束训练", exact: true }).click();
+	const ending = page.getByRole("dialog", { name: "结束这场训练？", exact: true });
+	await expect(ending).toBeVisible();
+	await ending.evaluate(async (dialog) => {
+		await Promise.all(dialog.getAnimations().map((animation) => animation.finished));
+	});
+	const endingGeometry = await ending.evaluate((dialog) => {
+		const notes = dialog.querySelector("input")?.getBoundingClientRect();
+		const fields = dialog.querySelectorAll(".field");
+		const pain = fields[1].getBoundingClientRect();
+		const actions = dialog.lastElementChild?.getBoundingClientRect();
+		return {
+			padding: Number.parseFloat(getComputedStyle(dialog).paddingTop),
+			fieldGap: pain.top - (notes?.bottom ?? 0),
+			actionGap: (actions?.top ?? 0) - pain.bottom,
+			overflow: dialog.scrollWidth > dialog.clientWidth,
+		};
+	});
+	expect(endingGeometry.padding).toBeGreaterThanOrEqual(16);
+	expect(endingGeometry.fieldGap).toBeGreaterThanOrEqual(16);
+	expect(endingGeometry.actionGap).toBeGreaterThanOrEqual(16);
+	expect(endingGeometry.overflow).toBe(false);
+	await ending
+		.getByRole("textbox", { name: "训练备注", exact: true })
+		.fill("Rest felt comfortable");
+	await ending.getByRole("combobox", { name: "有疼痛或明显不适吗？", exact: true }).click();
+	await page.getByRole("option", { name: "有，停止并复盘", exact: true }).click();
+	await expect(page.getByRole("listbox")).toHaveCount(0);
+	await page.screenshot({ path: info.outputPath("workout-ending.png") });
 	await page.getByRole("button", { name: "确认结束并保存", exact: true }).click();
 	await expect(page.getByText("训练已记录。下一次，继续。", { exact: true })).toBeVisible();
 	const ended = (await (await page.request.get(`/api/sessions/${id}`)).json()).data
 		.session as SessionRecord;
 	expect(ended.status).toBe("completed");
 	expect(ended.actual?.timing?.endedAt).not.toBeNull();
+	expect(ended.actual?.notes).toBe("Rest felt comfortable");
+	expect(ended.actual?.painFlag).toBe(true);
 	expect(ended.actual?.exercises[0].sets[1].status).toBe("not-recorded");
 	expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
+});
+
+test("green rest expires without starting the next set or changing records", async ({ page }) => {
+	await page.clock.install();
+	await page.goto("/");
+	await page.locator(".page-body").waitFor();
+	const target = sessionTarget();
+	target.blocks = [target.blocks[0]];
+	const exercise = target.blocks[0].exercises[0];
+	exercise.workingSets.push({ ...exercise.workingSets[0], id: uuid(), setIndex: 2 });
+	const id = await createDraft(page, target);
+	await page.getByRole("button", { name: "确认并开始", exact: true }).click();
+	await page.getByRole("button", { name: "完成本组并保存", exact: true }).click();
+	await expect(page.locator(".workout-live")).toHaveAttribute("data-workout-tone", "rest");
+	await expect(page.locator(".current-heading")).toContainText("第 2 / 2 组");
+	const background = await page
+		.locator(".workout-live")
+		.evaluate((element) => getComputedStyle(element).backgroundColor);
+	const rgb = background.match(/\d+/g)?.map(Number);
+	if (!rgb) throw new Error("Missing rest color");
+	expect(rgb[1]).toBeGreaterThan(rgb[0]);
+	expect(rgb[1]).toBeGreaterThan(rgb[2]);
+	await page.clock.fastForward(91_000);
+	await expect(page.locator(".workout-live")).toHaveAttribute("data-workout-tone", "strength");
+	await expect(page.getByTestId("step-timer")).toHaveText("00:00");
+	await expect(page.getByRole("button", { name: "开始下一组 / 段", exact: true })).toBeVisible();
+	const saved = (await (await page.request.get(`/api/sessions/${id}`)).json()).data
+		.session as SessionRecord;
+	expect(saved.actual?.timing?.steps).toHaveLength(1);
+	expect(saved.actual?.exercises[0].sets[1].status).toBe("not-recorded");
+	await page.getByRole("button", { name: "开始下一组 / 段", exact: true }).click();
+	await page.getByRole("button", { name: "完成本组并保存", exact: true }).click();
+	await expect(page.locator(".workout-live")).not.toHaveAttribute("data-workout-tone", "rest");
+	await page.getByRole("button", { name: "结束训练", exact: true }).first().click();
+	await page.getByRole("button", { name: "确认结束并保存", exact: true }).click();
+	await expect(page.getByText("训练已记录。下一次，继续。", { exact: true })).toBeVisible();
 });
 
 test("untimed active overview does not claim a running clock", async ({ page }) => {
@@ -237,6 +315,14 @@ for (const theme of ["light", "dark"]) {
 			? [320, 375, viewport.width]
 			: [viewport.width]) {
 			await page.setViewportSize({ ...viewport, width });
+			const heading = page.locator(".exercise-plan-heading").first();
+			const alignment = await heading.evaluate((row) => {
+				const boxes = ["img", "[role=combobox]", ".plan-preview-button"].map((selector) =>
+					row.querySelector(selector)?.getBoundingClientRect(),
+				);
+				return boxes.map((box) => (box ? box.y + box.height / 2 : -1));
+			});
+			expect(Math.max(...alignment) - Math.min(...alignment)).toBeLessThan(1);
 			const steppers = await page
 				.locator(".session-plan .stepper-control")
 				.evaluateAll((controls) =>
@@ -266,6 +352,18 @@ for (const theme of ["light", "dark"]) {
 		await page.getByRole("button", { name: "确认并开始", exact: true }).click();
 		const colors = new Set<string>();
 		for (const tone of ["preparation", "strength", "main", "recovery"]) {
+			if (tone === "main") {
+				await expect(page.locator(".workout-live")).toHaveAttribute("data-workout-tone", "rest");
+				await expect(page.locator(".current-heading h1")).toHaveText("组间休息");
+				await expect(page.locator(".current-heading p")).toContainText("主要有氧");
+				expectReadableBackground(
+					await page
+						.locator(".workout-live")
+						.evaluate((element) => getComputedStyle(element).backgroundColor),
+				);
+				await page.screenshot({ path: info.outputPath(`workout-${theme}-rest.png`) });
+				await page.getByRole("button", { name: "开始下一组 / 段", exact: true }).click();
+			}
 			await expect(page.locator(".workout-live")).toHaveAttribute("data-workout-tone", tone);
 			await expect(page.getByTestId("step-timer")).toHaveCSS("color", "rgb(255, 255, 255)");
 			const geometry = await page.locator(".workout-stage").evaluate((stage) => {
@@ -282,21 +380,15 @@ for (const theme of ["light", "dark"]) {
 					),
 					background: getComputedStyle(stage.closest(".workout-live") as HTMLElement)
 						.backgroundColor,
+					texture: getComputedStyle(stage.closest(".workout-live") as HTMLElement).backgroundImage,
 				};
 			});
 			expect(geometry.overflow).toBe(false);
 			expect(geometry.centerOffset).toBeLessThan(2);
 			expect(geometry.clockOffset).toBeLessThan(2);
 			colors.add(geometry.background);
-			const channels = geometry.background.match(/\d+/g)?.slice(0, 3).map(Number);
-			if (!channels) throw new Error("Missing workout background");
-			const luminance = channels
-				.map((channel) => {
-					const value = ((channel * 0.92 + 255 * 0.08) * 0.92 + 255 * 0.08) / 255;
-					return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
-				})
-				.reduce((sum, value, i) => sum + value * [0.2126, 0.7152, 0.0722][i], 0);
-			expect(1.05 / (luminance + 0.05)).toBeGreaterThanOrEqual(4.5);
+			expectReadableBackground(geometry.background);
+			expect(geometry.texture).toContain("repeating-radial-gradient");
 			await page.screenshot({ path: info.outputPath(`workout-${theme}-${tone}.png`) });
 			if (tone === "recovery") break;
 			if (tone === "preparation") {
