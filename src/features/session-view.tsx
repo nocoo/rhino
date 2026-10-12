@@ -31,6 +31,7 @@ import { emphasisNames, exerciseNames } from "../components/workout-summary";
 import { getExercise } from "../data/exercises";
 import type { CardioIntensity, SessionRecord, StrengthExerciseId } from "../domain/contracts";
 import { clockLabel, stepDone } from "../domain/workout";
+import { useWorkoutChrome } from "../hooks/use-browser-chrome";
 import { chineseCues, LazyExerciseViewer } from "./library-view";
 import { cardioNames, SessionPlan } from "./session-plan";
 import type { RhinoModel } from "./use-rhino-model";
@@ -71,6 +72,14 @@ export function SessionView({
 	const completed = workout.steps.filter((item) => stepDone(item, editor.actual)).length;
 	const showPlan = prep || workout.overview || finished;
 	const resting = workout.restSeconds > 0;
+	const tone = showPlan
+		? null
+		: resting
+			? "rest"
+			: step?.kind === "cardio"
+				? step.cardio.role
+				: "strength";
+	useWorkoutChrome(tone);
 	const PhaseIcon = resting
 		? Leaf
 		: step?.kind === "strength"
@@ -92,15 +101,7 @@ export function SessionView({
 		<div
 			ref={pageRoot}
 			className={`workout-page${showPlan ? " workout-plan-page" : " workout-live"}`}
-			data-workout-tone={
-				showPlan
-					? undefined
-					: resting
-						? "rest"
-						: step?.kind === "cardio"
-							? step.cardio.role
-							: "strength"
-			}
+			data-workout-tone={tone ?? undefined}
 		>
 			<header className="workout-topbar">
 				<Button variant="ghost" size="sm" disabled={model.busy} onClick={leave}>

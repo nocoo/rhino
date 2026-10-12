@@ -105,6 +105,23 @@ test("immersive timeline persists every step, survives lost responses and ends v
 	await expect(page.getByRole("button", { name: "结束训练", exact: true })).toBeInViewport();
 	await expect(page.getByRole("button", { name: "完成本段并保存", exact: true })).toBeInViewport();
 	if (info.project.name === "mobile") await expect(page.locator(".rhino-header")).toBeHidden();
+	if (info.project.name === "mobile") {
+		const background = await page
+			.locator(".workout-live")
+			.evaluate((el) => getComputedStyle(el).backgroundColor);
+		await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute("content", background);
+		expect(await page.locator("html").evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
+			background,
+		);
+		await page.addStyleTag({
+			content: "[data-basalt-shell] { --basalt-safe-top: 47px; padding-bottom: 34px; }",
+		});
+		await expect(page.getByRole("button", { name: "结束训练", exact: true })).toBeInViewport();
+		await expect(
+			page.getByRole("button", { name: "完成本段并保存", exact: true }),
+		).toBeInViewport();
+	}
+
 	await expect.poll(() => page.getByTestId("total-timer").textContent()).not.toBe("00:00");
 	await page.getByRole("button", { name: "完成本段并保存", exact: true }).click();
 	await expect(page.locator(".current-heading h1")).toHaveText("高脚杯深蹲");
@@ -264,10 +281,8 @@ test("untimed active overview does not claim a running clock", async ({ page }) 
 	expect(response.ok()).toBe(true);
 	await page.reload();
 	await openRecord(page, id);
-	await page.getByRole("button", { name: "计划 / 记录", exact: true }).click();
-	await expect(
-		page.getByText("本场尚未计时，可查看与修正实际记录。", { exact: true }),
-	).toBeVisible();
+	await expect(page.locator(".workout-plan-heading")).toContainText("补记实际训练");
+	await expect(page.getByTestId("total-timer")).toHaveCount(0);
 	const saved = (await (await page.request.get(`/api/sessions/${id}`)).json()).data
 		.session as SessionRecord;
 	expect(saved.actual?.timing).toBeUndefined();

@@ -27,6 +27,7 @@
 	}
 	body {
 		margin: 0;
+		background: inherit;
 	}
 	html,
 	body,
@@ -1218,6 +1219,25 @@
 	}
 }
 @media (max-width: 767px) {
+	:root[data-workout-tone] {
+		--rhino-active-tone: var(--rhino-training-strength);
+		background: hsl(var(--rhino-active-tone));
+	}
+	:root[data-workout-tone="preparation"] {
+		--rhino-active-tone: var(--rhino-training-preparation);
+	}
+	:root[data-workout-tone="main"] {
+		--rhino-active-tone: var(--rhino-training-main);
+	}
+	:root[data-workout-tone="recovery"] {
+		--rhino-active-tone: var(--rhino-training-recovery);
+	}
+	:root[data-workout-tone="rest"] {
+		--rhino-active-tone: var(--rhino-training-rest);
+	}
+	:root[data-workout-tone] .rhino-app {
+		background: transparent;
+	}
 	.workout-immersive .rhino-header {
 		display: none;
 	}

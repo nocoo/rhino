@@ -73,6 +73,7 @@ test("calendar manually records actuals without inventing a timer or performed s
 		data: { expectedRevision: data.current?.revision ?? 0, input },
 	});
 	expect(plan.ok()).toBe(true);
+	const adopted = (await plan.json()).data.revision;
 	await page.reload();
 	await openCalendar(page);
 	await expect(page.getByRole("button", { name: "补记实际训练", exact: true })).toBeEnabled();
@@ -89,19 +90,62 @@ test("calendar manually records actuals without inventing a timer or performed s
 		page.getByRole("button", { name: "查看训练结果", exact: true }).first(),
 	).toBeVisible();
 	const result = await (await page.request.get(`/api/sessions?from=${today}&to=${today}`)).json();
-	const manual =
-		result.data.sessions.find(
-			(session: { sourcePlanRevision: number; status: string }) =>
-				session.sourcePlanRevision === data.current?.revision + 1 && session.status === "completed",
-		) ??
-		result.data.sessions.find(
-			(session: { actual?: { timing?: unknown }; status: string }) =>
-				session.status === "completed" && !session.actual?.timing,
-		);
+	const manual = result.data.sessions.find(
+		(session: { sourcePlanRevision: number; status: string }) =>
+			session.sourcePlanRevision === adopted.revision && session.status === "completed",
+	);
 	expect(manual.actual.timing).toBeUndefined();
 	expect(
 		manual.actual.exercises
 			.flatMap((exercise: { sets: { status: string }[] }) => exercise.sets)
 			.filter((set: { status: string }) => set.status === "performed"),
 	).toHaveLength(1);
+});
+
+test("installed metadata uses approved icons and preserves online-only data access", async ({
+	page,
+}) => {
+	await page.goto("/");
+	await page.locator(".page-body").waitFor();
+	await expect(page.locator('meta[name="viewport"]')).toHaveAttribute(
+		"content",
+		/viewport-fit=cover/,
+	);
+	await expect(page.locator('meta[name="apple-mobile-web-app-capable"]')).toHaveAttribute(
+		"content",
+		"yes",
+	);
+	await expect(page.locator('meta[name="apple-mobile-web-app-status-bar-style"]')).toHaveCount(0);
+	const manifestPath = await page.locator('link[rel="manifest"]').getAttribute("href");
+	expect(manifestPath).toBe("/manifest.webmanifest");
+	const manifest = await (await page.request.get(manifestPath ?? "")).json();
+	expect(manifest).toMatchObject({
+		id: "/",
+		scope: "/",
+		start_url: "/",
+		display: "standalone",
+		short_name: "Rhino",
+	});
+	for (const icon of manifest.icons) {
+		const response = await page.request.get(icon.src);
+		expect(response.ok()).toBe(true);
+		expect(response.headers()["content-type"]).toContain("image/png");
+		const dimensions = await page.evaluate(async (path) => {
+			const image = new Image();
+			image.src = path;
+			await image.decode();
+			return `${image.naturalWidth}x${image.naturalHeight}`;
+		}, icon.src);
+		expect(dimensions).toBe(icon.sizes);
+	}
+	const color = await page.locator('meta[name="theme-color"]').getAttribute("content");
+	await page.getByRole("button", { name: "切换主题", exact: true }).click();
+	await expect(page.locator('meta[name="theme-color"]')).not.toHaveAttribute(
+		"content",
+		color ?? "",
+	);
+	expect(
+		await page.evaluate(async () => (await navigator.serviceWorker.getRegistrations()).length),
+	).toBe(0);
+	expect(await page.evaluate(async () => (await caches.keys()).length)).toBe(0);
 });

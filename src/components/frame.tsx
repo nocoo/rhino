@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 import { type ReactElement, type ReactNode, useEffect, useRef, useState } from "react";
 import { version } from "../../package.json";
+import { useBrowserChrome } from "../hooks/use-browser-chrome";
 import { EnvironmentSwitch } from "./environment-switch";
 
 const Github = createLucideIcon("Github", [
@@ -103,6 +104,7 @@ export function Frame({
 	identity?: { name: string | null; avatar: string | null };
 	immersive?: boolean;
 }) {
+	useBrowserChrome();
 	const profileName = identity?.name?.trim() || "我的训练日志";
 	const profileAvatar = identity?.avatar?.trim() || null;
 	const [mobile, setMobile] = useState(() => window.matchMedia("(max-width: 767px)").matches);

@@ -19,6 +19,7 @@ current implementation and open acceptance gates; none certifies medical safety.
 | [08 Local and Release](08-local-and-release.md) | Current local setup, implementation limits, production and recovery runbook |
 | [09 Video References](09-video-references.md) | Attributed external movement demonstrations and verification limits |
 | [10 Immersive Workout](10-immersive-workout.md) | Mobile timeline, durable clocks, step recording and completion |
+| [11 Calendar and PWA](11-calendar-and-pwa.md) | Cross-month plans, actual records and Safari installation |
 
 ## Reading Conventions
 

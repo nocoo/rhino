@@ -18,6 +18,7 @@ the root [logo.png](../../logo.png) SHA-256 matches that record.
 | Startup and environment failure | `public/logo-80.png` | Transparent mark at 80 CSS px |
 | Browser PNG | `public/favicon.png` | Transparent 64 px foreground |
 | Browser ICO | `public/favicon.ico` | Transparent 16/24/32/48/64/128/256 px entries |
+| Installed web app | `public/pwa-192.png`, `public/pwa-512.png` | Whole-canvas square presentation, manifest `purpose:any` |
 | Apple touch | `public/apple-touch-icon.png` | Opaque 180 px square presentation; platform applies its mask |
 
 The root transparent master and both presentation masters are 2048 x 2048.
@@ -26,7 +27,7 @@ Use the same foreground on light and dark surfaces. The optional sidebar avatar
 is the owner's separate identity, not a substitute for the project mark.
 
 The hosted login belongs to Cloudflare Access; this app does not duplicate or
-reconfigure that login. No PWA manifest or native application is currently shipped.
+reconfigure that login. The online-only PWA manifest uses the approved square presentation; no native application is shipped.
 Do not add a social image URL until its actual image response is verified.
 
 ## Verification
@@ -40,3 +41,6 @@ checked with `shasum -a 256 logo.png` from the repository root.
 Follow the [shared usage SOP](https://github.com/nocoo/hexly.ai/blob/main/docs/07-logo-usage-sop.md)
 for future derivatives. Keep original generation and finishing archives in Hexly;
 this local integration does not imply source publication or deployment.
+
+PWA derivatives are reproducible with installed Sharp: resize `assets/brand/icon.png`
+to 192 and 512 pixels using the default Lanczos3 kernel, and encode as PNG.

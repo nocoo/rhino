@@ -1,0 +1,16 @@
+{
+	"id": "/",
+	"name": "Rhino · 训练与记录",
+	"short_name": "Rhino",
+	"description": "私人训练计划、跨月日历与真实训练记录。需要联网使用。",
+	"lang": "zh-CN",
+	"start_url": "/",
+	"scope": "/",
+	"display": "standalone",
+	"background_color": "#eeeff2",
+	"theme_color": "#eeeff2",
+	"icons": [
+		{ "src": "/pwa-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+		{ "src": "/pwa-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+	]
+}

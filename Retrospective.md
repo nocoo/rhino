@@ -280,3 +280,12 @@ seeded the same historical date. The production list correctly displayed both
 records. Scope the fixture action to one matching record and verify its date;
 never assume a shared test day has exactly one session. No daily or production
 records were touched.
+
+## 2026-10-12 — Review launcher model name mismatch
+
+The supplied model spelling `group/auto-gpt-6.1-sol` was rejected by the live
+provider. No review ran. The provider identifies this route as
+`group/auto-gpt-6-1-sol`; relaunch the task-owned reviewer with that exact name.
+After stopping an interactive agent, verify the shell is ready before starting
+another: terminal keyboard-protocol teardown briefly prefixed the next command.
+Neither a settled pane nor a launch command alone proves review completion.
