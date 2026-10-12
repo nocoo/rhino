@@ -30,17 +30,17 @@ editor. Navigation from a saving training session is blocked until it settles.
 The framework header contains ancestors and the current title; there is no second
 breadcrumb trail inside the page.
 Changing pages or records resets the content island's scroll position; selecting
-a date or exercise keeps the current page mounted. On phones, the selected-day
-agenda precedes the monthly archive so older records do not bury today's actions.
+a date or exercise keeps the current page mounted.
 The skip link focuses the main landmark without creating a fragment history
 entry, so keyboard accessibility cannot bypass the navigation guard's index.
 
-The desktop calendar is capped at 1040px with a compact month grid, completed-work
-statistics, a chronological monthly record list and selected-day agenda. Plan
-details start expanded on desktop and open on demand on mobile; start/manual-record
-actions stay ahead of the details.
-Statistics distinguish completed actuals from unfinished sessions and projected
-plans. Basalt 3.0.0 public APIs were checked against its installed guides and the
+The calendar retains its original spacious layout: a full-width two-column desktop
+grid, a sticky month panel, responsive 52-80px date cells and 20px date numbers.
+On narrow screens the month and selected-day details stack vertically. Plan
+details remain visible without an accordion. The compact statistics strip,
+per-cell captions and duplicate monthly archive were removed at the owner's
+request; date selection still exposes all records for that day. Basalt 3.0.0
+public APIs were checked against its installed guides and the
 local Basalt reference at `e3071c1`.
 
 ## Workout calendar

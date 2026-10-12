@@ -43,21 +43,13 @@ test("calendar is home and native history restores pages and exercise paths", as
 	).toBeInViewport();
 	expect(await page.locator(".rhino-island").evaluate((island) => island.scrollTop)).toBe(0);
 	if (info.project.name === "desktop") {
-		expect(
-			await page.locator(".calendar-day-note").evaluateAll((notes) =>
-				notes.every((note) => {
-					const cell = note.parentElement?.getBoundingClientRect();
-					const text = note.getBoundingClientRect();
-					return (
-						cell &&
-						text.top >= cell.top &&
-						text.bottom <= cell.bottom &&
-						note.scrollHeight <= note.clientHeight
-					);
-				}),
-			),
-		).toBe(true);
+		const cell = await page.locator(".calendar-day").first().boundingBox();
+		expect(cell?.height).toBeGreaterThanOrEqual(70);
+		await expect(page.locator(".calendar-number").first()).toHaveCSS("font-size", "20px");
 	}
+	await expect(page.locator(".calendar-stats, .calendar-history, .calendar-day-note")).toHaveCount(
+		0,
+	);
 	await page.screenshot({
 		path: info.outputPath("calendar-home.png"),
 		fullPage: true,
