@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.2.1 - 2026-10-12
+
+- Add a cross-month workout calendar with historical plan revisions, scheduled
+  training, completed results and unfinished records. Preserve the selected date
+  when returning from a session.
+- Add manual workout recording without fabricating elapsed time or performed
+  sets. Allow actual cardio intensity to be saved and corrected, with matching
+  moderate-equivalent totals.
+- Add an online-only installed web app manifest and approved 192/512 PNG icons.
+  Keep private training and Access responses out of service-worker caches.
+- Extend phase colors into mobile safe areas and browser theme metadata; retain
+  immersive training in landscape on touch devices without duplicating Basalt's
+  safe-area geometry. Desktop pointer devices retain the framed workspace.
+- Cover calendar navigation, manual recording, installed metadata and landscape
+  training through desktop/mobile browser regressions.
+
+This patch follows the owner's explicit Z+1 request. No database schema migration
+or authentication change is required. Native iPhone Safari installation and
+toolbar acceptance remain pending; Chromium checks do not certify iOS behavior.
+The eleven motion previews remain unreviewed illustrations.
+
 ## v0.2.0 - 2026-10-12
 
 - Rebuild training as a chronological preparation and immersive workout flow,
