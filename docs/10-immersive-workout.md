@@ -1,7 +1,7 @@
 # Immersive Workout Flow
 
-Implementation revision: 2026-10-12. This is a local preview for owner acceptance,
-not a release or professional exercise review.
+Introduced in v0.2.0 (2026-10-12). This is a personal training preview,
+not professional exercise review.
 
 ## Basalt 3 Presentation
 

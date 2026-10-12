@@ -1,5 +1,29 @@
 # Changelog
 
+## v0.2.0 - 2026-10-12
+
+- Rebuild training as a chronological preparation and immersive workout flow,
+  with source-plan choices, exercise previews and mobile-friendly number steppers.
+- Persist total and per-step timing, save each completed set or cardio segment,
+  recover acknowledged records after reload and retry lost responses safely.
+- Keep plan/record review, non-interrupting technique dialogs and explicit partial
+  completion available throughout training. Loads use optional 15 kg presets and
+  5 kg steps while retaining precise actual values and per-hand units.
+- Upgrade Basalt from 2.1.8 to 3.0.0; align sidebar motion and blur, compact header
+  controls, exercise rows, finishing-dialog spacing and touch targets.
+- Add phase-specific blue backgrounds, white timer typography, green inter-set
+  rest, Lucide phase markers and lightweight contour textures. Desktop retains a
+  separate reference panel; short mobile screens scroll only when needed.
+- Deploy automatically after successful main-branch CI, with exact-source proof,
+  anonymous version/revision and D1 health checks, and protected business APIs.
+- Extend desktop/mobile browser coverage for persistence, failure recovery,
+  layout, contrast, touch regions and rest expiry without automatic recording.
+
+Timing is optional data in the existing session actual JSON; no database schema
+migration or authentication-flow change is required. Started targets remain
+immutable, and performed work is never inferred from a plan. The eleven motion
+previews remain unreviewed illustrations, not qualified coaching.
+
 ## 0.1.1 - 2026-10-09
 
 - Adopt the approved rhinoceros identity across the sidebar, startup and failure
