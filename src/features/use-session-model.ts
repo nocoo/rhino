@@ -119,7 +119,7 @@ export function useSessionModel(session: SessionRecord) {
 		setDirty(true);
 	}
 	function setCardioTarget(id: string, minutes: number) {
-		if (!Number.isInteger(minutes) || minutes < 1 || minutes > 150) return;
+		if (!Number.isInteger(minutes) || minutes < 1 || minutes > 180) return;
 		const next = structuredClone(target);
 		const block = next.blocks.find((item) => item.cardio?.id === id);
 		if (!block?.cardio) return;

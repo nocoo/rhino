@@ -19,7 +19,7 @@ it("edits actual intensity independently and bounds cardio target budgets", () =
 	expect(result.current.actual.cardioSegments[1]?.intensity).toBe("unknown");
 	expect(result.current.actual.completedAsPlanned).toBe(false);
 	act(() => result.current.setDirty(false));
-	for (const invalid of [0, 151, 1.5])
+	for (const invalid of [0, 181, 1.5])
 		act(() => result.current.setCardioTarget(cardio.id, invalid));
 	act(() => result.current.setCardioTarget("absent", 20));
 	expect(result.current.dirty).toBe(false);
@@ -32,4 +32,18 @@ it("edits actual intensity independently and bounds cardio target budgets", () =
 	expect(result.current.target.blocks[1]?.durationMinutes).toBe(20);
 	expect(result.current.actual.cardioSegments[0]?.intensity).toBe("unknown");
 	expect(result.current.dirty).toBe(true);
+});
+
+it("can reduce a long cardio plan without getting stuck above the old input limit", () => {
+	const session = sessionRecord();
+	const block = session.target.blocks[1];
+	if (!block.cardio) throw new Error("Missing cardio fixture");
+	block.durationMinutes = 180;
+	block.cardio.plannedMinutes = 180;
+	session.target.blocks = [block];
+	session.target.timeBudgetMinutes = 180;
+	const { result } = renderHook(() => useSessionModel(session));
+	act(() => result.current.setCardioTarget(block.cardio?.id ?? "", 179));
+	expect(result.current.target.blocks[0].cardio?.plannedMinutes).toBe(179);
+	expect(result.current.target.timeBudgetMinutes).toBe(179);
 });

@@ -92,7 +92,7 @@ export function SessionPlan({
 									}
 									unit="分钟"
 									min={prep ? 1 : 0}
-									max={prep ? 150 : 180}
+									max={180}
 									disabled={model.busy}
 									onChange={(value) => {
 										if (block.cardio) {
