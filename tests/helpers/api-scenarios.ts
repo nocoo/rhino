@@ -20,6 +20,11 @@ export type ApiHarness = {
 	origin: string;
 	guard: () => Promise<void>;
 };
+async function pauseAfterSequentialL2Request(): Promise<void> {
+	if (!process.env.RHINO_TEST_RUN_ID) return;
+	await new Promise((resolve) => setTimeout(resolve, 75));
+}
+
 export async function exerciseApi(harness: ApiHarness): Promise<void> {
 	const covered = new Set<string>();
 	const range = "from=2025-10-01&to=2026-10-09";
@@ -31,35 +36,41 @@ export async function exerciseApi(harness: ApiHarness): Promise<void> {
 		token = harness.tokens.owner,
 		headers: Record<string, string> = {},
 	): Promise<T> {
-		if (["PUT", "POST", "DELETE", "PATCH"].includes(method)) await harness.guard();
-		const response = await harness.request(path, {
-			method,
-			headers: {
-				...(token ? { "Cf-Access-Jwt-Assertion": token } : {}),
-				Origin: harness.origin,
-				"Content-Type": "application/json",
-				...headers,
-			},
-			...(body === undefined ? {} : { body: JSON.stringify(body) }),
-		});
-		assert.equal(response.status, status, `${method} ${path}: ${await response.clone().text()}`);
-		assert.equal(response.headers.get("cache-control"), "no-store");
-		const result = (await response.json()) as ApiData<T> & ApiErrorBody;
-		if (path === "/api/live" && status < 400) {
-			covered.add("GET /api/live");
+		try {
+			if (["PUT", "POST", "DELETE", "PATCH"].includes(method)) await harness.guard();
+			const response = await harness.request(path, {
+				method,
+				headers: {
+					...(token ? { "Cf-Access-Jwt-Assertion": token } : {}),
+					Origin: harness.origin,
+					"Content-Type": "application/json",
+					...headers,
+				},
+				...(body === undefined ? {} : { body: JSON.stringify(body) }),
+			});
+			assert.equal(response.status, status, `${method} ${path}: ${await response.clone().text()}`);
+			assert.equal(response.headers.get("cache-control"), "no-store");
+			const result = (await response.json()) as ApiData<T> & ApiErrorBody;
+			if (path === "/api/live" && status < 400) {
+				covered.add("GET /api/live");
+				return result as T;
+			}
+			if (status < 400) {
+				const route = API_ROUTES.find(
+					(route) =>
+						route.method === method &&
+						new RegExp(`^${route.path.replace(/:[^/]+/g, "[^/]+")}$`).test(
+							path.split("?")[0] ?? "",
+						),
+				);
+				if (route) covered.add(`${method} ${route.path}`);
+				return result.data;
+			}
+			assert.ok(result.error.code);
 			return result as T;
+		} finally {
+			await pauseAfterSequentialL2Request();
 		}
-		if (status < 400) {
-			const route = API_ROUTES.find(
-				(route) =>
-					route.method === method &&
-					new RegExp(`^${route.path.replace(/:[^/]+/g, "[^/]+")}$`).test(path.split("?")[0] ?? ""),
-			);
-			if (route) covered.add(`${method} ${route.path}`);
-			return result.data;
-		}
-		assert.ok(result.error.code);
-		return result as T;
 	}
 	const live = await call<{ status: string; name: string; version: string; revision: string }>(
 		"GET",

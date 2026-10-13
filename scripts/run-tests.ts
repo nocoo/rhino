@@ -71,6 +71,16 @@ try {
 		await new Promise((resolve) => setTimeout(resolve, 200));
 	}
 	console.log(`${tier.toUpperCase()}: 本地 Worker ${base}，隔离 D1 ${test.id}`);
+	if (tier === "l2") {
+		const { nodeFetch } = await import("../tests/helpers/node-fetch.ts");
+		for (let attempt = 0; attempt < 5; attempt++) {
+			const response = await nodeFetch(`${base}/api/live`, {
+				headers: { "Cf-Access-Jwt-Assertion": identity.tokens.owner },
+			});
+			if (!response.ok) throw new Error(`L2 warmup failed (${response.status})`);
+			await new Promise((resolve) => setTimeout(resolve, 100));
+		}
+	}
 	await run(
 		tier === "l2"
 			? ["bun", "test", "./tests/l2", ...process.argv.slice(3)]
