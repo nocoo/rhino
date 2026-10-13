@@ -13,7 +13,14 @@ import { join, resolve, sep } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { cleanEnvironment, run } from "../../scripts/process.ts";
 
-export type TestRun = { state: string; id: string; config: string; env: NodeJS.ProcessEnv };
+export type TestRun = {
+	state: string;
+	id: string;
+	config: string;
+	env: NodeJS.ProcessEnv;
+	/** When true, retry read-only SQLite marker checks while a live Worker holds the D1 file. */
+	markerViaWrangler?: boolean;
+};
 
 export function assertOwnedPath(state: string, id: string): void {
 	const root = resolve(".wrangler/tests");
@@ -132,23 +139,62 @@ async function executeSql(test: TestRun, sql: string): Promise<unknown> {
 	}
 }
 
-export async function assertMarker(test: TestRun): Promise<void> {
-	assertOwnedPath(test.state, test.id);
-	const files = readdirSync(join(test.state, "v3", "d1"), {
+const liveMarkerConnections = new WeakMap<TestRun, DatabaseSync>();
+
+function ownedDatabasePath(state: string): string {
+	const files = readdirSync(join(state, "v3", "d1"), {
 		recursive: true,
 		withFileTypes: true,
 	}).filter((file) => file.isFile() && /^[a-f0-9]{64}\.sqlite$/.test(file.name));
 	if (files.length !== 1 || !files[0])
 		throw new Error("Expected exactly one owned D1 SQLite database");
-	const database = new DatabaseSync(join(files[0].parentPath, files[0].name), { readOnly: true });
-	try {
-		const rows = database.prepare("SELECT env, run_id FROM _test_marker").all();
-		if (rows.length !== 1 || rows[0]?.env !== "test" || rows[0]?.run_id !== test.id) {
-			throw new Error("Refusing database without matching _test_marker(env=test, run_id)");
-		}
-	} finally {
-		database.close();
+	return join(files[0].parentPath, files[0].name);
+}
+
+function readMarkerFromDatabase(database: DatabaseSync, id: string): void {
+	const rows = database.prepare("SELECT env, run_id FROM _test_marker").all();
+	if (rows.length !== 1 || rows[0]?.env !== "test" || rows[0]?.run_id !== id) {
+		throw new Error("Refusing database without matching _test_marker(env=test, run_id)");
 	}
+}
+
+function markerDatabase(test: TestRun): DatabaseSync {
+	let database = liveMarkerConnections.get(test);
+	if (!database) {
+		database = new DatabaseSync(ownedDatabasePath(test.state), {
+			readOnly: true,
+			timeout: 10_000,
+		});
+		liveMarkerConnections.set(test, database);
+	}
+	return database;
+}
+
+export async function assertMarker(test: TestRun): Promise<void> {
+	assertOwnedPath(test.state, test.id);
+	if (!test.markerViaWrangler) {
+		const database = new DatabaseSync(ownedDatabasePath(test.state), {
+			readOnly: true,
+			timeout: 10_000,
+		});
+		try {
+			readMarkerFromDatabase(database, test.id);
+		} finally {
+			database.close();
+		}
+		return;
+	}
+	let lastError: unknown;
+	for (let attempt = 0; attempt < 12; attempt++) {
+		try {
+			readMarkerFromDatabase(markerDatabase(test), test.id);
+			return;
+		} catch (error) {
+			lastError = error;
+			await new Promise((resolve) => setTimeout(resolve, 25 * (attempt + 1)));
+		}
+	}
+	throw lastError;
 }
 
 export async function localSql(test: TestRun, sql: string): Promise<unknown> {
@@ -172,5 +218,10 @@ export async function initializeDatabase(test: TestRun): Promise<void> {
 export async function cleanupDatabase(test: TestRun): Promise<void> {
 	await assertMarker(test);
 	assertOwnedPath(test.state, test.id);
+	const database = liveMarkerConnections.get(test);
+	if (database) {
+		database.close();
+		liveMarkerConnections.delete(test);
+	}
 	rmSync(test.state, { recursive: true });
 }
