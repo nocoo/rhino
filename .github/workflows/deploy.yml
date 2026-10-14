@@ -18,7 +18,7 @@ jobs:
       github.event.workflow_run.event == 'push' &&
       github.event.workflow_run.head_branch == 'main' &&
       github.event.workflow_run.head_repository.full_name == github.repository
-    uses: nocoo/base-ci/.github/workflows/deploy-worker.yml@8816553dc9f4544d1e8486bacb5cce630a9f14cb
+    uses: nocoo/base-ci/.github/workflows/deploy-worker.yml@0394178ebcff0418c442d84a84119220f31f8987 # v2026.9
     with:
       expected-workflow-path: .github/workflows/ci.yml
       expected-workflow-name: CI
@@ -32,7 +32,6 @@ jobs:
       node-version: "26.10.0"
       install-policy: blocked
       deploy-cli: wrangler
-      wrangler-version: "4.149.0"
       wrangler-config: wrangler.jsonc
       build-command: bun scripts/prepare-deployment.ts && bun run build
       d1-migrations: true
