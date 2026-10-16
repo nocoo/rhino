@@ -3,7 +3,11 @@ import { Slider } from "@nocoo/basalt/components/slider";
 import { Focus, Layers3, Pause, Play, RotateCcw, RotateCw, View } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { StrengthExerciseId } from "../domain/contracts";
-import { createExerciseScene, type SceneController } from "../three/exercise-scene";
+import {
+	createExerciseScene,
+	defaultCameraView,
+	type SceneController,
+} from "../three/exercise-scene";
 
 type CameraPreset = "front" | "side" | "rear" | "detail";
 
@@ -19,7 +23,7 @@ export function ExerciseViewer({
 	const [playing, setPlaying] = useState(false);
 	const [progress, setProgress] = useState(0);
 	const [muscles, setMuscles] = useState(true);
-	const [camera, setCamera] = useState<CameraPreset>("front");
+	const [camera, setCamera] = useState<CameraPreset>(() => defaultCameraView(exerciseId));
 	const [loading, setLoading] = useState(true);
 	const [failed, setFailed] = useState(false);
 	const initialId = useRef(exerciseId);
@@ -52,7 +56,7 @@ export function ExerciseViewer({
 	useEffect(() => {
 		controller.current?.setExercise(exerciseId);
 		setPlaying(false);
-		setCamera("front");
+		setCamera(defaultCameraView(exerciseId));
 		controller.current?.setPlaying(false);
 	}, [exerciseId]);
 	const selectCamera = (next: CameraPreset) => {
