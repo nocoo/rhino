@@ -33,6 +33,10 @@ export type SceneController = {
 	dispose: () => void;
 };
 
+export function defaultCameraView(id: StrengthExerciseId): CameraView {
+	return [4, 8, 10].includes(getExercise(id).highlightRegions[0]) ? "rear" : "front";
+}
+
 export async function createExerciseScene(
 	host: HTMLElement,
 	exercise: StrengthExerciseId,
@@ -88,8 +92,8 @@ export async function createExerciseScene(
 	let mixer: AnimationMixer;
 	let duration = 4;
 	let model: Group;
-	let view: CameraView = "front";
-	let direction: Exclude<CameraView, "detail"> = "front";
+	let view: CameraView = defaultCameraView(exercise);
+	let direction: Exclude<CameraView, "detail"> = view === "rear" ? "rear" : "front";
 	const bounds = new Box3(new Vector3(-0.6, 0, -0.3), new Vector3(0.6, 2.3, 0.5));
 	const detailBounds = new Box3();
 	let body: SkinnedMesh;
@@ -138,7 +142,7 @@ export async function createExerciseScene(
 		controls.update();
 		render();
 	};
-	cameraView("front");
+	cameraView(view);
 	resize();
 	const material = new MeshStandardMaterial({ color: 0xa7adb8, roughness: 0.57, metalness: 0.12 });
 	material.onBeforeCompile = (shader) => {
@@ -336,7 +340,7 @@ export async function createExerciseScene(
 			);
 		}
 		detailBounds.expandByScalar(0.12);
-		cameraView([4, 8, 10].includes(selected[0]) ? "rear" : "front");
+		cameraView(defaultCameraView(id));
 		onProgress(0);
 		render();
 	};

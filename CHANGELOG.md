@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.2.4 - 2026-10-17
+
+- Polish all user-facing Basalt views (`today`, `calendar`, `plans`, `library`,
+  `progress`, `profile`, `session` and `session-plan`) and shared chrome to align
+  layout density, surface hierarchy, semantic status badges and CJK typography
+  with Basalt template peers.
+- Add staggered section entrance motion, phase-colored time-allocation bars with
+  grow animations, smooth live workout clock ring sweeps and active camera preset
+  states in the 3D exercise viewer, with full `prefers-reduced-motion: reduce`
+  support.
+- Upgrade plan revision history into a structured version grid, refine collapsible
+  static phase previews and muscle role badges in the exercise library, and add
+  recessed table containers and coach callouts while preserving all desktop/mobile
+  geometry and accessibility contracts.
+
 ## v0.2.1 - 2026-10-12
 
 - Add a cross-month workout calendar with historical plan revisions, scheduled

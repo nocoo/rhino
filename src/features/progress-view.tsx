@@ -10,8 +10,22 @@ import {
 	TableHeader,
 	TableRow,
 } from "@nocoo/basalt/components/table";
-import { HeartPulse, Plus, Scale, TrendingUp } from "lucide-react";
+import { Activity, ArrowUpRight, HeartPulse, Plus, Scale, TrendingUp } from "lucide-react";
 import type { RhinoModel } from "./use-rhino-model";
+
+const sessionStatusLabels = {
+	draft: "准备中",
+	active: "训练中",
+	completed: "已完成",
+	abandoned: "已放弃",
+} as const;
+
+const sessionStatusPills = {
+	draft: "pill pill-warning",
+	active: "pill pill-warning",
+	completed: "pill pill-success",
+	abandoned: "pill pill-muted",
+} as const;
 
 export function ProgressView({
 	model,
@@ -48,16 +62,19 @@ export function ProgressView({
 					value={String(latest?.value ?? "—")}
 					subtitle={latest?.effectiveDate ?? "等待第一条记录"}
 					icon={Scale}
+					iconColor="text-basalt-primary"
 				/>
 				<StatCard
 					label="身体质量指数 · BMI"
 					value={String(latest?.displayedBmi ?? "—")}
 					subtitle="不等于体脂率，不直接决定训练强度"
 					icon={TrendingUp}
+					iconColor="text-basalt-primary"
 				/>
 				<StatCard
 					label="中等强度心率参考 · bpm"
 					icon={HeartPulse}
+					iconColor="text-basalt-primary"
 					value={
 						guidance?.status === "available"
 							? guidance.estimate.displayedModerateBpm.join("–")
@@ -76,10 +93,11 @@ export function ProgressView({
 			</StatGrid>
 			<div className="plan-grid">
 				<LayerCard className="chart-card">
-					<LayerCard.Header>
+					<LayerCard.Header className="card-footer">
 						<h2 className="card-title">
-							体重趋势 <span className="eyebrow muted">体重 / 千克</span>
+							<Scale size={17} /> 体重趋势
 						</h2>
+						<span className="eyebrow muted">体重 / 千克</span>
 					</LayerCard.Header>
 					<LayerCard.Body>
 						{data.length ? (
@@ -102,10 +120,11 @@ export function ProgressView({
 					</LayerCard.Body>
 				</LayerCard>
 				<LayerCard className="chart-card">
-					<LayerCard.Header>
+					<LayerCard.Header className="card-footer">
 						<h2 className="card-title">
-							BMI 趋势 <span className="eyebrow muted">身体质量指数</span>
+							<TrendingUp size={17} /> BMI 趋势
 						</h2>
+						<span className="eyebrow muted">身体质量指数</span>
 					</LayerCard.Header>
 					<LayerCard.Body>
 						{data.some((item) => item.bmi !== null) ? (
@@ -129,35 +148,45 @@ export function ProgressView({
 				</LayerCard>
 			</div>
 			<LayerCard>
-				<LayerCard.Header>
-					<h2 className="card-title">原始测量数据</h2>
+				<LayerCard.Header className="card-footer">
+					<h2 className="card-title">
+						<Scale size={17} /> 原始测量数据
+					</h2>
+					<span className="pill pill-muted mono">{points.length} 条</span>
 				</LayerCard.Header>
 				<LayerCard.Body>
-					<div className="table-scroll">
-						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead>日期</TableHead>
-									<TableHead>体重 / kg</TableHead>
-									<TableHead>BMI</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{points.map((point) => (
-									<TableRow key={point.id}>
-										<TableCell className="mono">{point.effectiveDate}</TableCell>
-										<TableCell className="mono">{point.value}</TableCell>
-										<TableCell className="mono">{point.displayedBmi ?? "无有效身高"}</TableCell>
+					{points.length ? (
+						<div className="table-scroll">
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead>日期</TableHead>
+										<TableHead>体重 / kg</TableHead>
+										<TableHead>BMI</TableHead>
 									</TableRow>
-								))}
-							</TableBody>
-						</Table>
-					</div>
+								</TableHeader>
+								<TableBody>
+									{points.map((point) => (
+										<TableRow key={point.id}>
+											<TableCell className="mono">{point.effectiveDate}</TableCell>
+											<TableCell className="mono">{point.value}</TableCell>
+											<TableCell className="mono">{point.displayedBmi ?? "无有效身高"}</TableCell>
+										</TableRow>
+									))}
+								</TableBody>
+							</Table>
+						</div>
+					) : (
+						<p className="coach-note">还没有体重记录。在个人档案添加第一条测量数据。</p>
+					)}
 				</LayerCard.Body>
 			</LayerCard>
 			<LayerCard>
-				<LayerCard.Header>
-					<h2 className="card-title">训练记录</h2>
+				<LayerCard.Header className="card-footer">
+					<h2 className="card-title">
+						<Activity size={17} /> 训练记录
+					</h2>
+					<span className="pill pill-muted mono">{model.sessions.length} 场</span>
 				</LayerCard.Header>
 				<LayerCard.Body>
 					{model.sessions.length ? (
@@ -179,18 +208,14 @@ export function ProgressView({
 												{session.target.emphasis === "cardio" ? "有氧骑行" : "力量与有氧"}
 											</TableCell>
 											<TableCell>
-												{
-													{
-														draft: "准备中",
-														active: "训练中",
-														completed: "已完成",
-														abandoned: "已放弃",
-													}[session.status]
-												}
+												<span className={sessionStatusPills[session.status]}>
+													{sessionStatusLabels[session.status]}
+												</span>
 											</TableCell>
 											<TableCell>
 												<Button size="sm" variant="ghost" onClick={() => model.setActive(session)}>
 													查看记录
+													<ArrowUpRight size={13} />
 												</Button>
 											</TableCell>
 										</TableRow>
@@ -203,10 +228,14 @@ export function ProgressView({
 					)}
 				</LayerCard.Body>
 			</LayerCard>
-			<p className="coach-note">
-				<HeartPulse size={18} />{" "}
-				有氧训练也可以用谈话测试：中等强度时能说话但难以唱歌。用药或健康状况可能让通用心率区间不适用，身体感受比追逐数字更重要。
-			</p>
+			<div className="coach-callout">
+				<p className="coach-note">
+					<HeartPulse size={18} />{" "}
+					<span>
+						有氧训练也可以用谈话测试：中等强度时能说话但难以唱歌。用药或健康状况可能让通用心率区间不适用，身体感受比追逐数字更重要。
+					</span>
+				</p>
+			</div>
 		</div>
 	);
 }

@@ -9,7 +9,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@nocoo/basalt/components/table";
-import { HeartPulse, Ruler, Scale, ShieldCheck } from "lucide-react";
+import { Check, Dumbbell, HeartPulse, History, Ruler, Scale, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { Choice, Field } from "../components/fields";
 import { EQUIPMENT } from "../data/exercises";
@@ -30,10 +30,13 @@ export function ProfileView({ model }: { model: RhinoModel }) {
 			/>
 			<div className="profile-layout">
 				<LayerCard>
-					<LayerCard.Header>
+					<LayerCard.Header className="card-footer">
 						<h2 className="card-title">
 							<ShieldCheck size={18} /> 个人档案
 						</h2>
+						<span className={current ? "pill pill-success" : "pill pill-muted"}>
+							{current ? `已建立 · v${current.version}` : "待建立"}
+						</span>
 					</LayerCard.Header>
 					<LayerCard.Body>
 						<form
@@ -129,36 +132,53 @@ export function ProfileView({ model }: { model: RhinoModel }) {
 									/>
 								</div>
 							)}
-							<SectionRule title="可用器械">
+							<SectionRule
+								title={
+									<span className="section-label">
+										<Dumbbell size={14} /> 可用器械
+									</span>
+								}
+								actions={
+									<span className="pill pill-muted mono">
+										已选 {editor.preferences.equipmentIds.length} / {EQUIPMENT.length}
+									</span>
+								}
+							>
 								<div className="form-actions">
-									{EQUIPMENT.map((item) => (
-										<Button
-											key={item.id}
-											type="button"
-											size="sm"
-											variant={
-												editor.preferences.equipmentIds.includes(item.id) ? "secondary" : "ghost"
-											}
-											aria-pressed={editor.preferences.equipmentIds.includes(item.id)}
-											onClick={() => editor.toggleEquipment(item.id)}
-										>
-											{
+									{EQUIPMENT.map((item) => {
+										const active = editor.preferences.equipmentIds.includes(item.id);
+										return (
+											<Button
+												key={item.id}
+												type="button"
+												size="sm"
+												variant={active ? "secondary" : "ghost"}
+												aria-pressed={active}
+												onClick={() => editor.toggleEquipment(item.id)}
+											>
+												{active && <Check size={13} aria-hidden="true" />}
 												{
-													dumbbell: "哑铃",
-													bench: "训练凳",
-													"cable-machine": "坐姿划船机",
-													"lat-pulldown-machine": "高位下拉机",
-													"chest-press-machine": "坐姿推胸机",
-												}[item.id]
-											}
-										</Button>
-									))}
+													{
+														dumbbell: "哑铃",
+														bench: "训练凳",
+														"cable-machine": "坐姿划船机",
+														"lat-pulldown-machine": "高位下拉机",
+														"chest-press-machine": "坐姿推胸机",
+													}[item.id]
+												}
+											</Button>
+										);
+									})}
 								</div>
 							</SectionRule>
-							<p className="coach-note">
-								<HeartPulse size={18} />{" "}
-								若服用影响心率的药物，或已有医生的运动建议，请关闭通用估算。估算不是安全上限。
-							</p>
+							<div className="coach-callout">
+								<p className="coach-note">
+									<HeartPulse size={18} />{" "}
+									<span>
+										若服用影响心率的药物，或已有医生的运动建议，请关闭通用估算。估算不是安全上限。
+									</span>
+								</p>
+							</div>
 							<div className="form-actions">
 								<Button type="submit" loading={model.busy}>
 									保存档案
@@ -169,10 +189,11 @@ export function ProfileView({ model }: { model: RhinoModel }) {
 					</LayerCard.Body>
 				</LayerCard>
 				<LayerCard>
-					<LayerCard.Header>
+					<LayerCard.Header className="card-footer">
 						<h2 className="card-title">
 							<Scale size={18} /> 记录身体数据
 						</h2>
+						<span className="pill pill-muted">同日同类更新</span>
 					</LayerCard.Header>
 					<LayerCard.Body className="stack">
 						<Field label="测量日期" type="date" value={date} onChange={setDate} />
@@ -229,8 +250,11 @@ export function ProfileView({ model }: { model: RhinoModel }) {
 				</LayerCard>
 			</div>
 			<LayerCard>
-				<LayerCard.Header>
-					<h2 className="card-title">测量历史</h2>
+				<LayerCard.Header className="card-footer">
+					<h2 className="card-title">
+						<History size={17} /> 测量历史
+					</h2>
+					<span className="pill pill-muted mono">{model.measurements.length} 条</span>
 				</LayerCard.Header>
 				<LayerCard.Body>
 					{model.measurements.length ? (
@@ -249,7 +273,11 @@ export function ProfileView({ model }: { model: RhinoModel }) {
 										.map((item) => (
 											<TableRow key={item.id}>
 												<TableCell className="mono">{item.effectiveDate}</TableCell>
-												<TableCell>{item.kind === "height" ? "身高" : "体重"}</TableCell>
+												<TableCell>
+													<span className={item.kind === "height" ? "pill pill-muted" : "pill"}>
+														{item.kind === "height" ? "身高" : "体重"}
+													</span>
+												</TableCell>
 												<TableCell className="mono">
 													{item.value} {item.kind === "height" ? "cm" : "kg"}
 												</TableCell>

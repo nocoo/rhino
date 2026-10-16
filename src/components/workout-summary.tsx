@@ -1,5 +1,5 @@
 import { Button, LayerCard } from "@nocoo/basalt";
-import { ArrowRight, Bike, Clock3, Dumbbell, Play } from "lucide-react";
+import { ArrowRight, Bike, Clock3, Dumbbell, Play, SlidersHorizontal } from "lucide-react";
 import { EXERCISES } from "../data/exercises";
 import type { SessionTarget, StrengthExerciseId } from "../domain/contracts";
 
@@ -49,16 +49,19 @@ export function WorkoutSummary({
 					<span>
 						<Dumbbell size={14} /> {exercises.length} 个力量动作
 					</span>
-					<span>按状态微调</span>
+					<span>
+						<SlidersHorizontal size={13} /> 按状态微调
+					</span>
 				</div>
 				<div className="allocation" role="img" aria-label="训练时间分配">
 					{target.blocks.map((block) => (
-						<span key={block.kind} style={{ flex: block.durationMinutes }} />
+						<span key={block.kind} data-kind={block.kind} style={{ flex: block.durationMinutes }} />
 					))}
 				</div>
 				<div className="allocation-legend">
 					{target.blocks.map((block) => (
 						<span key={block.kind}>
+							<i className="allocation-dot" data-kind={block.kind} aria-hidden="true" />
 							{blockNames[block.kind]} {block.durationMinutes}′
 						</span>
 					))}
@@ -89,9 +92,11 @@ export function WorkoutSummary({
 					))}
 				</div>
 				{!exercises.length && (
-					<p className="coach-note">
-						舒适起步，逐渐进入目标强度。今天没有力量动作，也可以是一次完整的训练。
-					</p>
+					<div className="coach-callout" style={{ marginTop: 12 }}>
+						<p className="coach-note">
+							舒适起步，逐渐进入目标强度。今天没有力量动作，也可以是一次完整的训练。
+						</p>
+					</div>
 				)}
 			</LayerCard.Body>
 			{onStart && (

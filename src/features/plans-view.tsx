@@ -1,6 +1,7 @@
 import { Button, LayerCard } from "@nocoo/basalt";
 import { PageHeader } from "@nocoo/basalt/components/page-header";
-import { CalendarDays, RefreshCw, Sparkles } from "lucide-react";
+import { SectionRule } from "@nocoo/basalt/components/section-rule";
+import { CalendarDays, Check, History, RefreshCw, SlidersHorizontal, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { Choice, Field } from "../components/fields";
 import { WorkoutSummary } from "../components/workout-summary";
@@ -49,8 +50,11 @@ export function PlansView({ model }: { model: RhinoModel }) {
 				}
 			/>
 			<LayerCard>
-				<LayerCard.Header>
-					<h2 className="card-title">计划偏好</h2>
+				<LayerCard.Header className="card-footer">
+					<h2 className="card-title">
+						<SlidersHorizontal size={17} /> 计划偏好
+					</h2>
+					<span className="pill pill-muted mono">{model.today.slice(0, 7)} 复盘周期</span>
 				</LayerCard.Header>
 				<LayerCard.Body>
 					<form
@@ -106,7 +110,7 @@ export function PlansView({ model }: { model: RhinoModel }) {
 				</LayerCard.Body>
 			</LayerCard>
 			{!!model.limitations.length && (
-				<LayerCard>
+				<div className="coach-callout">
 					<div className="coach-note">
 						<CalendarDays size={18} />
 						<div>
@@ -115,37 +119,55 @@ export function PlansView({ model }: { model: RhinoModel }) {
 							))}
 						</div>
 					</div>
-				</LayerCard>
+				</div>
 			)}
 			{model.preview && (
-				<LayerCard className="stack">
-					<div className="card-footer">
-						<div>
-							<strong>计划预览</strong>
-							<p className="field-hint">采用后会创建新版本，历史训练保持不变。</p>
+				<LayerCard className="plan-preview-card">
+					<LayerCard.Body className="stack">
+						<div className="card-footer">
+							<div>
+								<div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+									<span className="pill pill-warning">
+										<Sparkles size={12} /> 待采用预览
+									</span>
+									<strong>计划预览</strong>
+								</div>
+								<p className="field-hint">采用后会创建新版本，历史训练保持不变。</p>
+							</div>
+							<Button onClick={() => void model.adopt()} loading={model.busy}>
+								<Check size={15} /> 采用这个计划
+							</Button>
 						</div>
-						<Button onClick={() => void model.adopt()} loading={model.busy}>
-							采用这个计划
-						</Button>
-					</div>
-					{model.preview.rationale.compromises.map((item) => (
-						<p className="field-hint" key={item}>
-							{item}
-						</p>
-					))}
+						{model.preview.rationale.compromises.map((item) => (
+							<p className="field-hint" key={item}>
+								{item}
+							</p>
+						))}
+					</LayerCard.Body>
 				</LayerCard>
 			)}
-			<div className="plan-grid">
-				{slots.map((slot, index) => (
-					<WorkoutSummary
-						key={slot.weekday}
-						target={slot.target}
-						subtitle={`训练 ${String(index + 1).padStart(2, "0")} / ${WEEKDAY_LABELS[slot.weekday]}`}
-						onStart={!model.preview ? () => void model.start(slot.target) : undefined}
-						busy={model.busy}
-					/>
-				))}
-			</div>
+			{!!slots.length && (
+				<SectionRule
+					title={
+						<span className="section-label">
+							<CalendarDays size={15} /> {model.preview ? "预览周安排" : "当前周安排"}
+						</span>
+					}
+					actions={<span className="pill pill-muted mono">每周 {slots.length} 场</span>}
+				>
+					<div className="plan-grid">
+						{slots.map((slot, index) => (
+							<WorkoutSummary
+								key={slot.weekday}
+								target={slot.target}
+								subtitle={`训练 ${String(index + 1).padStart(2, "0")} / ${WEEKDAY_LABELS[slot.weekday]}`}
+								onStart={!model.preview ? () => void model.start(slot.target) : undefined}
+								busy={model.busy}
+							/>
+						))}
+					</div>
+				</SectionRule>
+			)}
 			{!slots.length && (
 				<LayerCard>
 					<LayerCard.Empty
@@ -157,15 +179,33 @@ export function PlansView({ model }: { model: RhinoModel }) {
 			)}
 			{!!model.plans.history.length && (
 				<LayerCard>
-					<LayerCard.Header>
-						<h2 className="card-title">计划版本</h2>
+					<LayerCard.Header className="card-footer">
+						<h2 className="card-title">
+							<History size={17} /> 计划版本
+						</h2>
+						<span className="pill pill-muted mono">共 {model.plans.history.length} 个版本</span>
 					</LayerCard.Header>
-					<LayerCard.Body className="workout-meta">
-						{model.plans.history.map((plan) => (
-							<span key={plan.revision}>
-								v{plan.revision} · {plan.reviewMonth} · 每周 {plan.input.weeklyFrequency} 次
-							</span>
-						))}
+					<LayerCard.Body>
+						<div className="plan-revision-grid">
+							{model.plans.history.map((plan) => {
+								const isCurrent = plan.revision === model.plans.current?.revision;
+								return (
+									<div
+										key={plan.revision}
+										className="plan-revision-item"
+										data-current={isCurrent || undefined}
+									>
+										<span>
+											<strong className="mono">v{plan.revision}</strong> · {plan.reviewMonth} · 每周{" "}
+											{plan.input.weeklyFrequency} 次
+										</span>
+										<span className={isCurrent ? "pill pill-success" : "pill pill-muted mono"}>
+											{isCurrent ? "当前采用" : `${plan.input.sessionTimeBudgetMinutes}′`}
+										</span>
+									</div>
+								);
+							})}
+						</div>
 					</LayerCard.Body>
 				</LayerCard>
 			)}

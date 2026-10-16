@@ -21,6 +21,12 @@ import { useCalendarModel } from "./use-calendar-model";
 import type { RhinoModel } from "./use-rhino-model";
 
 const statusNames = { draft: "准备中", active: "进行中", completed: "已完成", abandoned: "已结束" };
+const statusPillClass = {
+	draft: "pill pill-warning",
+	active: "pill pill-warning",
+	completed: "pill pill-success",
+	abandoned: "pill pill-muted",
+};
 
 export function CalendarView({
 	model,
@@ -144,16 +150,30 @@ export function CalendarView({
 				</section>
 				<section className="stack calendar-agenda" aria-label="所选日期详情">
 					<SectionRule
-						title={`${calendar.selected} · ${WEEKDAY_LABELS[weekdayOf(calendar.selected)]}`}
+						title={
+							<span className="section-label">
+								<CalendarDays size={15} /> {calendar.selected} ·{" "}
+								{WEEKDAY_LABELS[weekdayOf(calendar.selected)]}
+							</span>
+						}
+						actions={
+							calendar.selected === model.today ? <span className="pill">今天</span> : undefined
+						}
 					/>
 					{calendar.loading ? (
 						<LayerCard.Loading label="正在加载当天记录" />
 					) : calendar.error ? (
 						<LayerCard>
-							<p role="alert">{calendar.error}</p>
-							<Button variant="secondary" onClick={calendar.retry}>
-								重试日历
-							</Button>
+							<LayerCard.Body className="stack">
+								<p role="alert" className="error-message">
+									{calendar.error}
+								</p>
+								<div className="form-actions">
+									<Button variant="secondary" onClick={calendar.retry}>
+										重试日历
+									</Button>
+								</div>
+							</LayerCard.Body>
 						</LayerCard>
 					) : records.length ? (
 						records.map((session) => {
@@ -162,7 +182,7 @@ export function CalendarView({
 								<LayerCard key={session.id} className="calendar-record">
 									<LayerCard.Header>
 										<div className="card-footer">
-											<span className="pill">
+											<span className={statusPillClass[session.status]}>
 												{session.status === "completed" ? (
 													<Check size={14} />
 												) : (
@@ -170,21 +190,23 @@ export function CalendarView({
 												)}
 												{statusNames[session.status]}
 											</span>
-											<span className="field-hint">
+											<span className="pill pill-muted mono">
 												{session.sourcePlanRevision
 													? `计划 v${session.sourcePlanRevision}`
 													: "独立训练"}
 											</span>
 										</div>
-										<h2 className="card-title">{emphasisNames[session.target.emphasis]}</h2>
+										<h2 className="card-title" style={{ marginTop: 8 }}>
+											{emphasisNames[session.target.emphasis]}
+										</h2>
 									</LayerCard.Header>
 									<LayerCard.Body>
 										<div className="calendar-actual">
 											<span>
-												<Dumbbell size={16} /> {actual.sets} 组
+												<Dumbbell size={15} /> {actual.sets} 组
 											</span>
 											<span>
-												<Clock3 size={16} /> 有氧 {Math.round(actual.minutes * 10) / 10} 分钟
+												<Clock3 size={15} /> 有氧 {Math.round(actual.minutes * 10) / 10} 分钟
 											</span>
 										</div>
 									</LayerCard.Body>
@@ -200,7 +222,9 @@ export function CalendarView({
 							);
 						})
 					) : (
-						<p className="field-hint">当天尚无训练记录；计划不会自动计入完成量。</p>
+						<div className="coach-callout">
+							<p className="field-hint">当天尚无训练记录；计划不会自动计入完成量。</p>
+						</div>
 					)}
 					{slot && plan ? (
 						<>

@@ -2,7 +2,16 @@ import { Button, LayerCard } from "@nocoo/basalt";
 import { StatCard, StatGrid } from "@nocoo/basalt/charts/stat-card";
 import { PageHeader } from "@nocoo/basalt/components/page-header";
 import { SectionRule } from "@nocoo/basalt/components/section-rule";
-import { ArrowRight, CalendarDays, CheckCheck, Clock3, HeartPulse, Leaf, Play } from "lucide-react";
+import {
+	ArrowRight,
+	CalendarDays,
+	CheckCheck,
+	Clock3,
+	HeartPulse,
+	Leaf,
+	Play,
+	Sparkles,
+} from "lucide-react";
 import { Suspense } from "react";
 import type { Page } from "../components/frame";
 import { WorkoutSummary } from "../components/workout-summary";
@@ -47,13 +56,16 @@ export function TodayView({
 				}
 			/>
 			{current && current.reviewMonth !== model.today.slice(0, 7) && (
-				<LayerCard>
-					<div className="card-footer">
-						<p className="coach-note">新的一月到了。复盘一下，保留有效的训练习惯。</p>
+				<LayerCard className="plan-preview-card">
+					<LayerCard.Body className="card-footer">
+						<div className="coach-note">
+							<Sparkles size={17} />
+							<span>新的一月到了。复盘一下，保留有效的训练习惯。</span>
+						</div>
 						<Button variant="secondary" onClick={() => navigate("plans")}>
 							月度复盘
 						</Button>
-					</div>
+					</LayerCard.Body>
 				</LayerCard>
 			)}
 			<StatGrid columns={3} className="today-metrics">
@@ -62,63 +74,80 @@ export function TodayView({
 					value={`${completed} / ${current?.input.weeklyFrequency ?? "—"}`}
 					subtitle="完成的真实记录"
 					icon={CheckCheck}
+					iconColor="text-basalt-primary"
 				/>
 				<StatCard
 					label="有氧累积 · min"
 					value={Math.round(minutes)}
 					subtitle="中等强度等效分钟"
 					icon={Clock3}
+					iconColor="text-basalt-primary"
 				/>
 				<StatCard
 					label="力量训练 · 次"
 					value={strength}
 					subtitle="目标每周 ≥ 2 次"
 					icon={HeartPulse}
+					iconColor="text-basalt-primary"
 				/>
 			</StatGrid>
 			<div className="today-layout">
 				<div className="stack">
 					<SectionRule
-						title="本周安排"
+						title={
+							<span className="section-label">
+								<CalendarDays size={15} /> 本周安排
+							</span>
+						}
 						actions={
-							<span className="field-hint">
+							<span className="pill pill-muted mono">
 								{start.slice(5).replace("-", ".")} — {days[6].slice(5).replace("-", ".")}
 							</span>
 						}
 					>
 						<div className="week-strip">
-							{days.map((day, index) => (
-								<div key={day} className={`week-day ${day === model.today ? "current" : ""}`}>
-									<span>{["一", "二", "三", "四", "五", "六", "日"][index]}</span>
-									<strong className="mono">{day.slice(8)}</strong>
-									<span
-										className="day-dot"
-										style={{
-											opacity: current?.template.slots.some(
-												(item) => item.weekday === weekdayOf(day),
-											)
-												? 1
-												: 0.15,
-										}}
-									/>
-								</div>
-							))}
+							{days.map((day, index) => {
+								const planned = current?.template.slots.some(
+									(item) => item.weekday === weekdayOf(day),
+								);
+								return (
+									<div
+										key={day}
+										data-planned={planned || undefined}
+										className={`week-day ${day === model.today ? "current" : ""}`}
+									>
+										<span>{["一", "二", "三", "四", "五", "六", "日"][index]}</span>
+										<strong className="mono">{day.slice(8)}</strong>
+										<span
+											className="day-dot"
+											style={{
+												opacity: planned ? 1 : 0.15,
+											}}
+										/>
+									</div>
+								);
+							})}
 						</div>
 					</SectionRule>
 					<Button variant="ghost" onClick={() => navigate("calendar")}>
 						<CalendarDays size={16} /> 打开训练日历 <ArrowRight size={14} />
 					</Button>
 					{pending && (
-						<LayerCard>
-							<div className="card-footer">
+						<LayerCard className="plan-preview-card">
+							<LayerCard.Body className="card-footer">
 								<div>
-									<strong style={{ fontSize: 14 }}>有一场训练等待继续</strong>
+									<div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+										<span className="pill pill-warning">
+											<Clock3 size={12} /> {pending.status === "active" ? "进行中" : "草稿"}
+										</span>
+										<strong style={{ fontSize: 14 }}>有一场训练等待继续</strong>
+									</div>
 									<p className="field-hint">{pending.localDate} · 已保存的训练草稿</p>
 								</div>
 								<Button variant="secondary" onClick={() => model.setActive(pending)}>
 									<Play size={14} /> 继续训练
 								</Button>
-							</div>
+							</LayerCard.Body>
 						</LayerCard>
 					)}
 					{slot ? (
@@ -143,15 +172,15 @@ export function TodayView({
 							/>
 						</LayerCard>
 					)}
-					<LayerCard>
+					<div className="coach-callout">
 						<div className="coach-note">
-							<Leaf size={19} />
+							<Leaf size={18} />
 							<div>
 								<strong style={{ color: "var(--rhino-ink)" }}>一致性，比完美更重要。</strong>
 								<p>热身轻松一点，力量训练留有余力。今天不必练到力竭，也不必弥补昨天。</p>
 							</div>
 						</div>
-					</LayerCard>
+					</div>
 				</div>
 				<div className="stack">
 					<Suspense fallback={<LayerCard.Loading label="正在准备三维动作" />}>

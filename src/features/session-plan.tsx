@@ -202,14 +202,24 @@ export function SessionPlan({
 											?.sets.map((set, i) => (
 												<div key={set.id} className="recorded-set">
 													<div className="card-footer">
-														<strong className="field-hint">
-															第 {i + 1} 组 ·{" "}
-															{set.status === "performed"
-																? "已完成"
-																: set.status === "skipped"
-																	? "已跳过"
-																	: "未记录"}
-														</strong>
+														<span className="banner-content">
+															<strong className="field-hint">第 {i + 1} 组</strong>
+															<span
+																className={
+																	set.status === "performed"
+																		? "pill pill-success"
+																		: set.status === "skipped"
+																			? "pill pill-muted"
+																			: "pill pill-warning"
+																}
+															>
+																{set.status === "performed"
+																	? "已完成"
+																	: set.status === "skipped"
+																		? "已跳过"
+																		: "未记录"}
+															</span>
+														</span>
 														<Button
 															size="sm"
 															variant="ghost"
