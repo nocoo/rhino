@@ -5,6 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import type { StrengthExerciseId } from "../domain/contracts";
 import { createExerciseScene, type SceneController } from "../three/exercise-scene";
 
+type CameraPreset = "front" | "side" | "rear" | "detail";
+
 export function ExerciseViewer({
 	exerciseId,
 	compact = false,
@@ -17,6 +19,7 @@ export function ExerciseViewer({
 	const [playing, setPlaying] = useState(false);
 	const [progress, setProgress] = useState(0);
 	const [muscles, setMuscles] = useState(true);
+	const [camera, setCamera] = useState<CameraPreset>("front");
 	const [loading, setLoading] = useState(true);
 	const [failed, setFailed] = useState(false);
 	const initialId = useRef(exerciseId);
@@ -49,8 +52,13 @@ export function ExerciseViewer({
 	useEffect(() => {
 		controller.current?.setExercise(exerciseId);
 		setPlaying(false);
+		setCamera("front");
 		controller.current?.setPlaying(false);
 	}, [exerciseId]);
+	const selectCamera = (next: CameraPreset) => {
+		setCamera(next);
+		controller.current?.setCamera(next);
+	};
 	return (
 		<section className={`movement-viewer ${compact ? "compact" : ""}`} aria-label="三维动作演示">
 			<div className="stage-top">
@@ -66,38 +74,38 @@ export function ExerciseViewer({
 				</div>
 				<div className="camera-tools">
 					<Button
-						variant="ghost"
+						variant={camera === "front" ? "secondary" : "ghost"}
 						size="icon"
 						aria-label="正面视角"
 						disabled={loading || failed}
-						onClick={() => controller.current?.setCamera("front")}
+						onClick={() => selectCamera("front")}
 					>
 						<View size={17} />
 					</Button>
 					<Button
-						variant="ghost"
+						variant={camera === "side" ? "secondary" : "ghost"}
 						size="icon"
 						aria-label="侧面视角"
 						disabled={loading || failed}
-						onClick={() => controller.current?.setCamera("side")}
+						onClick={() => selectCamera("side")}
 					>
 						<RotateCcw size={17} />
 					</Button>
 					<Button
-						variant="ghost"
+						variant={camera === "rear" ? "secondary" : "ghost"}
 						size="icon"
 						aria-label="背面视角"
 						disabled={loading || failed}
-						onClick={() => controller.current?.setCamera("rear")}
+						onClick={() => selectCamera("rear")}
 					>
 						<RotateCw size={17} />
 					</Button>
 					<Button
-						variant="ghost"
+						variant={camera === "detail" ? "secondary" : "ghost"}
 						size="icon"
 						aria-label="局部细节"
 						disabled={loading || failed}
-						onClick={() => controller.current?.setCamera("detail")}
+						onClick={() => selectCamera("detail")}
 					>
 						<Focus size={17} />
 					</Button>

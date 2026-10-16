@@ -1,4 +1,5 @@
 import { Button, LayerCard } from "@nocoo/basalt";
+import { AlertTriangle, CheckCircle2, RefreshCw } from "lucide-react";
 import { Component, type ReactNode, useState } from "react";
 import { Frame, type Page } from "./components/frame";
 import type { StrengthExerciseId } from "./domain/contracts";
@@ -20,9 +21,19 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean
 	render() {
 		return this.state.failed ? (
 			<LayerCard>
-				<h1>页面遇到问题</h1>
-				<p>已保存的数据不受影响。未提交的修改可能无法恢复。</p>
-				<Button onClick={() => window.location.reload()}>重新加载</Button>
+				<LayerCard.Header>
+					<h1 className="card-title">
+						<AlertTriangle size={18} aria-hidden="true" /> 页面遇到问题
+					</h1>
+				</LayerCard.Header>
+				<LayerCard.Body>
+					<p className="field-hint">已保存的数据不受影响。未提交的修改可能无法恢复。</p>
+				</LayerCard.Body>
+				<LayerCard.Footer>
+					<Button onClick={() => window.location.reload()}>
+						<RefreshCw size={15} /> 重新加载
+					</Button>
+				</LayerCard.Footer>
 			</LayerCard>
 		) : (
 			this.props.children
@@ -49,16 +60,20 @@ function Workspace() {
 			immersive={model.active?.status === "active"}
 		>
 			{model.error && !model.active && (
-				<div role="alert" className="error-message" style={{ marginBottom: 20 }}>
-					{model.error}
+				<div role="alert" className="error-message" style={{ marginBottom: 16 }}>
+					<span className="banner-content">
+						<AlertTriangle size={15} aria-hidden="true" />
+						<span>{model.error}</span>
+					</span>
 					<Button size="sm" variant="ghost" onClick={() => void model.reload()}>
-						重新加载
+						<RefreshCw size={13} /> 重新加载
 					</Button>
 				</div>
 			)}
 			{model.message && !model.active && (
 				<p className="status-message" role="status" style={{ marginBottom: 16 }}>
-					{model.message}
+					<CheckCircle2 size={15} aria-hidden="true" />
+					<span>{model.message}</span>
 				</p>
 			)}
 			{model.loading ? (
