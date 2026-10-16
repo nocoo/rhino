@@ -2,7 +2,7 @@ import { Button, LayerCard } from "@nocoo/basalt";
 import { PageHeader } from "@nocoo/basalt/components/page-header";
 import { SectionRule } from "@nocoo/basalt/components/section-rule";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@nocoo/basalt/components/tabs";
-import { ArrowUpRight, BookOpen, Info, Play } from "lucide-react";
+import { ArrowUpRight, BookOpen, Image, Info, Play } from "lucide-react";
 import { lazy, Suspense, useState } from "react";
 import { exerciseNames } from "../components/workout-summary";
 import { EXERCISE_VIDEO_REFERENCES } from "../data/exercise-videos";
@@ -76,7 +76,7 @@ function ExerciseVideo({ exerciseId }: { exerciseId: StrengthExerciseId }) {
 	return (
 		<LayerCard className="reference-video">
 			<LayerCard.Header>
-				<h2>真人动作参考 · {reference.title}</h2>
+				<h2 className="card-title">真人动作参考 · {reference.title}</h2>
 			</LayerCard.Header>
 			<LayerCard.Body className="stack">
 				{loaded ? (
@@ -168,16 +168,22 @@ export function LibraryView({
 							<ExerciseVideo key={selected} exerciseId={selected} />
 						</TabsContent>
 					</Tabs>
-					<details>
-						<summary className="field-hint">查看静态动作阶段（未审核示意）</summary>
-						<img
-							src={exercise.asset.posterPath}
-							alt={`${exerciseNames[selected]}的起始与中间阶段`}
-							width={680}
-							height={420}
-							style={{ width: "100%", height: "auto", borderRadius: 12 }}
-							loading="lazy"
-						/>
+					<details className="phase-poster-details">
+						<summary className="field-hint">
+							<span className="section-label">
+								<Image size={14} /> 查看静态动作阶段（未审核示意）
+							</span>
+							<span className="pill pill-muted">展开 / 收起</span>
+						</summary>
+						<div className="phase-poster-body">
+							<img
+								src={exercise.asset.posterPath}
+								alt={`${exerciseNames[selected]}的起始与中间阶段`}
+								width={680}
+								height={420}
+								loading="lazy"
+							/>
+						</div>
 					</details>
 					<LayerCard>
 						<LayerCard.Header className="workout-heading">
@@ -201,9 +207,19 @@ export function LibraryView({
 								<div>
 									{exercise.muscles.map((muscle) => (
 										<div key={muscle.id} className="exercise-row">
-											<span className="muscle-dot" />
-											<span style={{ fontSize: 12 }}>{muscle.name}</span>
-											<span className="muted" style={{ marginLeft: "auto", fontSize: 11 }}>
+											<span className="muscle-dot" data-role={muscle.role} />
+											<span
+												style={{
+													fontSize: 13,
+													fontWeight: muscle.role === "primary" ? 550 : 400,
+												}}
+											>
+												{muscle.name}
+											</span>
+											<span
+												className={muscle.role === "primary" ? "pill" : "pill pill-muted"}
+												style={{ marginLeft: "auto" }}
+											>
 												{muscle.role === "primary" ? "主要" : "辅助"}
 											</span>
 										</div>
@@ -212,10 +228,14 @@ export function LibraryView({
 							</SectionRule>
 						</LayerCard.Body>
 					</LayerCard>
-					<p className="coach-note">
-						<Info size={17} />{" "}
-						肌群高亮是区域示意，不是精确的组织分割或激活测量。动作不适合所有人；疼痛或动作不确定时应停止并咨询专业人员。
-					</p>
+					<div className="coach-callout">
+						<p className="coach-note">
+							<Info size={17} />{" "}
+							<span>
+								肌群高亮是区域示意，不是精确的组织分割或激活测量。动作不适合所有人；疼痛或动作不确定时应停止并咨询专业人员。
+							</span>
+						</p>
+					</div>
 				</div>
 			</div>
 		</div>
