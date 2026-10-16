@@ -1648,13 +1648,6 @@
 		font-size: 20px;
 	}
 }
-@media (prefers-reduced-motion: reduce) {
-	.workout-progress-track > div,
-	.clock-sweep,
-	.calendar-grid .calendar-day {
-		transition: none;
-	}
-}
 
 .calendar-layout {
 	display: grid;
@@ -1808,5 +1801,12 @@
 	}
 	.calendar-month {
 		position: static;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.workout-progress-track > div,
+	.clock-sweep,
+	.calendar-grid .calendar-day {
+		transition: none;
 	}
 }
