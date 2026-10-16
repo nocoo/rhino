@@ -738,10 +738,10 @@
 	grid-template-columns: repeat(2, minmax(0, 1fr));
 	gap: var(--rhino-gap);
 }
-.plan-preview-card {
-	border-color: hsl(var(--basalt-primary) / 0.32);
+.basalt-ui[data-basalt-surface].plan-preview-card {
+	border: 1px solid hsl(var(--basalt-primary) / 0.32);
 	background:
-		linear-gradient(135deg, hsl(var(--basalt-primary) / 0.06), transparent 60%),
+		linear-gradient(135deg, hsl(var(--basalt-primary) / 0.08), transparent 60%),
 		hsl(var(--basalt-card));
 }
 .plan-revision-grid {
