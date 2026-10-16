@@ -156,30 +156,38 @@ export function SessionView({
 						</div>
 						{finished && (
 							<p role="status" className="status-message">
-								{model.message || "训练已保存，可以回顾与修正实际记录。"}
+								<Check size={15} aria-hidden="true" />
+								<span>{model.message || "训练已保存，可以回顾与修正实际记录。"}</span>
 							</p>
 						)}
 						<SessionPlan workout={workout} session={session} model={model} preview={openPreview} />
 						{!prep && (
-							<LayerCard className="stack">
-								<Field
-									disabled={model.busy}
-									label="训练备注"
-									value={editor.actual.notes}
-									onChange={(notes) => editor.setActual({ ...editor.actual, notes })}
-								/>
-								<Choice
-									disabled={model.busy}
-									label="训练时有疼痛或明显不适吗？"
-									value={editor.actual.painFlag ? "yes" : "no"}
-									onChange={(value) =>
-										editor.setActual({ ...editor.actual, painFlag: value === "yes" })
-									}
-									options={[
-										{ value: "no", label: "没有" },
-										{ value: "yes", label: "有，停止并复盘" },
-									]}
-								/>
+							<LayerCard>
+								<LayerCard.Header>
+									<h2 className="card-title">
+										<ListChecks size={17} /> 训练总结与身体反馈
+									</h2>
+								</LayerCard.Header>
+								<LayerCard.Body className="stack">
+									<Field
+										disabled={model.busy}
+										label="训练备注"
+										value={editor.actual.notes}
+										onChange={(notes) => editor.setActual({ ...editor.actual, notes })}
+									/>
+									<Choice
+										disabled={model.busy}
+										label="训练时有疼痛或明显不适吗？"
+										value={editor.actual.painFlag ? "yes" : "no"}
+										onChange={(value) =>
+											editor.setActual({ ...editor.actual, painFlag: value === "yes" })
+										}
+										options={[
+											{ value: "no", label: "没有" },
+											{ value: "yes", label: "有，停止并复盘" },
+										]}
+									/>
+								</LayerCard.Body>
 							</LayerCard>
 						)}
 					</>
