@@ -370,7 +370,7 @@ test("Basalt shell geometry, collapse and drawer focus match the reference", asy
 	const item = rail.getByRole("button", { name: "今日训练", exact: true });
 	expect((await item.boundingBox())?.x).toBe(8);
 	await expect(item).toHaveCSS("font-size", "14px");
-	await expect(item).toHaveCSS("height", "34px");
+	await expect(item).toHaveCSS("height", "38px");
 	if (mobile) {
 		await expect(page.getByRole("dialog")).toHaveCSS("width", "260px");
 		await page.keyboard.press("Escape");
