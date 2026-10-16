@@ -5,7 +5,7 @@ not professional exercise review.
 
 ## Basalt 3 Presentation
 
-The application pins the published `@nocoo/basalt` 3.0.0 artifact. Integration
+The application pins the published `@nocoo/basalt` 3.1.0 artifact. Integration
 and compatibility guides were checked against the installed package and upstream
 revision `e3071c168e148381848b021d802f0972a3f7c0e7`. Standalone CSS remains the
 only stylesheet contract. Sidebar owns its 260/68px geometry, navigation insets
@@ -14,7 +14,7 @@ the collapsed mark, with keyboard focus preserved when the control moves. The
 mobile Sheet retains the package's 6px backdrop blur, 350/250ms entry/exit and
 reduced-motion behavior. The shell owns safe-area padding once.
 
-The pinned 3.0.0 stylesheet resolves normal rail motion to 180ms; read its token,
+The pinned 3.1.0 stylesheet resolves normal rail motion to 180ms; read its token,
 not older 300ms documentation. After upgrading, restart Vite with `--force`:
 a long-running server can retain the former dependency stylesheet even though
 the installed package and isolated test servers already use the new artifact.
