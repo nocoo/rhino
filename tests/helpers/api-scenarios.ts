@@ -20,7 +20,7 @@ export type ApiHarness = {
 	origin: string;
 	guard: () => Promise<void>;
 };
-async function pauseAfterSequentialL2Request(): Promise<void> {
+export async function pauseAfterSequentialL2Request(): Promise<void> {
 	if (!process.env.RHINO_TEST_RUN_ID) return;
 	await new Promise((resolve) => setTimeout(resolve, 75));
 }

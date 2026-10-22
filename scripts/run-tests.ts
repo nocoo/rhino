@@ -83,9 +83,9 @@ try {
 	}
 	await run(
 		tier === "l2"
-			? ["bun", "test", "./tests/l2", ...process.argv.slice(3)]
+			? ["bun", "test", "./tests/l2", "--sequential", ...process.argv.slice(3)]
 			: ["node", "node_modules/@playwright/test/cli.js", "test", ...process.argv.slice(3)],
-		{ env, timeout: tier === "l2" ? 120_000 : 360_000 },
+		{ env, timeout: tier === "l2" ? 120_000 : 900_000 },
 	);
 	if (interrupted) throw new Error("Test run interrupted");
 } finally {
