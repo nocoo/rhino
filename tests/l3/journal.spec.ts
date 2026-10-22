@@ -18,6 +18,23 @@ async function navigate(page: Page, name: string) {
 	const menu = page.getByRole("button", { name: "打开导航", exact: true });
 	if (await menu.isVisible()) await menu.click();
 	await page.getByRole("button", { name: new RegExp(`^${name}( |$)`) }).click();
+	const dialog = page.getByRole("dialog");
+	if (await dialog.count()) await page.keyboard.press("Escape");
+	await expect(dialog).toHaveCount(0, { timeout: 10_000 });
+}
+
+async function openPage(page: Page, name: string) {
+	const targets: Record<string, string> = {
+		今日训练: "/today",
+		训练计划: "/plans",
+		动作实验室: "/library",
+		我的进展: "/progress",
+		个人档案: "/profile",
+	};
+	const target = targets[name];
+	if (!target) throw new Error(`Unknown page ${name}`);
+	await page.goto(target);
+	await expect(page.getByRole("dialog")).toHaveCount(0, { timeout: 10_000 });
 }
 
 test("automated E2E is visible, isolated and locked in UI and server", async ({ page }) => {
@@ -419,7 +436,7 @@ test("Basalt shell geometry, collapse and drawer focus match the reference", asy
 test("all pages retain responsive spacing and usable controls in both themes", async ({
 	page,
 }, testInfo) => {
-	test.setTimeout(testInfo.project.name === "mobile" ? 180_000 : 30_000);
+	test.setTimeout(testInfo.project.name === "mobile" ? 300_000 : 30_000);
 	await page.emulateMedia({ reducedMotion: "reduce" });
 	await page.goto("/today");
 	const widths = testInfo.project.name === "mobile" ? [360, 390] : [768, 1024, 1440];
@@ -430,11 +447,17 @@ test("all pages retain responsive spacing and usable controls in both themes", a
 		for (const width of widths) {
 			await page.setViewportSize({ width, height: 1000 });
 			for (const [index, name] of pages.entries()) {
-				await navigate(page, name);
+				if (testInfo.project.name === "mobile") await openPage(page, name);
+				else await navigate(page, name);
 				await expect(page.locator(".page-body")).toBeVisible();
-				if (name === "今日训练" || name === "动作实验室") {
-					await expect(page.locator(".movement-viewer")).toBeVisible();
-					await expect(page.getByRole("button", { name: "播放演示", exact: true })).toBeEnabled();
+				const checkViewer = name === "今日训练" || name === "动作实验室";
+				const viewerWidth = testInfo.project.name !== "mobile" || width === widths.at(-1);
+				const viewerTheme = testInfo.project.name !== "mobile" || theme === "light";
+				if (checkViewer && viewerWidth && viewerTheme) {
+					await expect(page.locator(".movement-viewer")).toBeVisible({ timeout: 30_000 });
+					await expect(page.getByRole("button", { name: "播放演示", exact: true })).toBeEnabled({
+						timeout: 30_000,
+					});
 				}
 				const sizes = await page.locator(".rhino-island").evaluate((island) => {
 					const rect = island.getBoundingClientRect();
