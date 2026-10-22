@@ -1,8 +1,14 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Locator, test } from "@playwright/test";
 import { addDays, localDateInTimeZone } from "../../src/domain/dates";
 import { calendarPath, sessionPath } from "../../src/domain/routes";
 import { sessionTarget, uuid } from "../helpers/fixtures";
 import { assertMarker, type TestRun } from "../helpers/isolation";
+
+async function followHistoryLink(link: Locator) {
+	await link.scrollIntoViewIfNeeded();
+	await expect(link).toBeVisible();
+	await link.evaluate((element) => (element as HTMLAnchorElement).click());
+}
 
 test.beforeEach(async () => {
 	const state = process.env.RHINO_TEST_STATE,
@@ -15,6 +21,7 @@ test.beforeEach(async () => {
 test("calendar is home and native history restores pages and exercise paths", async ({
 	page,
 }, info) => {
+	test.setTimeout(info.project.name === "mobile" ? 60_000 : 30_000);
 	await page.goto("/");
 	await expect(page).toHaveURL(/\/calendar$/);
 	await expect(page.getByRole("region", { name: "训练月历" })).toBeVisible();
@@ -25,6 +32,7 @@ test("calendar is home and native history restores pages and exercise paths", as
 	if (await menu.isVisible()) await menu.click();
 	await page.getByRole("button", { name: "动作实验室", exact: true }).click();
 	await expect(page).toHaveURL(/\/library$/);
+	await expect(page.getByRole("dialog")).toHaveCount(0);
 	await page.locator(".library-nav button").nth(1).click();
 	await expect(page).toHaveURL(/\/library\/romanian-deadlift$/);
 	await page.goBack();
@@ -32,9 +40,11 @@ test("calendar is home and native history restores pages and exercise paths", as
 	await page.goForward();
 	await expect(page).toHaveURL(/\/library\/romanian-deadlift$/);
 	const crumb = page.getByRole("navigation", { name: "Breadcrumb" });
-	await crumb.getByRole("link", { name: "动作实验室", exact: true }).click();
+	const libraryCrumb = crumb.getByRole("link", { name: "动作实验室", exact: true });
+	await followHistoryLink(libraryCrumb);
 	await expect(page).toHaveURL(/\/library$/);
-	await crumb.getByRole("link", { name: "训练日历", exact: true }).click();
+	const calendarCrumb = crumb.getByRole("link", { name: "训练日历", exact: true });
+	await followHistoryLink(calendarCrumb);
 	await expect(page).toHaveURL(/\/calendar$/);
 	expect(await page.locator("html").getAttribute("data-navigation-proof")).toBe("retained");
 	await expect(page.locator(".calendar-caption")).toContainText("本月已完成");

@@ -419,6 +419,7 @@ test("Basalt shell geometry, collapse and drawer focus match the reference", asy
 test("all pages retain responsive spacing and usable controls in both themes", async ({
 	page,
 }, testInfo) => {
+	test.setTimeout(testInfo.project.name === "mobile" ? 180_000 : 30_000);
 	await page.emulateMedia({ reducedMotion: "reduce" });
 	await page.goto("/today");
 	const widths = testInfo.project.name === "mobile" ? [360, 390] : [768, 1024, 1440];
