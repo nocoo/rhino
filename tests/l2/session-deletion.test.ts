@@ -9,6 +9,7 @@ import {
 } from "../../src/domain/contracts";
 import { actualFromTarget, sessionTarget, uuid } from "../helpers/fixtures";
 import { assertMarker, type TestRun } from "../helpers/isolation";
+import { nodeFetch } from "../helpers/node-fetch";
 
 function harness() {
 	const origin = process.env.RHINO_TEST_URL;
@@ -34,7 +35,7 @@ function harness() {
 		headers: Record<string, string> = {},
 	) => {
 		if (method !== "GET") await assertMarker(state);
-		const response = await fetch(origin + path, {
+		const response = await nodeFetch(origin + path, {
 			method,
 			headers: {
 				"Cf-Access-Jwt-Assertion": tokens.owner ?? "",

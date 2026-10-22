@@ -348,3 +348,12 @@ and used the repository's existing isolated Worker/D1 test runner. No system ACL
 Keychain or certificate changes were made. Delegated testing instructions must
 explicitly prohibit unrelated runtime/security reconfiguration and require a
 handoff when the supported runner cannot execute.
+
+## 2026-10-22 - Reuse the L2 HTTP client
+
+The Basalt upgrade push was blocked by the deletion scenario's oversized-body
+request: Bun's native fetch returned a response without the required no-store
+header through Miniflare. The other L2 scenarios already used nodeFetch for this
+runtime incompatibility. Reusing that client made all three L2 tests pass without
+changing application behavior or weakening assertions. New HTTP scenarios must
+reuse the established test transport, including rejection-path requests.
