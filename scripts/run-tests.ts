@@ -83,7 +83,7 @@ try {
 	}
 	await run(
 		tier === "l2"
-			? ["bun", "test", "./tests/l2", ...process.argv.slice(3)]
+			? ["bun", "test", "./tests/l2", "--sequential", ...process.argv.slice(3)]
 			: ["node", "node_modules/@playwright/test/cli.js", "test", ...process.argv.slice(3)],
 		{ env, timeout: tier === "l2" ? 120_000 : 360_000 },
 	);

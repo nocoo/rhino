@@ -7,6 +7,7 @@ import {
 	type PutSessionRequest,
 	type SessionRecord,
 } from "../../src/domain/contracts";
+import { pauseAfterSequentialL2Request } from "../helpers/api-scenarios";
 import { actualFromTarget, sessionTarget, uuid } from "../helpers/fixtures";
 import { assertMarker, type TestRun } from "../helpers/isolation";
 import { nodeFetch } from "../helpers/node-fetch";
@@ -26,27 +27,33 @@ function harness() {
 		id: process.env.RHINO_TEST_RUN_ID,
 		config: process.env.RHINO_TEST_CONFIG,
 		env: process.env,
+		markerViaWrangler: true,
 	};
 	const tokens = JSON.parse(process.env.RHINO_TEST_TOKENS) as Record<string, string>;
 	const call = async (
 		method: string,
 		path: string,
 		body?: unknown,
+		token = tokens.owner,
 		headers: Record<string, string> = {},
 	) => {
-		if (method !== "GET") await assertMarker(state);
-		const response = await nodeFetch(origin + path, {
-			method,
-			headers: {
-				"Cf-Access-Jwt-Assertion": tokens.owner ?? "",
-				Origin: origin,
-				"Content-Type": "application/json",
-				...headers,
-			},
-			...(body === undefined ? {} : { body: JSON.stringify(body) }),
-		});
-		expect(response.headers.get("cache-control")).toBe("no-store");
-		return response;
+		try {
+			if (method !== "GET") await assertMarker(state);
+			const response = await nodeFetch(origin + path, {
+				method,
+				headers: {
+					...(token ? { "Cf-Access-Jwt-Assertion": token } : {}),
+					Origin: origin,
+					"Content-Type": "application/json",
+					...headers,
+				},
+				...(body === undefined ? {} : { body: JSON.stringify(body) }),
+			});
+			expect(response.headers.get("cache-control")).toBe("no-store");
+			return response;
+		} finally {
+			await pauseAfterSequentialL2Request();
+		}
 	};
 	return { call, tokens };
 }
@@ -73,17 +80,16 @@ test("session deletion is authorized, versioned, permanent and idempotent on rea
 		[tokens.badSignature ?? "", 403],
 		[tokens.expired ?? "", 403],
 	] as const)
-		expect(
-			(await call("DELETE", path, { expectedVersion: 1 }, { "Cf-Access-Jwt-Assertion": token }))
-				.status,
-		).toBe(status);
+		expect((await call("DELETE", path, { expectedVersion: 1 }, token)).status).toBe(status);
 	const rejectedHeaders: Record<string, string>[] = [
 		{ Origin: "https://evil.example.test" },
 		{ Origin: "" },
 		{ "Sec-Fetch-Site": "cross-site" },
 	];
 	for (const headers of rejectedHeaders)
-		expect((await call("DELETE", path, { expectedVersion: 1 }, headers)).status).toBe(403);
+		expect((await call("DELETE", path, { expectedVersion: 1 }, tokens.owner, headers)).status).toBe(
+			403,
+		);
 	for (const body of [
 		{},
 		{ expectedVersion: 0 },
@@ -94,7 +100,11 @@ test("session deletion is authorized, versioned, permanent and idempotent on rea
 	])
 		expect((await call("DELETE", path, body)).status).toBe(400);
 	expect(
-		(await call("DELETE", path, { expectedVersion: 1 }, { "Content-Type": "text/plain" })).status,
+		(
+			await call("DELETE", path, { expectedVersion: 1 }, tokens.owner, {
+				"Content-Type": "text/plain",
+			})
+		).status,
 	).toBe(400);
 	expect((await call("DELETE", path, "x".repeat(MAX_BODY_BYTES))).status).toBe(413);
 	expect((await call("GET", path)).status).toBe(200);

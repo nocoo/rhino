@@ -52,9 +52,12 @@ test("date records are compact, open read-only, edit and delete safely", async (
 	const row = (id: string) => page.locator(`.calendar-record[data-session-id="${id}"]`);
 	await expect(row(ids[0])).toBeVisible();
 	for (const id of ids) {
+		await row(id).scrollIntoViewIfNeeded();
 		await expect(row(id).getByRole("button")).toHaveCount(3);
 		for (const name of ["打开训练记录", "修改训练记录", "删除训练记录"]) {
-			const bounds = await row(id).getByRole("button", { name, exact: true }).boundingBox();
+			const button = row(id).getByRole("button", { name, exact: true });
+			await expect(button).toBeVisible();
+			const bounds = await button.boundingBox();
 			expect(bounds?.width).toBeGreaterThanOrEqual(44);
 			expect(bounds?.height).toBeGreaterThanOrEqual(44);
 		}
