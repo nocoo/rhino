@@ -27,7 +27,7 @@
 		"gate:verify": "bun scripts/verify-gates.ts"
 	},
 	"dependencies": {
-		"@nocoo/basalt": "3.1.0",
+		"@nocoo/basalt": "3.2.1",
 		"jose": "6.2.12",
 		"lucide-react": "1.57.0",
 		"react": "19.3.1",
