@@ -914,6 +914,12 @@
 	}
 }
 @media (max-width: 767px) {
+	.anatomy-stage {
+		height: 360px;
+	}
+	.compact .anatomy-stage {
+		height: 340px;
+	}
 	.today-metrics {
 		order: 1;
 	}
