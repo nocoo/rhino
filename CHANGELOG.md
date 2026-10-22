@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.2.5 - 2026-10-22
+
+- Run L2 API scenarios sequentially against the shared Vite/Miniflare worker and
+  align the session-deletion harness with the established `nodeFetch` transport,
+  marker checks and auth header conventions so unauthorized DELETE probes return
+  401 instead of tripping Miniflare dispatch failures.
+- Stabilize desktop session-record L3 touch-target measurements after calendar
+  record rows render.
+
 ## v0.2.4 - 2026-10-17
 
 - Polish all user-facing Basalt views (`today`, `calendar`, `plans`, `library`,
