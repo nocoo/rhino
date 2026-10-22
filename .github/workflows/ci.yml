@@ -16,7 +16,7 @@ jobs:
     with:
       package-manager: bun
       runtime-version: "1.4.2"
-      node-version: "26.10.0"
+      node-version: "26.12.1"
       install-policy: blocked
       typecheck: true
       lint: true
