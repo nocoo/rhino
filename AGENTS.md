@@ -6,7 +6,7 @@ Instructions apply repository-wide; there are no nested handbooks.
 
 ## Commands
 
-Use Bun 1.4.2 and Node 26.10.0. TypeScript is pinned to **7.0.2**.
+Use Bun 1.4.2 and Node 26.12.1. TypeScript is pinned to **7.0.2**.
 The machine blocks the official npm registry; follow the global mirror policy
 without writing mirror tarball URLs into the committed lockfile.
 
@@ -82,7 +82,7 @@ Keep release evidence tied to its exact revision, not unpublished local changes.
 Local URL: `https://rhino.dev.hexly.ai`, Caddy to `127.0.0.1:7057`.
 Production target: `https://rhino.hexly.ai`, Access team `nocoo`.
 Use stable Wrangler 4.151.0; this project has not migrated to beta `cf`.
-base-ci is pinned to `8816553dc9f4544d1e8486bacb5cce630a9f14cb`.
+base-ci is pinned to `ac635753a869cb85fad1f52aae4ccbd6119f3cae`.
 Deployment automatically follows successful push CI on this repository's `main`,
 with exact-source proof, fresh main and protected `production`. PR, fork, failed
 and manually dispatched CI runs cannot deploy. No manual deploy dispatch or

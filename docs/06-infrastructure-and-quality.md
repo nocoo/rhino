@@ -16,8 +16,8 @@ Read-only investigation on 2026-10-09 found:
 | Rhino baseline | `main` at `576edb275ce8aacfe9cbb7bc6d34aba6d6e223cf`; only `LICENSE` before this documentation change |
 | TypeScript | Owner requires exactly **7.0.2**; both inspected Life.ai and GeekHub manifests also pin it |
 | Neighbor references | `../life.ai` at `5d7a44fcb520b3b057e68fb1d27fd8b242d32df4`; `../geekhub` at `b649e4aae56a8540ce1bffaa21ca7d9d3a9d1f1a` |
-| base-ci checkout | `../base-ci` at `8816553dc9f4544d1e8486bacb5cce630a9f14cb`, including a `cf` deployment interface |
-| Machine | Node 26.10.0, Bun 1.4.2, `cf` 1.0.0-beta.13 observed; not chosen project pins |
+| base-ci checkout | `../base-ci` at `ac635753a869cb85fad1f52aae4ccbd6119f3cae`, including a `cf` deployment interface |
+| Machine | Node 26.12.1, Bun 1.4.2, `cf` 1.0.0-beta.13 observed; not chosen project pins |
 | Target hosts | Production `rhino.hexly.ai`; local `rhino.dev.hexly.ai`; DNS/serving state not established |
 | Local ports | **Candidates only:** dev 7057, L2 17057, L3 27057; not reserved or approved |
 | Caddy | Active `/opt/homebrew/etc/Caddyfile` and tracked `../workflow/caddy/Caddyfile` differ and are not the same file |
@@ -114,7 +114,7 @@ integrity. No package installation was needed for this documentation phase.
 Inspect and pin `nocoo/base-ci/.github/workflows/quality.yml` and
 `nocoo/base-ci/.github/workflows/deploy-worker.yml` to a **published, passing,
 immutable full SHA** when implementation begins. The local candidate
-`8816553dc9f4544d1e8486bacb5cce630a9f14cb` is evidence of an interface, not proof
+`ac635753a869cb85fad1f52aae4ccbd6119f3cae` is evidence of an interface, not proof
 that its remote CI passed. The older sibling pin
 `ad43150de3a2be2fa464b5cd2f921dc4fa9f8f0f` lacks this `cf` interface.
 

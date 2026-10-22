@@ -37,7 +37,7 @@ Personal pages and business APIs require the owner identity. In the current sour
 
 ## Development
 
-Use Node **26.10.0**, Bun **1.4.2** and pinned TypeScript **7.0.2**. If the machine blocks the official npm registry, follow its configured mirror policy without replacing source URLs in the lockfile.
+Use Node **26.12.1**, Bun **1.4.2** and pinned TypeScript **7.0.2**. If the machine blocks the official npm registry, follow its configured mirror policy without replacing source URLs in the lockfile.
 
 ```sh
 bun install --frozen-lockfile
