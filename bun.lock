@@ -6,7 +6,7 @@
       "name": "rhino",
       "dependencies": {
         "@nocoo/basalt": "3.2.1",
-        "jose": "6.2.12",
+        "jose": "6.2.13",
         "lucide-react": "1.61.0",
         "react": "19.3.1",
         "react-dom": "19.3.1",
@@ -604,7 +604,7 @@
 
     "is-potential-custom-element-name": ["is-potential-custom-element-name@1.0.1", "", {}, "sha1-Fx7W8Z46xVQ5Tt94yqBXhKRb67U="],
 
-    "jose": ["jose@6.2.12", "", {}, "sha1-ZWY+FG7dAQuY7Og/gXN9Oqlf0Nc="],
+    "jose": ["jose@6.2.13", "", {}, "sha512-7TIg10ZE1x82YediN+lcrPNvGMKge9yFHQD+Qho/b8y2adfugU3AsvvHfxV0fzyFllT6l9xCjf4RWY9g/Z9PJQ=="],
 
     "js-tokens": ["js-tokens@10.0.0", "", {}, "sha1-3/51mbSou3/jCv+NAjUjTf+3mDE="],
 
