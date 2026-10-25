@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.2.6 - 2026-10-25
+
+- Bump direct and transitive dependencies (Cloudflare toolchain, Vite, Biome,
+  Jose, Lucide, Bun types) and override `undici` to 7.30.1 for security fixes.
+
 ## v0.2.5 - 2026-10-22
 
 - Run L2 API scenarios sequentially against the shared Vite/Miniflare worker and
