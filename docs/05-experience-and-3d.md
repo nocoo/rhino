@@ -76,14 +76,14 @@ Lucide icons with labels; navigation starts from Basalt's 16px/1.5 stroke
 convention. The mobile sheet reuses the same navigation model without leaving
 duplicate hidden focusable links. Profile settings are not a second dashboard.
 
-| Screen | Desktop | Mobile |
-| --- | --- | --- |
-| Today | Compact weekly rail, selected workout, actual weekly totals | Today's choice and start action first; week horizontally scrollable within its region |
-| Plan editor | Session list with inline composition editor | One session at a time; exercise selector in an accessible sheet |
-| Workout | Set log and sticky instructional side panel | One-column log; explicit viewer toggle; current set and save actions stay reachable |
-| Exercise library | Search/filter list with selected movement stage | Filterable list, then a dedicated viewer panel; never many active canvases |
-| Progress | Weight/BMI chart plus actual workout history | One readable chart at a time, data-table option, non-hover-only values |
-| Profile | Short grouped form and measurement history | Labeled controls, native numeric keyboard where appropriate, no multi-column cramped form |
+| Screen           | Desktop                                                     | Mobile                                                                                    |
+| ---------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Today            | Compact weekly rail, selected workout, actual weekly totals | Today's choice and start action first; week horizontally scrollable within its region     |
+| Plan editor      | Session list with inline composition editor                 | One session at a time; exercise selector in an accessible sheet                           |
+| Workout          | Set log and sticky instructional side panel                 | One-column log; explicit viewer toggle; current set and save actions stay reachable       |
+| Exercise library | Search/filter list with selected movement stage             | Filterable list, then a dedicated viewer panel; never many active canvases                |
+| Progress         | Weight/BMI chart plus actual workout history                | One readable chart at a time, data-table option, non-hover-only values                    |
+| Profile          | Short grouped form and measurement history                  | Labeled controls, native numeric keyboard where appropriate, no multi-column cramped form |
 
 Do not render a full-screen canvas above the essential workout controls on a
 phone. The stage supplements logging; it must not make quick recording slow.
@@ -177,11 +177,11 @@ mistakes, and a stop/seek-guidance note for pain or uncertain technique.
 
 No model, rig, texture, or motion asset has been acquired or approved.
 
-| Path | Value | Limitation and decision |
-| --- | --- | --- |
-| Licensed rigged anatomical adult plus authored clips | Best direct path to coherent realism and repeated movements | Confirm web redistribution, derivative work, source/archive rights, costs, and qualified review; recommended path if budget permits |
-| BodyParts3D-derived local muscle detail | Credible anatomical starting geometry with explicit attribution | Static anatomy, not an exercise rig or validated motion library; substantial retopology/rigging may be required |
-| Z-Anatomy repository | Rich anatomical material | Mixed per-asset licensing; cannot adopt the entire repository under one permissive assumption |
+| Path                                                 | Value                                                           | Limitation and decision                                                                                                             |
+| ---------------------------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Licensed rigged anatomical adult plus authored clips | Best direct path to coherent realism and repeated movements     | Confirm web redistribution, derivative work, source/archive rights, costs, and qualified review; recommended path if budget permits |
+| BodyParts3D-derived local muscle detail              | Credible anatomical starting geometry with explicit attribution | Static anatomy, not an exercise rig or validated motion library; substantial retopology/rigging may be required                     |
+| Z-Anatomy repository                                 | Rich anatomical material                                        | Mixed per-asset licensing; cannot adopt the entire repository under one permissive assumption                                       |
 
 [BodyParts3D's current license page](https://dbarchive.biosciencedbc.jp/en/bodyparts3d/lic.html),
 updated 2025-02-27, states CC BY 4.0. Confirm the exact downloaded release and
@@ -264,15 +264,15 @@ Official API references: [GLTFLoader](https://threejs.org/docs/pages/GLTFLoader.
 
 These are **proposed targets**, not measured achievements:
 
-| Area | Target and verification |
-| --- | --- |
-| First movement transfer | Selected rig/clip/textures <=5 MiB compressed; report actual network transfer |
-| Mobile animation | At least 30 fps during a 60-second reviewed clip on the agreed physical phone; record device/browser/thermal conditions |
-| Ordinary routes | No 3D model requests until instruction is opened; logging remains responsive while assets load |
-| Resource lifetime | Twenty open/close or exercise switches without monotonic GPU/resource-count growth; inspect renderer counters and browser memory |
-| Form fidelity | Reviewer approves setup, equipment, phases, range, breathing cues, and muscle labels per exercise |
-| Accessibility | Keyboard-only controls, named buttons, reduced-motion initial pause, complete static/text alternative |
-| Recovery | Failed model request/context loss does not discard session edits; retry/fallback remains usable |
+| Area                    | Target and verification                                                                                                          |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| First movement transfer | Selected rig/clip/textures <=5 MiB compressed; report actual network transfer                                                    |
+| Mobile animation        | At least 30 fps during a 60-second reviewed clip on the agreed physical phone; record device/browser/thermal conditions          |
+| Ordinary routes         | No 3D model requests until instruction is opened; logging remains responsive while assets load                                   |
+| Resource lifetime       | Twenty open/close or exercise switches without monotonic GPU/resource-count growth; inspect renderer counters and browser memory |
+| Form fidelity           | Reviewer approves setup, equipment, phases, range, breathing cues, and muscle labels per exercise                                |
+| Accessibility           | Keyboard-only controls, named buttons, reduced-motion initial pause, complete static/text alternative                            |
+| Recovery                | Failed model request/context loss does not discard session edits; retry/fallback remains usable                                  |
 
 Record side/front stills and a full repetition video at desktop and mobile sizes.
 Performance numbers cannot waive incorrect anatomy; realism cannot waive an

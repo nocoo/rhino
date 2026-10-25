@@ -23,13 +23,13 @@ Brand controls use AccentProvider's supported primary override: HSL
 `215 72% 39%` in light mode and `210 80% 74%` in dark mode. Training uses a
 separate, theme-independent blue-family palette with white foregrounds:
 
-| Phase | HSL background | CSS token suffix |
-| --- | --- | --- |
-| Strength | `215 72% 34%` | `strength` |
-| Preparation | `192 72% 28%` | `preparation` |
-| Main cardio | `202 78% 32%` | `main` |
-| Recovery | `205 32% 32%` | `recovery` |
-| Inter-set rest | `158 48% 25%` | `rest` |
+| Phase          | HSL background | CSS token suffix |
+| -------------- | -------------- | ---------------- |
+| Strength       | `215 72% 34%`  | `strength`       |
+| Preparation    | `192 72% 28%`  | `preparation`    |
+| Main cardio    | `202 78% 32%`  | `main`           |
+| Recovery       | `205 32% 32%`  | `recovery`       |
+| Inter-set rest | `158 48% 25%`  | `rest`           |
 
 These `--rhino-training-*` tokens apply only to the specialist live workout
 surface, not library cards, modal roots, menus or charts. Static contour lines

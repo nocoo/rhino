@@ -11,15 +11,15 @@ the root [logo.png](../../logo.png) SHA-256 matches that record.
 
 ## Surface Roles
 
-| Surface | Asset | Treatment |
-| --- | --- | --- |
-| Chinese and English README | `assets/brand/icon-rounded.png` | Selected presentation at 128 CSS px; no extra mask |
+| Surface                                      | Asset                                      | Treatment                                                              |
+| -------------------------------------------- | ------------------------------------------ | ---------------------------------------------------------------------- |
+| Chinese and English README                   | `assets/brand/icon-rounded.png`            | Selected presentation at 128 CSS px; no extra mask                     |
 | Expanded/collapsed sidebar and mobile drawer | `public/logo-24.png`, `public/logo-80.png` | Responsive transparent mark at 24 CSS px; same position when collapsed |
-| Startup and environment failure | `public/logo-80.png` | Transparent mark at 80 CSS px |
-| Browser PNG | `public/favicon.png` | Transparent 64 px foreground |
-| Browser ICO | `public/favicon.ico` | Transparent 16/24/32/48/64/128/256 px entries |
-| Installed web app | `public/pwa-192.png`, `public/pwa-512.png` | Whole-canvas square presentation, manifest `purpose:any` |
-| Apple touch | `public/apple-touch-icon.png` | Opaque 180 px square presentation; platform applies its mask |
+| Startup and environment failure              | `public/logo-80.png`                       | Transparent mark at 80 CSS px                                          |
+| Browser PNG                                  | `public/favicon.png`                       | Transparent 64 px foreground                                           |
+| Browser ICO                                  | `public/favicon.ico`                       | Transparent 16/24/32/48/64/128/256 px entries                          |
+| Installed web app                            | `public/pwa-192.png`, `public/pwa-512.png` | Whole-canvas square presentation, manifest `purpose:any`               |
+| Apple touch                                  | `public/apple-touch-icon.png`              | Opaque 180 px square presentation; platform applies its mask           |
 
 The root transparent master and both presentation masters are 2048 x 2048.
 Small app/browser marks have no background tile, circular crop, shadow or filter.

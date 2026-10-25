@@ -93,20 +93,20 @@ calories, estimated body-fat percentage, or an opaque "fitness score."
 
 ## Acceptance Matrix
 
-| Requirement | Observable acceptance |
-| --- | --- |
-| One owner | A valid Access token for another user is rejected; no first-visitor ownership claim |
-| Durable data | A fresh authenticated browser retrieves the saved plan, session, and measurement from D1 |
-| Weekly frequency | One to seven requested slots are supported; missed slots do not become forced catch-up workouts |
-| Monthly refresh | Accepting a new month creates a revision; old plans and completed sessions are unchanged |
-| Strength and cardio | Mixed sessions and a cycling-only session can both be planned and completed |
-| Session edits | A changed exercise or set target affects only that session unless a plan change is explicitly accepted |
-| Fast recording | A prepared workout can be confirmed as performed, reviewed, and saved from one summary screen |
-| Realistic instruction | Every selectable strength exercise has a reviewed, licensed 3D clip and muscle mapping |
-| Body measurements | Dated height/weight corrections are possible without silently changing unrelated history |
-| Heart-rate guidance | Birthday-derived estimates show method and limitations; medication override suppresses generic zones |
-| Desktop/mobile | No horizontal page overflow at 360px; keyboard and touch workflows both complete |
-| Reliability | Repeated submission is idempotent; stale multi-tab edits produce an actionable conflict, not data loss |
+| Requirement           | Observable acceptance                                                                                  |
+| --------------------- | ------------------------------------------------------------------------------------------------------ |
+| One owner             | A valid Access token for another user is rejected; no first-visitor ownership claim                    |
+| Durable data          | A fresh authenticated browser retrieves the saved plan, session, and measurement from D1               |
+| Weekly frequency      | One to seven requested slots are supported; missed slots do not become forced catch-up workouts        |
+| Monthly refresh       | Accepting a new month creates a revision; old plans and completed sessions are unchanged               |
+| Strength and cardio   | Mixed sessions and a cycling-only session can both be planned and completed                            |
+| Session edits         | A changed exercise or set target affects only that session unless a plan change is explicitly accepted |
+| Fast recording        | A prepared workout can be confirmed as performed, reviewed, and saved from one summary screen          |
+| Realistic instruction | Every selectable strength exercise has a reviewed, licensed 3D clip and muscle mapping                 |
+| Body measurements     | Dated height/weight corrections are possible without silently changing unrelated history               |
+| Heart-rate guidance   | Birthday-derived estimates show method and limitations; medication override suppresses generic zones   |
+| Desktop/mobile        | No horizontal page overflow at 360px; keyboard and touch workflows both complete                       |
+| Reliability           | Repeated submission is idempotent; stale multi-tab edits produce an actionable conflict, not data loss |
 
 These are release gates, not claims that the current repository passes them.
 

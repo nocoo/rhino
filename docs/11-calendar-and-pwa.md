@@ -6,15 +6,15 @@ The calendar is the default workspace. `/` is replaced with `/calendar` without
 adding a history entry. The application uses native `pushState`/`replaceState`
 and `popstate`; Basalt breadcrumb links use the same navigation adapter.
 
-| Path | Content |
-| --- | --- |
-| `/calendar?date=YYYY-MM-DD` | Month calendar and selected-day agenda |
-| `/today` | Today's recommendations |
-| `/plans` | Weekly training plans |
-| `/library/:exerciseId` | Selected exercise preview; `/library` opens the first |
-| `/progress` | Measurements and progress |
-| `/profile` | Personal profile |
-| `/sessions/:id?from=...` | Independently loaded training record and parent path |
+| Path                        | Content                                               |
+| --------------------------- | ----------------------------------------------------- |
+| `/calendar?date=YYYY-MM-DD` | Month calendar and selected-day agenda                |
+| `/today`                    | Today's recommendations                               |
+| `/plans`                    | Weekly training plans                                 |
+| `/library/:exerciseId`      | Selected exercise preview; `/library` opens the first |
+| `/progress`                 | Measurements and progress                             |
+| `/profile`                  | Personal profile                                      |
+| `/sessions/:id?from=...`    | Independently loaded training record and parent path  |
 
 Session links accept `mode=view` for read-only details and `mode=edit` for the
 existing plan/actuals editor. Omitting the mode resumes the workout flow. Switching

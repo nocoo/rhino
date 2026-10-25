@@ -47,11 +47,11 @@ bun run dev
 
 On the configured development machine, open [rhino.dev.hexly.ai](https://rhino.dev.hexly.ai); Caddy forwards to `127.0.0.1:7057`. Local uses a synthetic identity and local D1 without production credentials. Do not expose it publicly. Other machines need their corresponding local domain and save origin configured; see [local setup](08-local-and-release.md).
 
-| Mode | Data and behavior |
-| --- | --- |
-| Local | Default on every server start; `.wrangler/state` persists daily development data |
-| E2E | Creates a fresh temporary Wrangler database; leaving removes only its matching marked instance |
-| Prod | Proxies to the hosted Worker with real Access identity; reads and writes affect production |
+| Mode  | Data and behavior                                                                              |
+| ----- | ---------------------------------------------------------------------------------------------- |
+| Local | Default on every server start; `.wrangler/state` persists daily development data               |
+| E2E   | Creates a fresh temporary Wrangler database; leaving removes only its matching marked instance |
+| Prod  | Proxies to the hosted Worker with real Access identity; reads and writes affect production     |
 
 Switching confirms the loss of unsaved edits and reloads the page. Old tabs are rejected rather than redirected to the new environment. Automated tests are locked to E2E. Hosted production has neither the selector nor the local gateway.
 
@@ -86,14 +86,14 @@ Vitest runs unit tests; Worker tests invoke real isolated local D1. L2 checks AP
 
 ## Stack
 
-| Technology | Role |
-| --- | --- |
-| React · Vite · Basalt · Lucide | Chinese-first responsive UI, controls and icons |
-| Three.js | Movement illustrations, camera controls and muscle regions |
-| Recharts | Personal measurement and training trends |
-| Cloudflare Workers · D1 · Access | APIs, persistence and owner authentication |
-| TypeScript · Zod · jose | Types, input validation and JWT verification |
-| Bun · Biome · Vitest · Playwright | Scripts, static checks, unit and browser tests |
+| Technology                        | Role                                                       |
+| --------------------------------- | ---------------------------------------------------------- |
+| React · Vite · Basalt · Lucide    | Chinese-first responsive UI, controls and icons            |
+| Three.js                          | Movement illustrations, camera controls and muscle regions |
+| Recharts                          | Personal measurement and training trends                   |
+| Cloudflare Workers · D1 · Access  | APIs, persistence and owner authentication                 |
+| TypeScript · Zod · jose           | Types, input validation and JWT verification               |
+| Bun · Biome · Vitest · Playwright | Scripts, static checks, unit and browser tests             |
 
 ## Documentation
 

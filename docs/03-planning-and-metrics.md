@@ -14,17 +14,17 @@ persists their results. No model API or external recommendation service is neede
 
 ## Inputs and Units
 
-| Input | Meaning and handling |
-| --- | --- |
-| Birthday | Valid date-only `YYYY-MM-DD`, optional; reject future dates |
-| Timezone | Confirmed IANA timezone; determines local dates, weeks, and months |
-| Experience/goal | Beginner or returning general-fitness owner initially; strength-first or endurance-first preference |
-| Weekly frequency | Integer 1-7 available sessions; not an instruction to train hard every day |
-| Availability | Preferred weekdays, per-session time budget, optional cardio-only slots |
-| Equipment | Explicit catalog equipment IDs; never substitute unavailable equipment |
-| Measurements | Finite positive kg and cm with an effective local date; plausibility warnings, no silent clamping |
-| Guidance mode | Generic estimates allowed, disabled, or clinician-provided range; uncertainty disables numeric zones |
-| Feedback | Actual completion, perceived effort, tolerance, pain flag, and explicit adjustment preference |
+| Input            | Meaning and handling                                                                                 |
+| ---------------- | ---------------------------------------------------------------------------------------------------- |
+| Birthday         | Valid date-only `YYYY-MM-DD`, optional; reject future dates                                          |
+| Timezone         | Confirmed IANA timezone; determines local dates, weeks, and months                                   |
+| Experience/goal  | Beginner or returning general-fitness owner initially; strength-first or endurance-first preference  |
+| Weekly frequency | Integer 1-7 available sessions; not an instruction to train hard every day                           |
+| Availability     | Preferred weekdays, per-session time budget, optional cardio-only slots                              |
+| Equipment        | Explicit catalog equipment IDs; never substitute unavailable equipment                               |
+| Measurements     | Finite positive kg and cm with an effective local date; plausibility warnings, no silent clamping    |
+| Guidance mode    | Generic estimates allowed, disabled, or clinician-provided range; uncertainty disables numeric zones |
+| Feedback         | Actual completion, perceived effort, tolerance, pain flag, and explicit adjustment preference        |
 
 Age is full elapsed calendar years on the workout's local date, not
 `milliseconds / 365 days`. Use March 1 as the non-leap-year anniversary for
@@ -52,13 +52,13 @@ session. Preserve the connection to its source plan without enforcing attendance
 7. Persist only when accepted. Identical inputs and catalog/algorithm versions
    produce the same preview; there is no random monthly exercise shuffle.
 
-| Weekly slots | General-fitness proposal, before explicit cardio-only overrides |
-| --- | --- |
-| 1 | One full-body session or one cardio session by preference; explain the frequency limitation |
-| 2 | Two full-body sessions with different emphasis; cardio additions only if time permits |
-| 3 | Two full-body sessions plus one cardio-only session; optionally three tolerable full-body exposures when strength is the priority |
-| 4 | Two full-body sessions plus two cardio sessions; a reviewed upper/lower split is an alternative, not the beginner default |
-| 5-7 | Keep two or three strength sessions; distribute the remaining slots across easy/moderate cardio and recovery-oriented activity |
+| Weekly slots | General-fitness proposal, before explicit cardio-only overrides                                                                   |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| 1            | One full-body session or one cardio session by preference; explain the frequency limitation                                       |
+| 2            | Two full-body sessions with different emphasis; cardio additions only if time permits                                             |
+| 3            | Two full-body sessions plus one cardio-only session; optionally three tolerable full-body exposures when strength is the priority |
+| 4            | Two full-body sessions plus two cardio sessions; a reviewed upper/lower split is an alternative, not the beginner default         |
+| 5-7          | Keep two or three strength sessions; distribute the remaining slots across easy/moderate cardio and recovery-oriented activity    |
 
 The table is a product default, not a claim that a particular split is superior.
 Full-body sessions may emphasize different regions without neglecting the other
@@ -213,15 +213,15 @@ includes rest and is not interchangeable with aerobic minutes.
 
 ## Required Deterministic Tests
 
-| Area | Cases |
-| --- | --- |
-| Dates | Birthday today/tomorrow, leap day, invalid/future date, month/year boundary, timezone change |
-| Plan | Frequencies 1-7, all-cardio choice, unavailable equipment, no valid substitute, budget too small |
-| Progression | Missing effort, partial sets, pain flag, changed variation, unsuitable equipment increment |
-| Versioning | Same inputs repeat, deferred review, multiple revisions, active session during rollover |
-| HR | Age-40 example, missing birthday, guidance disabled, manual override, no HRR/HRmax mixing |
-| BMI | Example above, zero/NaN/infinite rejection, no historical height, corrected dated height |
-| Totals | Partial session, skipped sets, unknown cardio intensity, no warm-up double count, local week boundary |
+| Area        | Cases                                                                                                 |
+| ----------- | ----------------------------------------------------------------------------------------------------- |
+| Dates       | Birthday today/tomorrow, leap day, invalid/future date, month/year boundary, timezone change          |
+| Plan        | Frequencies 1-7, all-cardio choice, unavailable equipment, no valid substitute, budget too small      |
+| Progression | Missing effort, partial sets, pain flag, changed variation, unsuitable equipment increment            |
+| Versioning  | Same inputs repeat, deferred review, multiple revisions, active session during rollover               |
+| HR          | Age-40 example, missing birthday, guidance disabled, manual override, no HRR/HRmax mixing             |
+| BMI         | Example above, zero/NaN/infinite rejection, no historical height, corrected dated height              |
+| Totals      | Partial session, skipped sets, unknown cardio intensity, no warm-up double count, local week boundary |
 
 Medical and coaching review is additional to software testing; passing unit tests
 cannot establish that a training instruction is appropriate for an individual.
