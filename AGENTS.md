@@ -10,25 +10,25 @@ Use Bun 1.4.2 and Node 26.12.1. TypeScript is pinned to **7.0.2**.
 The machine blocks the official npm registry; follow the global mirror policy
 without writing mirror tarball URLs into the committed lockfile.
 
-| Command | Purpose |
-| --- | --- |
-| `bun install --frozen-lockfile` | Install the exact lock and initialize Husky |
-| `bun run dev` | Local-only Vite/Worker, port 7057, local D1 |
-| `bun run login:prod` | Authenticate the explicit development Prod proxy through Access |
-| `bun run db:migrate` | Apply migrations only to daily-development local D1 |
-| `bun run typegen` | Regenerate checked-in Wrangler binding declarations |
-| `bun run typecheck` | Strict TS across app, Worker, tests and scripts |
-| `bun run lint` | Biome recommended rules and formatting, reject warnings |
-| `bun run test:coverage` | Full UT, four 95% thresholds, reject skips/empty/report loss |
-| `bun run test:l2` | Real HTTP/Worker/D1 API scenarios with synthetic JWTs |
-| `bun run test:l3` | Desktop/mobile Chromium critical workflows |
-| `bun run gate:l1` | Check the exact staged index in an isolated snapshot |
-| `bun run gate:verify` | Disposable Git/Husky healthy and rejection probes |
-| `bun run gate:security` | Gitleaks and OSV; missing scanners fail closed |
-| `bun run gate:pre-push` | Pushed-ref L2 and G2 (normally invoked by Husky) |
-| `bun run build` | Build Worker and static assets, not deployment |
-| `node assets-source/build-model.mjs` | Rebuild the shared rig and eleven clips |
-| `node assets-source/build-posters.mjs` | Render matching static phase posters |
+| Command                                | Purpose                                                         |
+| -------------------------------------- | --------------------------------------------------------------- |
+| `bun install --frozen-lockfile`        | Install the exact lock and initialize Husky                     |
+| `bun run dev`                          | Local-only Vite/Worker, port 7057, local D1                     |
+| `bun run login:prod`                   | Authenticate the explicit development Prod proxy through Access |
+| `bun run db:migrate`                   | Apply migrations only to daily-development local D1             |
+| `bun run typegen`                      | Regenerate checked-in Wrangler binding declarations             |
+| `bun run typecheck`                    | Strict TS across app, Worker, tests and scripts                 |
+| `bun run lint`                         | Biome recommended rules and formatting, reject warnings         |
+| `bun run test:coverage`                | Full UT, four 95% thresholds, reject skips/empty/report loss    |
+| `bun run test:l2`                      | Real HTTP/Worker/D1 API scenarios with synthetic JWTs           |
+| `bun run test:l3`                      | Desktop/mobile Chromium critical workflows                      |
+| `bun run gate:l1`                      | Check the exact staged index in an isolated snapshot            |
+| `bun run gate:verify`                  | Disposable Git/Husky healthy and rejection probes               |
+| `bun run gate:security`                | Gitleaks and OSV; missing scanners fail closed                  |
+| `bun run gate:pre-push`                | Pushed-ref L2 and G2 (normally invoked by Husky)                |
+| `bun run build`                        | Build Worker and static assets, not deployment                  |
+| `node assets-source/build-model.mjs`   | Rebuild the shared rig and eleven clips                         |
+| `node assets-source/build-posters.mjs` | Render matching static phase posters                            |
 
 ## Boundaries
 
@@ -81,7 +81,7 @@ Keep release evidence tied to its exact revision, not unpublished local changes.
 
 Local URL: `https://rhino.dev.hexly.ai`, Caddy to `127.0.0.1:7057`.
 Production target: `https://rhino.hexly.ai`, Access team `nocoo`.
-Use stable Wrangler 4.151.0; this project has not migrated to beta `cf`.
+Use stable Wrangler 4.152.0; this project has not migrated to beta `cf`.
 base-ci is pinned to `ac635753a869cb85fad1f52aae4ccbd6119f3cae`.
 Deployment automatically follows successful push CI on this repository's `main`,
 with exact-source proof, fresh main and protected `production`. PR, fork, failed

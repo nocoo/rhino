@@ -41,27 +41,27 @@ needs it; a few route views do not justify a second app framework.
 
 These are planned paths, not files that currently exist.
 
-| Path | Responsibility |
-| --- | --- |
-| `src/app.tsx` | Providers, app shell, route-level composition |
-| `src/styles.css` | Basalt integration, app semantic tokens, responsive layout |
-| `src/domain/planning.ts` | Deterministic schedule, allocation, progression suggestions |
-| `src/domain/metrics.ts` | Date/age, heart-rate estimates, BMI, actual training totals |
-| `src/domain/contracts.ts` | Shared validated request/snapshot schemas and derived types |
-| `src/data/exercises.ts` | Small reviewed exercise catalog and versioned asset references |
-| `src/features/{today,plans,session,progress,profile}/` | Feature views and `use-*-model.ts` hooks as needed |
-| `src/lib/api.ts` | Typed same-origin fetch, conflict/error mapping, cancellation |
-| `src/components/exercise-viewer.tsx` | Lazy viewer boundary, accessible controls and fallback |
-| `src/three/exercise-scene.ts` | Three.js loading, animation, camera, highlighting, disposal |
-| `worker/index.ts` | API routing, response headers, static asset handoff |
-| `worker/auth.ts` | Access assertion verification and owner authorization |
-| `worker/routes/` | Profile, measurements, plans, sessions, and progress handlers |
-| `worker/db.ts` | Direct bound SQL and narrow persistence helpers |
-| `migrations/0001_initial.sql` | Initial schema, checks, unique indexes, foreign keys |
-| `assets-source/README.md` | Authorship, license, editable-source archive locations and hashes |
-| `public/models/` | Optimized, licensed deployment artifacts only |
-| `tests/{unit,l2,l3}/` | Pure/UI tests, real local API/D1 tests, browser journeys |
-| `scripts/` | Only actual test-isolation, gate, and deployment-verification needs |
+| Path                                                   | Responsibility                                                      |
+| ------------------------------------------------------ | ------------------------------------------------------------------- |
+| `src/app.tsx`                                          | Providers, app shell, route-level composition                       |
+| `src/styles.css`                                       | Basalt integration, app semantic tokens, responsive layout          |
+| `src/domain/planning.ts`                               | Deterministic schedule, allocation, progression suggestions         |
+| `src/domain/metrics.ts`                                | Date/age, heart-rate estimates, BMI, actual training totals         |
+| `src/domain/contracts.ts`                              | Shared validated request/snapshot schemas and derived types         |
+| `src/data/exercises.ts`                                | Small reviewed exercise catalog and versioned asset references      |
+| `src/features/{today,plans,session,progress,profile}/` | Feature views and `use-*-model.ts` hooks as needed                  |
+| `src/lib/api.ts`                                       | Typed same-origin fetch, conflict/error mapping, cancellation       |
+| `src/components/exercise-viewer.tsx`                   | Lazy viewer boundary, accessible controls and fallback              |
+| `src/three/exercise-scene.ts`                          | Three.js loading, animation, camera, highlighting, disposal         |
+| `worker/index.ts`                                      | API routing, response headers, static asset handoff                 |
+| `worker/auth.ts`                                       | Access assertion verification and owner authorization               |
+| `worker/routes/`                                       | Profile, measurements, plans, sessions, and progress handlers       |
+| `worker/db.ts`                                         | Direct bound SQL and narrow persistence helpers                     |
+| `migrations/0001_initial.sql`                          | Initial schema, checks, unique indexes, foreign keys                |
+| `assets-source/README.md`                              | Authorship, license, editable-source archive locations and hashes   |
+| `public/models/`                                       | Optimized, licensed deployment artifacts only                       |
+| `tests/{unit,l2,l3}/`                                  | Pure/UI tests, real local API/D1 tests, browser journeys            |
+| `scripts/`                                             | Only actual test-isolation, gate, and deployment-verification needs |
 
 Use MVVM boundaries without ceremonial classes: views render data and invoke
 actions; feature hooks own screen state and async workflows; pure domain
@@ -110,12 +110,12 @@ JSON inside D1, not a generic document-store abstraction. A complete workout is
 one logical aggregate; storing it in one row makes a quick-save atomic without
 dozens of per-set requests. Measurements remain relational for time-series queries.
 
-| Table | Essential fields and constraints |
-| --- | --- |
-| `profile` | Singleton `id = 1`, birthday nullable, timezone, preferences/guidance JSON, integer version, UTC created/updated timestamps |
-| `measurements` | UUID primary key, kind `height` or `weight`, effective local date, positive finite value in cm/kg, version, timestamps; unique `(kind, effective_date)` |
-| `plan_revisions` | Monotonic revision primary key, unique client request UUID, review month, accepted timestamp, algorithm/catalog versions, validated input/template/rationale JSON; append-only |
-| `sessions` | UUID primary key, optional source plan revision FK, local workout date and timezone snapshot, status, target snapshot JSON, actual log JSON, version, last mutation UUID/hash, timestamps |
+| Table            | Essential fields and constraints                                                                                                                                                          |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `profile`        | Singleton `id = 1`, birthday nullable, timezone, preferences/guidance JSON, integer version, UTC created/updated timestamps                                                               |
+| `measurements`   | UUID primary key, kind `height` or `weight`, effective local date, positive finite value in cm/kg, version, timestamps; unique `(kind, effective_date)`                                   |
+| `plan_revisions` | Monotonic revision primary key, unique client request UUID, review month, accepted timestamp, algorithm/catalog versions, validated input/template/rationale JSON; append-only            |
+| `sessions`       | UUID primary key, optional source plan revision FK, local workout date and timezone snapshot, status, target snapshot JSON, actual log JSON, version, last mutation UUID/hash, timestamps |
 
 Use the selected migration tool's schema history; do not add a duplicate schema
 metadata table. No `users` table or owner ID column is needed everywhere for a
@@ -145,22 +145,22 @@ All personal endpoints require the owner. JSON responses use `Cache-Control:
 no-store`. The API uses method-specific routing and JSON errors, never an HTML
 SPA fallback for an unknown `/api` path.
 
-| Method and path | Contract |
-| --- | --- |
-| `GET /api/profile` | Profile, readiness and guidance state |
-| `PUT /api/profile` | Version-checked singleton update |
-| `GET /api/measurements?from=&to=` | Bounded dated observations |
-| `PUT /api/measurements/:id` | Stable-ID creation or version-checked correction; duplicate date is an explicit conflict |
-| `DELETE /api/measurements/:id` | Confirmed, version-checked deletion; disclose derived BMI changes |
-| `GET /api/plans` | Current revision and bounded history |
-| `POST /api/plans/preview` | Recompute validated deterministic preview without a write |
-| `PUT /api/plans/:requestId` | Accept one new revision against the expected current revision |
-| `GET /api/sessions?from=&to=` | Bounded history with cursors when needed |
-| `GET /api/sessions/:id` | Snapshot, actuals, save version |
-| `PUT /api/sessions/:id` | Stable-ID creation, preparation, start, quick-save, completion, or explicit correction |
-| `GET /api/progress?from=&to=` | Derived actual totals and body measurements, never fabricated scores |
-| `GET /api/live` | Anonymous minimal database readiness, name/version/revision; no personal records or error details |
-| `GET /api/identity` | Optional display name/avatar from the hashed, owner-verified JWT email; never an email header; no-store and fail-soft profile lookup |
+| Method and path                   | Contract                                                                                                                             |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `GET /api/profile`                | Profile, readiness and guidance state                                                                                                |
+| `PUT /api/profile`                | Version-checked singleton update                                                                                                     |
+| `GET /api/measurements?from=&to=` | Bounded dated observations                                                                                                           |
+| `PUT /api/measurements/:id`       | Stable-ID creation or version-checked correction; duplicate date is an explicit conflict                                             |
+| `DELETE /api/measurements/:id`    | Confirmed, version-checked deletion; disclose derived BMI changes                                                                    |
+| `GET /api/plans`                  | Current revision and bounded history                                                                                                 |
+| `POST /api/plans/preview`         | Recompute validated deterministic preview without a write                                                                            |
+| `PUT /api/plans/:requestId`       | Accept one new revision against the expected current revision                                                                        |
+| `GET /api/sessions?from=&to=`     | Bounded history with cursors when needed                                                                                             |
+| `GET /api/sessions/:id`           | Snapshot, actuals, save version                                                                                                      |
+| `PUT /api/sessions/:id`           | Stable-ID creation, preparation, start, quick-save, completion, or explicit correction                                               |
+| `GET /api/progress?from=&to=`     | Derived actual totals and body measurements, never fabricated scores                                                                 |
+| `GET /api/live`                   | Anonymous minimal database readiness, name/version/revision; no personal records or error details                                    |
+| `GET /api/identity`               | Optional display name/avatar from the hashed, owner-verified JWT email; never an email header; no-store and fail-soft profile lookup |
 
 The owner authorized anonymous health in local revision `7376d23`. Only exact GET
 `/api/live` precedes Worker authentication; business routes still verify the owner.

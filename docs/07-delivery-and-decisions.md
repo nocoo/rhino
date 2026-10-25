@@ -15,14 +15,14 @@ the two Rhino domains, and public base-ci.
 
 The following choices are **not** silently resolved by the proposal:
 
-| Gate | Options and recommendation | What depends on it |
-| --- | --- | --- |
-| Initial recommendation scope | Proposed healthy adult 18-64 general fitness/basic strength; alternatively expand only with appropriate specialist guidance | Onboarding, safety text, generator, age behavior |
-| Training goals and equipment | Confirm strength-first/endurance-first preference, experience, available machines/free weights, weekly frequency/time, and movement constraints | First catalog, templates, progression defaults |
-| Realistic assets | Recommended licensed rig plus authored/reviewed clips; alternatively derive suitable open anatomical assets with explicit modeling work | Visual prototype, redistribution rights, archive location, asset/reviewer budget |
-| Toolchain | Recommended stable Wrangler for maturity; alternatively explicitly accept `cf` beta and plugin beta 2 | Config format, runtime pins, scripts, base-ci deployment inputs |
-| Identity and local mapping | Confirm owner Access subject and policy; approve or replace candidate ports 7057/17057/27057 | Auth setup, local HTTPS, deployment validation |
-| Interface | Proposed Basalt with a compact mineral/graphite direction and Chinese-first UI; confirm before visual implementation | Component integration, typography, screen copy |
+| Gate                         | Options and recommendation                                                                                                                      | What depends on it                                                               |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Initial recommendation scope | Proposed healthy adult 18-64 general fitness/basic strength; alternatively expand only with appropriate specialist guidance                     | Onboarding, safety text, generator, age behavior                                 |
+| Training goals and equipment | Confirm strength-first/endurance-first preference, experience, available machines/free weights, weekly frequency/time, and movement constraints | First catalog, templates, progression defaults                                   |
+| Realistic assets             | Recommended licensed rig plus authored/reviewed clips; alternatively derive suitable open anatomical assets with explicit modeling work         | Visual prototype, redistribution rights, archive location, asset/reviewer budget |
+| Toolchain                    | Recommended stable Wrangler for maturity; alternatively explicitly accept `cf` beta and plugin beta 2                                           | Config format, runtime pins, scripts, base-ci deployment inputs                  |
+| Identity and local mapping   | Confirm owner Access subject and policy; approve or replace candidate ports 7057/17057/27057                                                    | Auth setup, local HTTPS, deployment validation                                   |
+| Interface                    | Proposed Basalt with a compact mineral/graphite direction and Chinese-first UI; confirm before visual implementation                            | Component integration, typography, screen copy                                   |
 
 Personal details do not need to be posted in a public issue or committed to the
 repository. Set them through the private local/production onboarding when the

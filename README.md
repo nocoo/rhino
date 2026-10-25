@@ -47,11 +47,11 @@ bun run dev
 
 已配置的开发机器访问 [rhino.dev.hexly.ai](https://rhino.dev.hexly.ai)，Caddy 转发到 `127.0.0.1:7057`。Local 使用合成身份和本地 D1，无需生产凭据，不应公开暴露。其他机器需要配置相应本地域名与保存来源，见[本地环境说明](docs/08-local-and-release.md)。
 
-| 环境 | 数据与行为 |
-| --- | --- |
-| Local | 每次启动的默认环境；`.wrangler/state` 持久保存日常开发数据 |
-| E2E | 创建新的临时 Wrangler 数据库；退出后仅清理自身标记匹配的实例 |
-| Prod | 使用真实 Access 身份代理到线上 Worker；读写都会影响生产数据 |
+| 环境  | 数据与行为                                                   |
+| ----- | ------------------------------------------------------------ |
+| Local | 每次启动的默认环境；`.wrangler/state` 持久保存日常开发数据   |
+| E2E   | 创建新的临时 Wrangler 数据库；退出后仅清理自身标记匹配的实例 |
+| Prod  | 使用真实 Access 身份代理到线上 Worker；读写都会影响生产数据  |
 
 切换前确认放弃未保存修改，再重新加载页面。旧标签页会被拒绝，而不是继续访问新环境。自动化测试锁定 E2E；生产站不显示切换器，也不提供本地网关。
 
@@ -86,13 +86,13 @@ bun run test:l3
 
 ## 技术栈
 
-| 技术 | 用途 |
-| --- | --- |
-| React · Vite · Basalt · Lucide | 中文响应式界面、控件与图标 |
-| Three.js | 动作示意、视角控制与肌群区域显示 |
-| Recharts | 个人测量与训练趋势 |
-| Cloudflare Workers · D1 · Access | API、持久化与所有者认证 |
-| TypeScript · Zod · jose | 类型、输入校验与 JWT 验证 |
+| 技术                              | 用途                             |
+| --------------------------------- | -------------------------------- |
+| React · Vite · Basalt · Lucide    | 中文响应式界面、控件与图标       |
+| Three.js                          | 动作示意、视角控制与肌群区域显示 |
+| Recharts                          | 个人测量与训练趋势               |
+| Cloudflare Workers · D1 · Access  | API、持久化与所有者认证          |
+| TypeScript · Zod · jose           | 类型、输入校验与 JWT 验证        |
 | Bun · Biome · Vitest · Playwright | 脚本、静态检查、单元与浏览器测试 |
 
 ## 文档

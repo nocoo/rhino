@@ -11,17 +11,17 @@
 
 Read-only investigation on 2026-10-09 found:
 
-| Item | Observation |
-| --- | --- |
-| Rhino baseline | `main` at `576edb275ce8aacfe9cbb7bc6d34aba6d6e223cf`; only `LICENSE` before this documentation change |
-| TypeScript | Owner requires exactly **7.0.2**; both inspected Life.ai and GeekHub manifests also pin it |
+| Item                | Observation                                                                                                            |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Rhino baseline      | `main` at `576edb275ce8aacfe9cbb7bc6d34aba6d6e223cf`; only `LICENSE` before this documentation change                  |
+| TypeScript          | Owner requires exactly **7.0.2**; both inspected Life.ai and GeekHub manifests also pin it                             |
 | Neighbor references | `../life.ai` at `5d7a44fcb520b3b057e68fb1d27fd8b242d32df4`; `../geekhub` at `b649e4aae56a8540ce1bffaa21ca7d9d3a9d1f1a` |
-| base-ci checkout | `../base-ci` at `ac635753a869cb85fad1f52aae4ccbd6119f3cae`, including a `cf` deployment interface |
-| Machine | Node 26.12.1, Bun 1.4.2, `cf` 1.0.0-beta.13 observed; not chosen project pins |
-| Target hosts | Production `rhino.hexly.ai`; local `rhino.dev.hexly.ai`; DNS/serving state not established |
-| Local ports | **Candidates only:** dev 7057, L2 17057, L3 27057; not reserved or approved |
-| Caddy | Active `/opt/homebrew/etc/Caddyfile` and tracked `../workflow/caddy/Caddyfile` differ and are not the same file |
-| Access | Team and audience supplied; actual owner identity/policy remain unverified |
+| base-ci checkout    | `../base-ci` at `ac635753a869cb85fad1f52aae4ccbd6119f3cae`, including a `cf` deployment interface                      |
+| Machine             | Node 26.12.1, Bun 1.4.2, `cf` 1.0.0-beta.13 observed; not chosen project pins                                          |
+| Target hosts        | Production `rhino.hexly.ai`; local `rhino.dev.hexly.ai`; DNS/serving state not established                             |
+| Local ports         | **Candidates only:** dev 7057, L2 17057, L3 27057; not reserved or approved                                            |
+| Caddy               | Active `/opt/homebrew/etc/Caddyfile` and tracked `../workflow/caddy/Caddyfile` differ and are not the same file        |
+| Access              | Team and audience supplied; actual owner identity/policy remain unverified                                             |
 
 Neighbor patterns worth reusing after inspection: Access verification in
 `../life.ai/worker/auth.ts` and `../geekhub/src/worker/auth.ts`; test allocation and
@@ -58,10 +58,10 @@ Cloudflare hosting is fixed; the CLI is not. This repository has not migrated
 to `cf`, so the owner's "use cf for already-migrated repositories" rule does not
 settle the new-project choice.
 
-| Option | Benefits | Constraints |
-| --- | --- | --- |
-| Stable Wrangler + supported Vite plugin | Closest to the inspected sibling deployments; avoids adopting a beta config surface | Use only this configuration path; exact compatible versions still need verification |
-| `cf` beta + `cloudflare.config.ts` + Vite plugin beta 2 | Current Cloudflare CLI path; inspected base-ci supports it | Open beta, Node-based config loading, different build outputs and deployment inputs; requires explicit beta acceptance |
+| Option                                                  | Benefits                                                                            | Constraints                                                                                                            |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Stable Wrangler + supported Vite plugin                 | Closest to the inspected sibling deployments; avoids adopting a beta config surface | Use only this configuration path; exact compatible versions still need verification                                    |
+| `cf` beta + `cloudflare.config.ts` + Vite plugin beta 2 | Current Cloudflare CLI path; inspected base-ci supports it                          | Open beta, Node-based config loading, different build outputs and deployment inputs; requires explicit beta acceptance |
 
 **Recommendation for reliability:** stable Wrangler unless the owner explicitly
 wants to standardize this new project on `cf` beta. If `cf` is chosen, use it
@@ -161,18 +161,18 @@ references in a consumer project. The consumer is installed at
 
 These are script **names to implement**, not commands that can currently run:
 
-| Script | Required behavior |
-| --- | --- |
-| `dev` | Local Worker/Vite and daily-development local D1, explicit approved port |
-| `typecheck` | TypeScript 7.0.2, `strict: true`, no emit; UI, Worker, tests, and helpers |
-| `lint` | Biome check-only including format, explicit rules and `--error-on-warnings` |
-| `test:coverage` | Nonempty UT lane, all four coverage metrics individually >=95% |
-| `test:l2` | Owned local HTTP/Worker/D1 environment with route inventory |
-| `test:l3` | Owned browser journey environment, isolated from dev and L2 |
-| `gate:security` | Required dependency and secret scanners, bounded failure propagation |
-| `gate:l1` | Check the staged-index snapshot without mutating the worktree/index |
-| `gate:pre-push` | Inspect pushed refs from hook stdin; L2 and G2 with aggregate status |
-| `build` | Explicit checked build for the selected Cloudflare/Vite toolchain |
+| Script          | Required behavior                                                           |
+| --------------- | --------------------------------------------------------------------------- |
+| `dev`           | Local Worker/Vite and daily-development local D1, explicit approved port    |
+| `typecheck`     | TypeScript 7.0.2, `strict: true`, no emit; UI, Worker, tests, and helpers   |
+| `lint`          | Biome check-only including format, explicit rules and `--error-on-warnings` |
+| `test:coverage` | Nonempty UT lane, all four coverage metrics individually >=95%              |
+| `test:l2`       | Owned local HTTP/Worker/D1 environment with route inventory                 |
+| `test:l3`       | Owned browser journey environment, isolated from dev and L2                 |
+| `gate:security` | Required dependency and secret scanners, bounded failure propagation        |
+| `gate:l1`       | Check the staged-index snapshot without mutating the worktree/index         |
+| `gate:pre-push` | Inspect pushed refs from hook stdin; L2 and G2 with aggregate status        |
+| `build`         | Explicit checked build for the selected Cloudflare/Vite toolchain           |
 
 Prefer runner-native coverage thresholds and simple orchestration. Vitest is a
 proposed fit for TypeScript/UI behavior; Playwright is proposed for browser
@@ -182,13 +182,13 @@ models/hooks/domain modules and cannot be hidden in excluded visual files.
 
 ## 6DQ Contract and Current Status
 
-| Dimension | Release contract | Current status |
-| --- | --- | --- |
-| L1 | Meaningful UT; statements, branches, functions, lines each >=95%; strict typecheck; zero lint warnings/errors; installed Husky staged-snapshot gate and proven failure blocking | **Planned**; no runtime/config/hooks/tests exist |
-| L2 | Real local HTTP for each owned endpoint/method, D1 constraints, auth failures, rollback and save races | **Planned** |
-| L3 | Profile -> plan -> edit -> view movement -> record -> reopen -> progress; desktop and mobile, failure recovery | **Planned** |
-| G2 | Dependency and secret scans with correct lockfile scope and missing-tool failure | **Planned** |
-| D1 isolation | Per-run local test stores, owned process/port allocation, guards before writes/reset/cleanup | **Planned**; this quality dimension is separate from the Cloudflare D1 product name |
+| Dimension    | Release contract                                                                                                                                                                | Current status                                                                      |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| L1           | Meaningful UT; statements, branches, functions, lines each >=95%; strict typecheck; zero lint warnings/errors; installed Husky staged-snapshot gate and proven failure blocking | **Planned**; no runtime/config/hooks/tests exist                                    |
+| L2           | Real local HTTP for each owned endpoint/method, D1 constraints, auth failures, rollback and save races                                                                          | **Planned**                                                                         |
+| L3           | Profile -> plan -> edit -> view movement -> record -> reopen -> progress; desktop and mobile, failure recovery                                                                  | **Planned**                                                                         |
+| G2           | Dependency and secret scans with correct lockfile scope and missing-tool failure                                                                                                | **Planned**                                                                         |
+| D1 isolation | Per-run local test stores, owned process/port allocation, guards before writes/reset/cleanup                                                                                    | **Planned**; this quality dimension is separate from the Cloudflare D1 product name |
 
 No S/A/B/F grade, coverage result, CI success, or 6DQ certification is claimed.
 Documentation link/whitespace checks are not substitutes for application tests.
