@@ -81,7 +81,7 @@ Keep release evidence tied to its exact revision, not unpublished local changes.
 
 Local URL: `https://rhino.dev.hexly.ai`, Caddy to `127.0.0.1:7057`.
 Production target: `https://rhino.hexly.ai`, Access team `nocoo`.
-Use stable Wrangler 4.151.0; this project has not migrated to beta `cf`.
+Use stable Wrangler 4.152.0; this project has not migrated to beta `cf`.
 base-ci is pinned to `ac635753a869cb85fad1f52aae4ccbd6119f3cae`.
 Deployment automatically follows successful push CI on this repository's `main`,
 with exact-source proof, fresh main and protected `production`. PR, fork, failed
