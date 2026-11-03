@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.2.7 - 2026-11-03
+
+- Bump wrangler, Cloudflare Vite plugin, Biome, Node/Three types and runtime
+  three.js to the latest patch/minor releases tracked in dependency issues.
+
 ## v0.2.6 - 2026-10-25
 
 - Bump direct and transitive dependencies (Cloudflare toolchain, Vite, Biome,
