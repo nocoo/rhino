@@ -74,6 +74,32 @@ models. Pure `.tsx` views and Three.js rendering use browser/visual verification
 Rejection probes prove the gate, not application health. Store L1 audit reports
 in nmem, not a tracked certification document. Do not invent grades or timings.
 
+### L1 measured evidence (system0-6dq-l1 v1.1.3)
+
+Recorded at pinned `main` revision `aadae12` on Linux x86_64 with Bun 1.4.4,
+Node from the project CI pin, and `bun install --frozen-lockfile` (clean tree).
+
+| Check              | Command                                                      | Exit              | Cold  | Warm  |
+| ------------------ | ------------------------------------------------------------ | ----------------- | ----- | ----- |
+| Husky chain        | `sh .husky/pre-commit` (= `bun run gate:l1` on staged index) | 0 (healthy index) | —     | 12.7s |
+| L1 snapshot gate   | `bun run gate:l1`                                            | 0                 | 13.8s | 12.7s |
+| L1 rejection suite | `bun run gate:verify`                                        | 0                 | ~30s  | ~30s  |
+
+Coverage from the staged snapshot run (`gate:l1`, exit 0): statements **98.61%**,
+branches **96.23%**, functions **98.75%**, lines **99.02%** (each floor 95%).
+
+Parallel steps inside `gate:l1`: `typecheck`, `lint`, `test:coverage`; failures
+aggregate through `Promise.allSettled` and reject the hook. Wall time remains
+under the 30s target on this machine without skipping checks.
+
+`gate:verify` builds a disposable Husky repo (real runners), proves a healthy
+commit, then auto-cleans after verifying rejection for: UT failure; each coverage
+metric below floor (fixture uses a 101% probe threshold); lint error and warning;
+type error; `test.skip` and `test.only`; staged bug with unstaged fix; missing
+tool; child signal; timeout; missing `coverage-summary.json`; empty suite;
+parallel sole failure (typecheck fails while lint and UT succeed). CI runs
+`bun run gate:verify` in the `l1-rejection` job beside the shared L1 quality job.
+
 The implementation has passed UT, L2 and desktop/mobile L3 locally and in CI.
 Production D1 readiness and deployed version/revision are verified separately
 through anonymous GET `/api/live`; business access still needs owner verification.
