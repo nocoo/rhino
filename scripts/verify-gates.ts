@@ -68,7 +68,10 @@ try {
 			files: { includes: ["source.ts", "sample.test.ts"] },
 			formatter: { enabled: false },
 			assist: { enabled: false },
-			linter: { enabled: true, rules: { recommended: true, suspicious: { noDebugger: "warn" } } },
+			linter: {
+				enabled: true,
+				rules: { recommended: false, suspicious: { noDebugger: "warn" } },
+			},
 		}),
 	);
 	write(".gitignore", "node_modules/\ncoverage/\ntest-results/\n.husky/_/\n");
@@ -102,6 +105,11 @@ try {
 	write("source.ts", `${source}const invalid: string = 1;\n`);
 	await command(["git", "add", "source.ts"]);
 	await rejectCommit("type error", "TS2322");
+	write("source.ts", source);
+	write("sample.test.ts", tests);
+	write("source.ts", `${source}const parallelOnly: string = 1;\n`);
+	await command(["git", "add", "source.ts", "sample.test.ts"]);
+	await rejectCommit("parallel sole failure", "TS2322");
 	write("source.ts", source.replace("-value", "value"));
 	await command(["git", "add", "source.ts"]);
 	await rejectCommit("staged bug", "FAIL");
@@ -127,6 +135,12 @@ try {
 	write("sample.test.ts", tests.replace('test("boundaries"', 'test.skip("boundaries"'));
 	await command(["git", "add", "sample.test.ts"]);
 	await rejectCommit("skipped required suite");
+	write("sample.test.ts", tests.replace('test("boundaries"', 'test.only("boundaries"'));
+	await command(["git", "add", "sample.test.ts"]);
+	await rejectCommit("focused required test");
+	write("vitest.config.ts", config.replace('reporter: ["json-summary"]', 'reporter: ["text"]'));
+	await command(["git", "add", "vitest.config.ts"]);
+	await rejectCommit("missing coverage report", "coverage-summary");
 	await command(["git", "rm", "sample.test.ts"]);
 	await rejectCommit("empty required suite");
 	console.log(
