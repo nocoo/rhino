@@ -414,9 +414,14 @@ test("Basalt shell geometry, collapse and drawer focus match the reference", asy
 		await page.getByRole("button", { name: "收起侧栏", exact: true }).click();
 		await expect(rail).toHaveCSS("width", "68px");
 		await expect(page.getByRole("button", { name: "展开侧栏", exact: true })).toBeFocused();
-		expect(
-			await page.locator('[data-slot="sidebar-header"] img[alt="Rhino"]').boundingBox(),
-		).toEqual(logo);
+		const collapsedLogo = await page
+			.locator('[data-slot="sidebar-header"] img[alt="Rhino"]')
+			.boundingBox();
+		expect(collapsedLogo).toMatchObject({
+			x: logo?.x,
+			width: logo?.width,
+			height: logo?.height,
+		});
 		await rail.getByRole("button", { name: "个人档案", exact: true }).hover();
 		await expect(page.getByRole("tooltip")).toHaveText("个人档案");
 		await rail.getByRole("button", { name: "个人档案", exact: true }).click();

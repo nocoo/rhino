@@ -238,7 +238,7 @@ export function Frame({
 				{compact ? (
 					<Tooltip delayDuration={0}>
 						<TooltipTrigger asChild>
-							<Avatar className="h-9 w-9 cursor-pointer">
+							<Avatar className="cursor-pointer">
 								{profileAvatar ? <AvatarImage src={profileAvatar} alt={profileName} /> : null}
 								<AvatarFallback className="text-basalt-sm">
 									{profileName.slice(0, 1)}
@@ -254,7 +254,7 @@ export function Frame({
 						name={profileName}
 						email="私人训练空间"
 						avatar={
-							<Avatar className="h-9 w-9 shrink-0">
+							<Avatar>
 								{profileAvatar ? <AvatarImage src={profileAvatar} alt={profileName} /> : null}
 								<AvatarFallback className="text-basalt-sm">
 									{profileName.trim().slice(0, 1) || <ShieldCheck size={18} strokeWidth={1.5} />}
