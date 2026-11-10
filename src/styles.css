@@ -165,11 +165,6 @@
 .startup-error img {
 	object-fit: contain;
 }
-.navigation-items {
-	display: flex;
-	flex-direction: column;
-	gap: var(--basalt-space-nav-gap);
-}
 .rail-project-link {
 	display: none;
 }
