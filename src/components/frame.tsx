@@ -110,7 +110,7 @@ export function Frame({
 	identity?: { name: string | null; avatar: string | null };
 	immersive?: boolean;
 	title?: string;
-	breadcrumbs?: { href: string; label: string }[];
+	breadcrumbs?: { href?: string; label: string }[];
 	contentKey: string;
 }) {
 	useBrowserChrome();
@@ -276,8 +276,6 @@ export function Frame({
 				<AppHeader
 					density="compact"
 					className="rhino-header"
-					title={title ?? pageLabels[page]}
-					breadcrumbs={breadcrumbs}
 					leading={
 						mobile ? (
 							<Sheet open={open} onOpenChange={setOpen}>
@@ -301,6 +299,8 @@ export function Frame({
 							</Sheet>
 						) : undefined
 					}
+					breadcrumbs={breadcrumbs}
+					title={title ?? pageLabels[page]}
 					actions={
 						<>
 							<EnvironmentSwitch />
