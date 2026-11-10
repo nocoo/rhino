@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.2.8 - 2026-11-10
+
+- Bump lucide-react, vitest, Biome, Playwright, and jsdom to the versions
+  tracked in dependency issues #47, #56, #57, #60, #61 and #62.
+
 ## v0.2.7 - 2026-11-03
 
 - Bump wrangler, Cloudflare Vite plugin, Biome, Node/Three types and runtime
