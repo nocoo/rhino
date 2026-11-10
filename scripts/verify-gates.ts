@@ -70,7 +70,7 @@ try {
 			assist: { enabled: false },
 			linter: {
 				enabled: true,
-				rules: { recommended: false, suspicious: { noDebugger: "warn" } },
+				rules: { preset: "none", suspicious: { noDebugger: "warn" } },
 			},
 		}),
 	);
