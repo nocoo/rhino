@@ -24,6 +24,7 @@ import {
 } from "@nocoo/basalt";
 import { AppHeader } from "@nocoo/basalt/components/app-header";
 import { AppMain, AppShell, AppSkipLink } from "@nocoo/basalt/components/app-shell";
+import { LinkButton } from "@nocoo/basalt/components/button";
 import {
 	Activity,
 	BookOpen,
@@ -31,8 +32,7 @@ import {
 	ChartNoAxesCombined,
 	createLucideIcon,
 	Menu,
-	PanelLeftClose,
-	PanelLeftOpen,
+	PanelLeft,
 	ShieldCheck,
 	UserRound,
 	X,
@@ -42,6 +42,8 @@ import { version } from "../../package.json";
 import { type Page, pageLabels } from "../domain/routes";
 import { useBrowserChrome } from "../hooks/use-browser-chrome";
 import { EnvironmentSwitch } from "./environment-switch";
+
+const SIDEBAR_MARK_SLOT_CLASS = "flex w-full items-center";
 
 const Github = createLucideIcon("Github", [
 	[
@@ -54,7 +56,7 @@ const Github = createLucideIcon("Github", [
 	["path", { d: "M9 18c-4.51 2-5-2-7-2", key: "9comsn" }],
 ]);
 
-function HeaderIconLink({
+function HeaderActionLink({
 	href,
 	label,
 	children,
@@ -68,12 +70,17 @@ function HeaderIconLink({
 	return (
 		<Tooltip delayDuration={0}>
 			<TooltipTrigger asChild>
-				<Button variant="ghost" size="icon" className={className} asChild>
-					<a href={href} target="_blank" rel="noopener noreferrer" aria-label={label}>
-						{children}
-						<span className="sr-only">{label}</span>
-					</a>
-				</Button>
+				<LinkButton
+					variant="ghost"
+					size="icon"
+					href={href}
+					target="_blank"
+					rel="noopener noreferrer"
+					aria-label={label}
+					className={className}
+				>
+					{children}
+				</LinkButton>
 			</TooltipTrigger>
 			<TooltipContent side="bottom" sideOffset={6}>
 				{label}
@@ -109,7 +116,7 @@ export function Frame({
 	identity?: { name: string | null; avatar: string | null };
 	immersive?: boolean;
 	title?: string;
-	breadcrumbs?: { href: string; label: string }[];
+	breadcrumbs?: { href?: string; label: string }[];
 	contentKey: string;
 }) {
 	useBrowserChrome();
@@ -143,13 +150,13 @@ export function Frame({
 					size="icon"
 					aria-label={compact ? "展开侧栏" : "收起侧栏"}
 					aria-expanded={!compact}
-					className={compact ? "sidebar-expand" : undefined}
+					className={compact ? "mb-basalt-space-sm self-center" : undefined}
 					onClick={() => {
 						focusToggle.current = true;
 						setCollapsed(!collapsed);
 					}}
 				>
-					{compact ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+					<PanelLeft size={16} aria-hidden="true" />
 				</Button>
 			</TooltipTrigger>
 			<TooltipContent side="right">{compact ? "展开侧栏" : "收起侧栏"}</TooltipContent>
@@ -158,22 +165,32 @@ export function Frame({
 	const rail = (
 		<Sidebar collapsed={compact} className="rhino-sidebar" aria-label="主导航侧栏">
 			<SidebarHeader>
-				<div className={`brand${compact ? " brand-compact" : ""}`}>
-					<img
-						className="brand-symbol"
-						src="/logo-24.png"
-						srcSet="/logo-24.png 24w, /logo-80.png 80w"
-						sizes="24px"
-						width={24}
-						height={24}
-						alt="Rhino"
-					/>
-					{!compact && (
-						<>
-							<span className="brand-name">Rhino</span>
-							<span className="version-pill">v{version}</span>
-						</>
-					)}
+				<div
+					className={
+						compact
+							? `${SIDEBAR_MARK_SLOT_CLASS} pl-basalt-layout-sm`
+							: `${SIDEBAR_MARK_SLOT_CLASS} justify-between pl-basalt-layout-sm`
+					}
+				>
+					<div className="flex min-w-0 items-center gap-basalt-space-lg text-basalt-foreground">
+						<img
+							src="/logo-24.png"
+							srcSet="/logo-24.png 24w, /logo-80.png 80w"
+							sizes="24px"
+							width={24}
+							height={24}
+							alt="Rhino"
+							className="shrink-0 object-contain"
+						/>
+						{!compact && (
+							<>
+								<span className="text-basalt-xl font-semibold text-basalt-foreground">Rhino</span>
+								<span className="rounded-basalt-md bg-basalt-secondary px-basalt-space-md py-basalt-space-xs text-basalt-sm leading-basalt-tight font-medium text-basalt-muted-foreground">
+									v{version}
+								</span>
+							</>
+						)}
+					</div>
 					{mobile && (
 						<Button
 							variant="ghost"
@@ -181,7 +198,7 @@ export function Frame({
 							aria-label="关闭导航"
 							onClick={() => setOpen(false)}
 						>
-							<X size={16} />
+							<X size={16} aria-hidden="true" />
 						</Button>
 					)}
 					{!mobile && !compact && collapseControl}
@@ -219,14 +236,18 @@ export function Frame({
 			</SidebarNav>
 			<SidebarFooter>
 				{compact ? (
-					<Tooltip>
+					<Tooltip delayDuration={0}>
 						<TooltipTrigger asChild>
-							<Avatar aria-label={profileName} role="img" tabIndex={0}>
-								{profileAvatar && <AvatarImage src={profileAvatar} alt={profileName} />}
-								<AvatarFallback>{profileName.slice(0, 1)}</AvatarFallback>
+							<Avatar className="cursor-pointer">
+								{profileAvatar ? <AvatarImage src={profileAvatar} alt={profileName} /> : null}
+								<AvatarFallback className="text-basalt-sm">
+									{profileName.slice(0, 1)}
+								</AvatarFallback>
 							</Avatar>
 						</TooltipTrigger>
-						<TooltipContent side="right">{profileName}</TooltipContent>
+						<TooltipContent side="right" sideOffset={8}>
+							{profileName}
+						</TooltipContent>
 					</Tooltip>
 				) : (
 					<SidebarUser
@@ -235,7 +256,7 @@ export function Frame({
 						avatar={
 							<Avatar>
 								{profileAvatar ? <AvatarImage src={profileAvatar} alt={profileName} /> : null}
-								<AvatarFallback>
+								<AvatarFallback className="text-basalt-sm">
 									{profileName.trim().slice(0, 1) || <ShieldCheck size={18} strokeWidth={1.5} />}
 								</AvatarFallback>
 							</Avatar>
@@ -265,8 +286,6 @@ export function Frame({
 				<AppHeader
 					density="compact"
 					className="rhino-header"
-					title={title ?? pageLabels[page]}
-					breadcrumbs={breadcrumbs}
 					leading={
 						mobile ? (
 							<Sheet open={open} onOpenChange={setOpen}>
@@ -277,7 +296,7 @@ export function Frame({
 										aria-label="打开导航"
 										onClick={(event) => event.currentTarget.focus()}
 									>
-										<Menu size={19} />
+										<Menu size={18} aria-hidden="true" />
 									</Button>
 								</SheetTrigger>
 								<SheetContent side="left" className="navigation-sheet">
@@ -290,19 +309,20 @@ export function Frame({
 							</Sheet>
 						) : undefined
 					}
+					breadcrumbs={breadcrumbs}
+					title={title ?? pageLabels[page]}
 					actions={
 						<>
 							<EnvironmentSwitch />
-							<HeaderIconLink href="https://github.com/nocoo/rhino" label="Rhino 的 GitHub 仓库">
+							<HeaderActionLink href="https://github.com/nocoo/rhino" label="Rhino 的 GitHub 仓库">
 								<Github size={18} strokeWidth={1.5} aria-hidden="true" />
-							</HeaderIconLink>
-							<HeaderIconLink
+							</HeaderActionLink>
+							<HeaderActionLink
 								className="header-project-link"
 								href="https://hexly.ai/projects/rhino"
 								label="在 Hexly 项目页查看 Rhino"
 							>
 								<svg
-									className="h-[18px] w-[18px]"
 									width="18"
 									height="18"
 									viewBox="0 0 24 24"
@@ -316,15 +336,8 @@ export function Frame({
 									<path d="m12 2 8.66 5v10L12 22l-8.66-5V7Z" />
 									<path d="M12 2v20M3.34 7l17.32 10m0-10L3.34 17" />
 								</svg>
-							</HeaderIconLink>
-							<Tooltip delayDuration={0}>
-								<TooltipTrigger asChild>
-									<ThemeToggle aria-label="切换主题" />
-								</TooltipTrigger>
-								<TooltipContent side="bottom" sideOffset={6}>
-									切换主题
-								</TooltipContent>
-							</Tooltip>
+							</HeaderActionLink>
+							<ThemeToggle aria-label="切换主题" />
 						</>
 					}
 				/>

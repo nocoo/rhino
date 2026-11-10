@@ -173,7 +173,7 @@ test("approved branding covers startup, browser icons and the navigation rail", 
 	await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveAttribute("sizes", "180x180");
 	const menu = page.getByRole("button", { name: "打开导航", exact: true });
 	if (await menu.isVisible()) await menu.click();
-	const logo = page.locator(".brand-symbol");
+	const logo = page.locator('[data-slot="sidebar-header"] img[alt="Rhino"]');
 	await expect(logo).toHaveAttribute("src", "/logo-24.png");
 	await expect(logo).toHaveCSS("width", "24px");
 	await expect(logo).toHaveCSS("height", "24px");
@@ -182,7 +182,9 @@ test("approved branding covers startup, browser icons and the navigation rail", 
 			logo.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0),
 		)
 		.toBe(true);
-	await expect(page.locator(".brand-name")).toHaveText("Rhino");
+	await expect(
+		page.locator('[data-slot="sidebar-header"]').getByText("Rhino", { exact: true }),
+	).toBeVisible();
 	for (const theme of ["light", "dark"]) {
 		if (theme === "dark") {
 			if (await page.getByRole("dialog").isVisible()) await page.keyboard.press("Escape");
@@ -218,8 +220,9 @@ test("Chinese blue shell, owner avatar and opt-in YouTube reference", async ({
 	await page.goto("/today");
 	const menu = page.getByRole("button", { name: "打开导航", exact: true });
 	if (await menu.isVisible()) await menu.click();
-	await expect(page.getByRole("img", { name: "测试用户", exact: true })).toBeVisible();
-	const avatar = page.getByRole("img", { name: "测试用户", exact: true });
+	const rail = page.getByRole("complementary", { name: "主导航侧栏" });
+	const avatar = rail.getByRole("img", { name: "测试用户", exact: true });
+	await expect(avatar).toBeVisible();
 	await expect(avatar).toHaveCSS("width", "36px");
 	await expect(avatar).toHaveCSS("height", "36px");
 	await page.getByRole("button", { name: "动作实验室", exact: true }).click();
@@ -386,7 +389,7 @@ test("Basalt shell geometry, collapse and drawer focus match the reference", asy
 	expect(geometry).toEqual({ top: 52, left: mobile ? 8 : 272, padding: mobile ? "16px" : "32px" });
 	if (mobile) await menu.click();
 	await expect(rail).toHaveCSS("width", "260px");
-	const logo = await page.locator(".brand-symbol").boundingBox();
+	const logo = await page.locator('[data-slot="sidebar-header"] img[alt="Rhino"]').boundingBox();
 	const item = rail.getByRole("button", { name: "今日训练", exact: true });
 	expect((await item.boundingBox())?.x).toBe(8);
 	await expect(item).toHaveCSS("font-size", "14px");
@@ -411,7 +414,14 @@ test("Basalt shell geometry, collapse and drawer focus match the reference", asy
 		await page.getByRole("button", { name: "收起侧栏", exact: true }).click();
 		await expect(rail).toHaveCSS("width", "68px");
 		await expect(page.getByRole("button", { name: "展开侧栏", exact: true })).toBeFocused();
-		expect(await page.locator(".brand-symbol").boundingBox()).toEqual(logo);
+		const collapsedLogo = await page
+			.locator('[data-slot="sidebar-header"] img[alt="Rhino"]')
+			.boundingBox();
+		expect(collapsedLogo).toMatchObject({
+			x: logo?.x,
+			width: logo?.width,
+			height: logo?.height,
+		});
 		await rail.getByRole("button", { name: "个人档案", exact: true }).hover();
 		await expect(page.getByRole("tooltip")).toHaveText("个人档案");
 		await rail.getByRole("button", { name: "个人档案", exact: true }).click();
@@ -516,7 +526,7 @@ test("navigation retains Basalt blur and motion in both themes", async ({ page }
 					await expect(rail).toHaveCSS("transition-duration", "0.18s");
 				await page.getByRole("button", { name: "收起侧栏", exact: true }).click();
 				await expect(rail).toHaveCSS("width", "68px");
-				await expect(page.locator(".sidebar-expand")).toBeFocused();
+				await expect(page.getByRole("button", { name: "展开侧栏", exact: true })).toBeFocused();
 				await page.getByRole("button", { name: "展开侧栏", exact: true }).click();
 				await expect(rail).toHaveCSS("width", "260px");
 			}

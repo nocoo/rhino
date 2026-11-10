@@ -153,31 +153,6 @@
 .rhino-sidebar {
 	flex-shrink: 0;
 }
-.rhino-sidebar [role="img"][tabindex]:focus-visible {
-	outline: 2px solid hsl(var(--basalt-ring));
-	outline-offset: 2px;
-}
-.brand {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	width: 100%;
-	height: 32px;
-	min-width: 0;
-	padding-inline: 14px 0;
-}
-.brand-compact {
-	justify-content: center;
-	padding: 0;
-}
-.sidebar-expand {
-	align-self: center;
-	margin-bottom: var(--basalt-space-sm);
-}
-.brand-symbol {
-	flex-shrink: 0;
-	object-fit: contain;
-}
 .startup-error {
 	display: grid;
 	place-items: center;
@@ -189,22 +164,6 @@
 }
 .startup-error img {
 	object-fit: contain;
-}
-.brand-name {
-	font-family: var(--basalt-font-display);
-	font-size: 18px;
-	font-weight: 600;
-	letter-spacing: -0.03em;
-}
-.version-pill {
-	padding: 2px 5px;
-	font-size: 11px;
-	color: var(--rhino-muted);
-	background: hsl(var(--basalt-secondary));
-	border-radius: var(--radius-sm);
-}
-.brand > button {
-	margin-left: auto;
 }
 .navigation-items {
 	display: flex;
