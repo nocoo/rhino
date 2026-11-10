@@ -24,6 +24,7 @@ import {
 } from "@nocoo/basalt";
 import { AppHeader } from "@nocoo/basalt/components/app-header";
 import { AppMain, AppShell, AppSkipLink } from "@nocoo/basalt/components/app-shell";
+import { LinkButton } from "@nocoo/basalt/components/button";
 import {
 	Activity,
 	BookOpen,
@@ -55,7 +56,7 @@ const Github = createLucideIcon("Github", [
 	["path", { d: "M9 18c-4.51 2-5-2-7-2", key: "9comsn" }],
 ]);
 
-function HeaderIconLink({
+function HeaderActionLink({
 	href,
 	label,
 	children,
@@ -69,12 +70,17 @@ function HeaderIconLink({
 	return (
 		<Tooltip delayDuration={0}>
 			<TooltipTrigger asChild>
-				<Button variant="ghost" size="icon" className={className} asChild>
-					<a href={href} target="_blank" rel="noopener noreferrer" aria-label={label}>
-						{children}
-						<span className="sr-only">{label}</span>
-					</a>
-				</Button>
+				<LinkButton
+					variant="ghost"
+					size="icon"
+					href={href}
+					target="_blank"
+					rel="noopener noreferrer"
+					aria-label={label}
+					className={className}
+				>
+					{children}
+				</LinkButton>
 			</TooltipTrigger>
 			<TooltipContent side="bottom" sideOffset={6}>
 				{label}
@@ -286,7 +292,7 @@ export function Frame({
 										aria-label="打开导航"
 										onClick={(event) => event.currentTarget.focus()}
 									>
-										<Menu size={19} />
+										<Menu size={18} aria-hidden="true" />
 									</Button>
 								</SheetTrigger>
 								<SheetContent side="left" className="navigation-sheet">
@@ -304,16 +310,15 @@ export function Frame({
 					actions={
 						<>
 							<EnvironmentSwitch />
-							<HeaderIconLink href="https://github.com/nocoo/rhino" label="Rhino 的 GitHub 仓库">
+							<HeaderActionLink href="https://github.com/nocoo/rhino" label="Rhino 的 GitHub 仓库">
 								<Github size={18} strokeWidth={1.5} aria-hidden="true" />
-							</HeaderIconLink>
-							<HeaderIconLink
+							</HeaderActionLink>
+							<HeaderActionLink
 								className="header-project-link"
 								href="https://hexly.ai/projects/rhino"
 								label="在 Hexly 项目页查看 Rhino"
 							>
 								<svg
-									className="h-[18px] w-[18px]"
 									width="18"
 									height="18"
 									viewBox="0 0 24 24"
@@ -327,15 +332,8 @@ export function Frame({
 									<path d="m12 2 8.66 5v10L12 22l-8.66-5V7Z" />
 									<path d="M12 2v20M3.34 7l17.32 10m0-10L3.34 17" />
 								</svg>
-							</HeaderIconLink>
-							<Tooltip delayDuration={0}>
-								<TooltipTrigger asChild>
-									<ThemeToggle aria-label="切换主题" />
-								</TooltipTrigger>
-								<TooltipContent side="bottom" sideOffset={6}>
-									切换主题
-								</TooltipContent>
-							</Tooltip>
+							</HeaderActionLink>
+							<ThemeToggle aria-label="切换主题" />
 						</>
 					}
 				/>
