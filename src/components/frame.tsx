@@ -168,7 +168,7 @@ export function Frame({
 				<div
 					className={
 						compact
-							? `${SIDEBAR_MARK_SLOT_CLASS} justify-center`
+							? `${SIDEBAR_MARK_SLOT_CLASS} pl-basalt-layout-sm`
 							: `${SIDEBAR_MARK_SLOT_CLASS} justify-between pl-basalt-layout-sm`
 					}
 				>

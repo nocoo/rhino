@@ -220,8 +220,9 @@ test("Chinese blue shell, owner avatar and opt-in YouTube reference", async ({
 	await page.goto("/today");
 	const menu = page.getByRole("button", { name: "打开导航", exact: true });
 	if (await menu.isVisible()) await menu.click();
-	await expect(page.getByRole("img", { name: "测试用户", exact: true })).toBeVisible();
-	const avatar = page.getByRole("img", { name: "测试用户", exact: true });
+	const rail = page.getByRole("complementary", { name: "主导航侧栏" });
+	const avatar = rail.getByRole("img", { name: "测试用户", exact: true });
+	await expect(avatar).toBeVisible();
 	await expect(avatar).toHaveCSS("width", "36px");
 	await expect(avatar).toHaveCSS("height", "36px");
 	await page.getByRole("button", { name: "动作实验室", exact: true }).click();
