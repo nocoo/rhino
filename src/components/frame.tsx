@@ -31,8 +31,7 @@ import {
 	ChartNoAxesCombined,
 	createLucideIcon,
 	Menu,
-	PanelLeftClose,
-	PanelLeftOpen,
+	PanelLeft,
 	ShieldCheck,
 	UserRound,
 	X,
@@ -42,6 +41,8 @@ import { version } from "../../package.json";
 import { type Page, pageLabels } from "../domain/routes";
 import { useBrowserChrome } from "../hooks/use-browser-chrome";
 import { EnvironmentSwitch } from "./environment-switch";
+
+const SIDEBAR_MARK_SLOT_CLASS = "flex w-full items-center";
 
 const Github = createLucideIcon("Github", [
 	[
@@ -143,13 +144,13 @@ export function Frame({
 					size="icon"
 					aria-label={compact ? "展开侧栏" : "收起侧栏"}
 					aria-expanded={!compact}
-					className={compact ? "sidebar-expand" : undefined}
+					className={compact ? "mb-basalt-space-sm self-center" : undefined}
 					onClick={() => {
 						focusToggle.current = true;
 						setCollapsed(!collapsed);
 					}}
 				>
-					{compact ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+					<PanelLeft size={16} aria-hidden="true" />
 				</Button>
 			</TooltipTrigger>
 			<TooltipContent side="right">{compact ? "展开侧栏" : "收起侧栏"}</TooltipContent>
@@ -158,22 +159,32 @@ export function Frame({
 	const rail = (
 		<Sidebar collapsed={compact} className="rhino-sidebar" aria-label="主导航侧栏">
 			<SidebarHeader>
-				<div className={`brand${compact ? " brand-compact" : ""}`}>
-					<img
-						className="brand-symbol"
-						src="/logo-24.png"
-						srcSet="/logo-24.png 24w, /logo-80.png 80w"
-						sizes="24px"
-						width={24}
-						height={24}
-						alt="Rhino"
-					/>
-					{!compact && (
-						<>
-							<span className="brand-name">Rhino</span>
-							<span className="version-pill">v{version}</span>
-						</>
-					)}
+				<div
+					className={
+						compact
+							? `${SIDEBAR_MARK_SLOT_CLASS} justify-center`
+							: `${SIDEBAR_MARK_SLOT_CLASS} justify-between pl-basalt-layout-sm`
+					}
+				>
+					<div className="flex min-w-0 items-center gap-basalt-space-lg text-basalt-foreground">
+						<img
+							src="/logo-24.png"
+							srcSet="/logo-24.png 24w, /logo-80.png 80w"
+							sizes="24px"
+							width={24}
+							height={24}
+							alt="Rhino"
+							className="shrink-0 object-contain"
+						/>
+						{!compact && (
+							<>
+								<span className="text-basalt-xl font-semibold text-basalt-foreground">Rhino</span>
+								<span className="rounded-basalt-md bg-basalt-secondary px-basalt-space-md py-basalt-space-xs text-basalt-sm leading-basalt-tight font-medium text-basalt-muted-foreground">
+									v{version}
+								</span>
+							</>
+						)}
+					</div>
 					{mobile && (
 						<Button
 							variant="ghost"
@@ -181,7 +192,7 @@ export function Frame({
 							aria-label="关闭导航"
 							onClick={() => setOpen(false)}
 						>
-							<X size={16} />
+							<X size={16} aria-hidden="true" />
 						</Button>
 					)}
 					{!mobile && !compact && collapseControl}
