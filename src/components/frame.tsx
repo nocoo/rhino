@@ -236,23 +236,27 @@ export function Frame({
 			</SidebarNav>
 			<SidebarFooter>
 				{compact ? (
-					<Tooltip>
+					<Tooltip delayDuration={0}>
 						<TooltipTrigger asChild>
-							<Avatar aria-label={profileName} role="img" tabIndex={0}>
-								{profileAvatar && <AvatarImage src={profileAvatar} alt={profileName} />}
-								<AvatarFallback>{profileName.slice(0, 1)}</AvatarFallback>
+							<Avatar className="h-9 w-9 cursor-pointer">
+								{profileAvatar ? <AvatarImage src={profileAvatar} alt={profileName} /> : null}
+								<AvatarFallback className="text-basalt-sm">
+									{profileName.slice(0, 1)}
+								</AvatarFallback>
 							</Avatar>
 						</TooltipTrigger>
-						<TooltipContent side="right">{profileName}</TooltipContent>
+						<TooltipContent side="right" sideOffset={8}>
+							{profileName}
+						</TooltipContent>
 					</Tooltip>
 				) : (
 					<SidebarUser
 						name={profileName}
 						email="私人训练空间"
 						avatar={
-							<Avatar>
+							<Avatar className="h-9 w-9 shrink-0">
 								{profileAvatar ? <AvatarImage src={profileAvatar} alt={profileName} /> : null}
-								<AvatarFallback>
+								<AvatarFallback className="text-basalt-sm">
 									{profileName.trim().slice(0, 1) || <ShieldCheck size={18} strokeWidth={1.5} />}
 								</AvatarFallback>
 							</Avatar>

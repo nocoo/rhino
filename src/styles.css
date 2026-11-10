@@ -153,10 +153,6 @@
 .rhino-sidebar {
 	flex-shrink: 0;
 }
-.rhino-sidebar [role="img"][tabindex]:focus-visible {
-	outline: 2px solid hsl(var(--basalt-ring));
-	outline-offset: 2px;
-}
 .startup-error {
 	display: grid;
 	place-items: center;
