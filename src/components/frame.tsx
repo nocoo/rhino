@@ -150,13 +150,12 @@ export function Frame({
 					size="icon"
 					aria-label={compact ? "展开侧栏" : "收起侧栏"}
 					aria-expanded={!compact}
-					className={compact ? "mb-basalt-space-sm self-center" : undefined}
 					onClick={() => {
 						focusToggle.current = true;
 						setCollapsed(!collapsed);
 					}}
 				>
-					<PanelLeft size={16} aria-hidden="true" />
+					<PanelLeft aria-hidden="true" />
 				</Button>
 			</TooltipTrigger>
 			<TooltipContent side="right">{compact ? "展开侧栏" : "收起侧栏"}</TooltipContent>
@@ -207,32 +206,30 @@ export function Frame({
 			{compact && collapseControl}
 			<SidebarNav aria-label="主要页面">
 				{!compact && <SidebarPartition>训练空间</SidebarPartition>}
-				<div className="navigation-items">
-					{navigation.map(({ id, label, icon: Icon }) => {
-						const props = {
-							active: page === id,
-							onClick: () => {
-								navigate(id);
-								setOpen(false);
-							},
-						};
-						return compact ? (
-							<Tooltip key={id}>
-								<TooltipTrigger asChild>
-									<SidebarIconItem {...props} aria-label={label}>
-										<Icon size={16} strokeWidth={1.5} />
-									</SidebarIconItem>
-								</TooltipTrigger>
-								<TooltipContent side="right">{label}</TooltipContent>
-							</Tooltip>
-						) : (
-							<SidebarItem key={id} {...props}>
-								<Icon size={16} strokeWidth={1.5} />
-								<span>{label}</span>
-							</SidebarItem>
-						);
-					})}
-				</div>
+				{navigation.map(({ id, label, icon: Icon }) => {
+					const props = {
+						active: page === id,
+						onClick: () => {
+							navigate(id);
+							setOpen(false);
+						},
+					};
+					return compact ? (
+						<Tooltip key={id}>
+							<TooltipTrigger asChild>
+								<SidebarIconItem {...props} aria-label={label}>
+									<Icon className="h-4 w-4 shrink-0" strokeWidth={1.5} />
+								</SidebarIconItem>
+							</TooltipTrigger>
+							<TooltipContent side="right">{label}</TooltipContent>
+						</Tooltip>
+					) : (
+						<SidebarItem key={id} {...props}>
+							<Icon className="h-4 w-4 shrink-0" strokeWidth={1.5} />
+							<span className="flex-1 truncate text-left">{label}</span>
+						</SidebarItem>
+					);
+				})}
 			</SidebarNav>
 			<SidebarFooter>
 				{compact ? (
