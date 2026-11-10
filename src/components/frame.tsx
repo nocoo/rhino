@@ -150,13 +150,12 @@ export function Frame({
 					size="icon"
 					aria-label={compact ? "展开侧栏" : "收起侧栏"}
 					aria-expanded={!compact}
-					className={compact ? "mb-basalt-space-sm self-center" : undefined}
 					onClick={() => {
 						focusToggle.current = true;
 						setCollapsed(!collapsed);
 					}}
 				>
-					<PanelLeft size={16} aria-hidden="true" />
+					<PanelLeft aria-hidden="true" />
 				</Button>
 			</TooltipTrigger>
 			<TooltipContent side="right">{compact ? "展开侧栏" : "收起侧栏"}</TooltipContent>
