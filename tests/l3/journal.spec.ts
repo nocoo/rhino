@@ -70,9 +70,7 @@ test("automated E2E is visible, isolated and locked in UI and server", async ({ 
 		});
 		expect(result.status()).toBe(409);
 	}
-	await expect(
-		page.getByRole("link", { name: "Rhino 的 GitHub 仓库", exact: true }),
-	).toBeInViewport();
+	await expect(page.getByRole("link", { name: "GitHub repository", exact: true })).toBeInViewport();
 	const overflow = await page.evaluate(
 		() => document.documentElement.scrollWidth > window.innerWidth,
 	);
@@ -226,12 +224,14 @@ test("Chinese blue shell, owner avatar and opt-in YouTube reference", async ({
 	await expect(avatar).toHaveCSS("width", "36px");
 	await expect(avatar).toHaveCSS("height", "36px");
 	await page.getByRole("button", { name: "动作实验室", exact: true }).click();
-	await expect(
-		page.getByRole("link", { name: "Rhino 的 GitHub 仓库", exact: true }),
-	).toHaveAttribute("href", "https://github.com/nocoo/rhino");
-	await expect(
-		page.getByRole("link", { name: "在 Hexly 项目页查看 Rhino", exact: true }),
-	).toHaveAttribute("href", "https://hexly.ai/projects/rhino");
+	await expect(page.getByRole("link", { name: "GitHub repository", exact: true })).toHaveAttribute(
+		"href",
+		"https://github.com/nocoo/rhino",
+	);
+	await expect(page.getByRole("link", { name: "Rhino on hexly.ai", exact: true })).toHaveAttribute(
+		"href",
+		"https://hexly.ai/projects/rhino",
+	);
 	const accent = await page.evaluate(() =>
 		getComputedStyle(document.documentElement).getPropertyValue("--basalt-primary"),
 	);
@@ -491,6 +491,28 @@ test("all pages retain responsive spacing and usable controls in both themes", a
 			}
 		}
 	}
+});
+
+test("sidebar sign-out uses Cloudflare Access logout URL", async ({ page }) => {
+	await page.setViewportSize({ width: 1440, height: 900 });
+	await page.goto("/today");
+	await page.locator(".page-body").waitFor();
+	const signOut = page.getByRole("link", { name: "退出登录", exact: true });
+	await expect(signOut).toBeVisible();
+	await expect(signOut).toHaveAttribute("href", "/cdn-cgi/access/logout");
+});
+
+test("mobile drawer closes from dismiss toggle and restores menu focus", async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 900 });
+	await page.goto("/today");
+	await page.locator(".page-body").waitFor();
+	const opener = page.getByRole("button", { name: "打开导航", exact: true });
+	await opener.click();
+	const drawer = page.getByRole("dialog", { name: "Rhino 导航" });
+	await expect(drawer).toBeVisible();
+	await drawer.getByRole("button", { name: "关闭导航", exact: true }).click();
+	await expect(drawer).toHaveCount(0);
+	await expect(opener).toBeFocused();
 });
 
 test("navigation retains Basalt blur and motion in both themes", async ({ page }, info) => {
