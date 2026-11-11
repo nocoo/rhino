@@ -218,11 +218,13 @@ test("Chinese blue shell, owner avatar and opt-in YouTube reference", async ({
 		}),
 	);
 	await page.goto("/today");
+	const mobile = testInfo.project.name === "mobile";
 	const menu = page.getByRole("button", { name: "打开导航", exact: true });
-	if (await menu.isVisible()) await menu.click();
-	const rail = page.getByRole("complementary", {
-		name: (await menu.isVisible()) ? "主导航抽屉" : "主导航侧栏",
-	});
+	if (mobile) {
+		await menu.click();
+		await expect(page.getByRole("dialog", { name: "Rhino 导航" })).toBeVisible();
+	}
+	const rail = page.getByRole("complementary", { name: mobile ? "主导航抽屉" : "主导航侧栏" });
 	const avatar = rail.getByRole("img", { name: "测试用户", exact: true });
 	await expect(avatar).toBeVisible();
 	await expect(avatar).toHaveCSS("width", "36px");
@@ -388,7 +390,10 @@ test("Basalt shell geometry, collapse and drawer focus match the reference", asy
 		return { top: rect.top, left: rect.left, padding: style.paddingLeft };
 	});
 	expect(geometry).toEqual({ top: 52, left: mobile ? 8 : 272, padding: mobile ? "16px" : "32px" });
-	if (mobile) await menu.click();
+	if (mobile) {
+		await menu.click();
+		await expect(page.getByRole("dialog", { name: "Rhino 导航" })).toBeVisible();
+	}
 	const rail = page.getByRole("complementary", { name: mobile ? "主导航抽屉" : "主导航侧栏" });
 	await expect(rail).toHaveCSS("width", "260px");
 	const logo = await page.locator('[data-slot="sidebar-header"] img[alt="Rhino"]').boundingBox();
