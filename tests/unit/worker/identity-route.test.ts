@@ -53,7 +53,11 @@ it("uses only verified JWT email for profile lookup and rejects invalid assertio
 	const response = await handleApi(valid, env);
 	expect(response.status).toBe(200);
 	expect(await response.json()).toEqual({
-		data: { name: "Verified Owner", avatar: "https://images.example.test/avatar.webp" },
+		data: {
+			email: verifiedEmail,
+			name: "Verified Owner",
+			avatar: "https://images.example.test/avatar.webp",
+		},
 	});
 
 	const [input] = remoteFetch.mock.calls[0] ?? [];
@@ -64,4 +68,23 @@ it("uses only verified JWT email for profile lookup and rejects invalid assertio
 	expect(remoteFetch).toHaveBeenCalledOnce();
 	expect(new URL(String(input)).searchParams.get("hash")).toBe(hash);
 	expect(String(input)).not.toContain("spoof@example.test");
+});
+
+it("falls back to the JWT name when the author profile misses", async () => {
+	vi.stubGlobal("fetch", remoteFetch);
+	remoteFetch.mockResolvedValue(Response.json({ name: null, avatar: null }));
+
+	const email = "alice@example.com";
+	const response = await handleApi(
+		new Request(`${origin}/api/identity`, {
+			headers: {
+				"Cf-Access-Jwt-Assertion": await identity.token({ email, name: "Alice" }),
+			},
+		}),
+		env,
+	);
+	expect(response.status).toBe(200);
+	expect(await response.json()).toEqual({
+		data: { email, name: "Alice", avatar: null },
+	});
 });

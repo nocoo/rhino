@@ -35,7 +35,11 @@ export const API_ROUTES = [
 	{ method: "GET", path: "/api/progress" },
 ] as const;
 
-export type IdentityProfile = { name: string | null; avatar: string | null };
+export type IdentityProfile = {
+	email: string | null;
+	name: string | null;
+	avatar: string | null;
+};
 
 export const ERROR_CODES = [
 	"unauthorized",

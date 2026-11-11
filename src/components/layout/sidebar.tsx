@@ -27,12 +27,13 @@ import {
 	CalendarDays,
 	ChartNoAxesCombined,
 	type LucideIcon,
-	ShieldCheck,
 	UserRound,
 } from "lucide-react";
 import { type ReactNode, useCallback, useState } from "react";
 import { version } from "../../../package.json";
+import type { IdentityProfile } from "../../domain/contracts";
 import { type Page, pageLabels } from "../../domain/routes";
+import { getDisplayName } from "../../lib/identity-display";
 
 export const ACCESS_LOGOUT_URL = "/cdn-cgi/access/logout";
 
@@ -92,21 +93,18 @@ interface SidebarProps {
 	activePage: Page;
 	onNavigate: (page: Page) => void;
 	onDismiss?: () => void;
-	identity?: { name: string | null; avatar: string | null };
+	identity?: IdentityProfile;
 }
 
 function RhinoSidebarBody({ variant, activePage, onNavigate, onDismiss, identity }: SidebarProps) {
 	const { collapsed, peek, peeking } = useSidebar();
 	const railCollapsed = collapsed && !(peek && peeking);
-	const profileName = identity?.name?.trim() || "我的训练日志";
-	const profileAvatar = identity?.avatar?.trim() || null;
+	const { name, initial, email, avatar: avatarUrl } = getDisplayName(identity);
 
 	const avatar = (
 		<Avatar>
-			{profileAvatar ? <AvatarImage src={profileAvatar} alt={profileName} /> : null}
-			<AvatarFallback className="text-basalt-sm">
-				{profileName.trim().slice(0, 1) || <ShieldCheck size={18} strokeWidth={1.5} />}
-			</AvatarFallback>
+			{avatarUrl ? <AvatarImage src={avatarUrl} alt={name} /> : null}
+			<AvatarFallback className="text-basalt-sm">{initial}</AvatarFallback>
 		</Avatar>
 	);
 
@@ -172,10 +170,10 @@ function RhinoSidebarBody({ variant, activePage, onNavigate, onDismiss, identity
 			</SidebarNav>
 			<SidebarFooter>
 				<SidebarUser
-					name={profileName}
-					email="私人训练空间"
+					name={name}
+					email={email ?? undefined}
 					avatar={avatar}
-					tooltip={profileName}
+					tooltip={name}
 					signOutHref={ACCESS_LOGOUT_URL}
 					signOutLabel="退出登录"
 				/>

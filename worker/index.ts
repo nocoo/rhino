@@ -1,9 +1,9 @@
 import { version } from "../package.json";
 import { API_ROUTES, ApiError } from "../src/domain/contracts";
 import { authenticate } from "./auth";
-import { authorProfile } from "./author-profile";
 import type { WorkerEnv } from "./env";
 import { JSON_HEADERS, jsonError, jsonOk, logSafe, requireOrigin } from "./http";
+import { getIdentity } from "./routes/identity";
 import { deleteMeasurement, getMeasurements, putMeasurement } from "./routes/measurements";
 import { getPlans, previewPlans, putPlan } from "./routes/plans";
 import { getProfile, putProfile } from "./routes/profile";
@@ -80,7 +80,7 @@ export async function handleApi(
 		requireOrigin(request, env.APP_ORIGIN);
 	}
 	if (path === "/api/identity" && request.method === "GET") {
-		return jsonOk(await authorProfile(identity.email));
+		return jsonOk(await getIdentity(identity));
 	}
 	if (path === "/api/profile" && request.method === "GET") {
 		return getProfile(env);

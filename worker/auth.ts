@@ -10,7 +10,7 @@ let remoteJwksIssuer: string | null = null;
 export async function authenticate(request: Request, env: WorkerEnv): Promise<AuthContext> {
 	if (env.RESOURCE_ENV === "local") {
 		const owner = configuredOwner(env);
-		return { sub: owner, mode: "local", email: null };
+		return { sub: owner, mode: "local", email: null, accessName: null };
 	}
 	if (env.RESOURCE_ENV === "production") {
 		configuredOwner(env);
@@ -72,6 +72,7 @@ async function verifyAccessJwt(
 			sub: payload.sub,
 			mode: "access",
 			email: typeof payload.email === "string" ? payload.email : null,
+			accessName: typeof payload.name === "string" && payload.name.length > 0 ? payload.name : null,
 		};
 	} catch (error) {
 		if (error instanceof ApiError) {

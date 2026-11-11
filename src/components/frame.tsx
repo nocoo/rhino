@@ -33,7 +33,7 @@ function FrameInner({
 	page: Page;
 	navigate: (page: Page) => void;
 	children: ReactNode;
-	identity?: { name: string | null; avatar: string | null };
+	identity?: { email: string | null; name: string | null; avatar: string | null };
 	immersive?: boolean;
 	title?: string;
 	breadcrumbs?: { href?: string; label: string }[];
