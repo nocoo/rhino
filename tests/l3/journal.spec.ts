@@ -420,6 +420,13 @@ test("Basalt shell geometry, collapse and drawer focus match the reference", asy
 		await page.locator(".page-body").waitFor();
 		await expect(page.getByRole("button", { name: "打开导航", exact: true })).toBeVisible();
 		await expect(page.getByRole("dialog")).toHaveCount(0);
+		const opener = page.getByRole("button", { name: "打开导航", exact: true });
+		await opener.click();
+		await page
+			.getByRole("complementary", { name: "主导航抽屉" })
+			.getByRole("button", { name: "个人档案", exact: true })
+			.click();
+		await expect(page.getByLabel("生日", { exact: true })).toBeVisible();
 	} else {
 		await page.getByRole("button", { name: "收起侧栏", exact: true }).click();
 		await expect(rail).toHaveCSS("width", "68px");
