@@ -1,106 +1,26 @@
 import {
-	Avatar,
-	AvatarFallback,
-	AvatarImage,
-	Button,
 	ContentIsland,
 	Sheet,
 	SheetContent,
 	SheetDescription,
+	SheetHeader,
 	SheetTitle,
-	SheetTrigger,
-	Sidebar,
-	SidebarFooter,
-	SidebarHeader,
-	SidebarIconItem,
-	SidebarItem,
-	SidebarNav,
-	SidebarPartition,
-	SidebarUser,
-	ThemeToggle,
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger,
+	SidebarProvider,
 } from "@nocoo/basalt";
-import { AppHeader } from "@nocoo/basalt/components/app-header";
+import { AppHeader, AppHeaderMenuButton, ProjectLinks } from "@nocoo/basalt/components/app-header";
 import { AppMain, AppShell, AppSkipLink } from "@nocoo/basalt/components/app-shell";
-import { LinkButton } from "@nocoo/basalt/components/button";
-import {
-	Activity,
-	BookOpen,
-	CalendarDays,
-	ChartNoAxesCombined,
-	createLucideIcon,
-	Menu,
-	PanelLeft,
-	ShieldCheck,
-	UserRound,
-	X,
-} from "lucide-react";
-import { type ReactElement, type ReactNode, useEffect, useRef, useState } from "react";
-import { version } from "../../package.json";
+import { ThemeToggle } from "@nocoo/basalt/components/theme-toggle";
+import { type ReactNode, useEffect, useRef } from "react";
 import { type Page, pageLabels } from "../domain/routes";
 import { useBrowserChrome } from "../hooks/use-browser-chrome";
+import { useIsMobile } from "../hooks/use-mobile";
 import { EnvironmentSwitch } from "./environment-switch";
-
-const SIDEBAR_MARK_SLOT_CLASS = "flex w-full items-center";
-
-const Github = createLucideIcon("Github", [
-	[
-		"path",
-		{
-			d: "M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4",
-			key: "tonef",
-		},
-	],
-	["path", { d: "M9 18c-4.51 2-5-2-7-2", key: "9comsn" }],
-]);
-
-function HeaderActionLink({
-	href,
-	label,
-	children,
-	className,
-}: {
-	href: string;
-	label: string;
-	children: ReactElement;
-	className?: string;
-}) {
-	return (
-		<Tooltip delayDuration={0}>
-			<TooltipTrigger asChild>
-				<LinkButton
-					variant="ghost"
-					size="icon"
-					href={href}
-					target="_blank"
-					rel="noopener noreferrer"
-					aria-label={label}
-					className={className}
-				>
-					{children}
-				</LinkButton>
-			</TooltipTrigger>
-			<TooltipContent side="bottom" sideOffset={6}>
-				{label}
-			</TooltipContent>
-		</Tooltip>
-	);
-}
+import { MobileNavProvider, useMobileNav } from "./layout/mobile-nav-context";
+import { ACCESS_LOGOUT_URL, PersistedSidebarProvider, Sidebar } from "./layout/sidebar";
 
 export type { Page } from "../domain/routes";
 
-const navigation = [
-	{ id: "calendar", label: "训练日历", icon: CalendarDays },
-	{ id: "today", label: "今日训练", icon: Activity },
-	{ id: "plans", label: "训练计划", icon: CalendarDays },
-	{ id: "library", label: "动作实验室", icon: BookOpen },
-	{ id: "progress", label: "我的进展", icon: ChartNoAxesCombined },
-	{ id: "profile", label: "个人档案", icon: UserRound },
-] as const;
-
-export function Frame({
+function FrameInner({
 	page,
 	navigate,
 	children,
@@ -120,154 +40,21 @@ export function Frame({
 	contentKey: string;
 }) {
 	useBrowserChrome();
-	const profileName = identity?.name?.trim() || "我的训练日志";
-	const profileAvatar = identity?.avatar?.trim() || null;
-	const [mobile, setMobile] = useState(() => window.matchMedia("(max-width: 767px)").matches);
-	const [open, setOpen] = useState(false);
-	const [collapsed, setCollapsed] = useState(false);
-	const focusToggle = useRef(false);
+	const isMobile = useIsMobile();
+	const { mobileOpen, setMobileOpen } = useMobileNav();
+	const menuButton = useRef<HTMLButtonElement>(null);
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: close the drawer when route content changes
 	useEffect(() => {
-		const query = window.matchMedia("(max-width: 767px)");
-		const change = () => {
-			setMobile(query.matches);
-			setOpen(false);
-		};
-		query.addEventListener("change", change);
-		return () => query.removeEventListener("change", change);
-	}, []);
-	const compact = !mobile && collapsed;
-	const collapseControl = (
-		<Tooltip>
-			<TooltipTrigger asChild>
-				<Button
-					ref={(element) => {
-						if (element && focusToggle.current) {
-							element.focus();
-							focusToggle.current = false;
-						}
-					}}
-					variant="ghost"
-					size="icon"
-					aria-label={compact ? "展开侧栏" : "收起侧栏"}
-					aria-expanded={!compact}
-					onClick={() => {
-						focusToggle.current = true;
-						setCollapsed(!collapsed);
-					}}
-				>
-					<PanelLeft aria-hidden="true" />
-				</Button>
-			</TooltipTrigger>
-			<TooltipContent side="right">{compact ? "展开侧栏" : "收起侧栏"}</TooltipContent>
-		</Tooltip>
-	);
-	const rail = (
-		<Sidebar collapsed={compact} className="rhino-sidebar" aria-label="主导航侧栏">
-			<SidebarHeader>
-				<div
-					className={
-						compact
-							? `${SIDEBAR_MARK_SLOT_CLASS} pl-basalt-layout-sm`
-							: `${SIDEBAR_MARK_SLOT_CLASS} justify-between pl-basalt-layout-sm`
-					}
-				>
-					<div className="flex min-w-0 items-center gap-basalt-space-lg text-basalt-foreground">
-						<img
-							src="/logo-24.png"
-							srcSet="/logo-24.png 24w, /logo-80.png 80w"
-							sizes="24px"
-							width={24}
-							height={24}
-							alt="Rhino"
-							className="shrink-0 object-contain"
-						/>
-						{!compact && (
-							<>
-								<span className="text-basalt-xl font-semibold text-basalt-foreground">Rhino</span>
-								<span className="rounded-basalt-md bg-basalt-secondary px-basalt-space-md py-basalt-space-xs text-basalt-sm leading-basalt-tight font-medium text-basalt-muted-foreground">
-									v{version}
-								</span>
-							</>
-						)}
-					</div>
-					{mobile && (
-						<Button
-							variant="ghost"
-							size="icon"
-							aria-label="关闭导航"
-							onClick={() => setOpen(false)}
-						>
-							<X size={16} aria-hidden="true" />
-						</Button>
-					)}
-					{!mobile && !compact && collapseControl}
-				</div>
-			</SidebarHeader>
-			{compact && collapseControl}
-			<SidebarNav aria-label="主要页面">
-				{!compact && <SidebarPartition>训练空间</SidebarPartition>}
-				{navigation.map(({ id, label, icon: Icon }) => {
-					const props = {
-						active: page === id,
-						onClick: () => {
-							navigate(id);
-							setOpen(false);
-						},
-					};
-					return compact ? (
-						<Tooltip key={id}>
-							<TooltipTrigger asChild>
-								<SidebarIconItem {...props} aria-label={label}>
-									<Icon className="h-4 w-4 shrink-0" strokeWidth={1.5} />
-								</SidebarIconItem>
-							</TooltipTrigger>
-							<TooltipContent side="right">{label}</TooltipContent>
-						</Tooltip>
-					) : (
-						<SidebarItem key={id} {...props}>
-							<Icon className="h-4 w-4 shrink-0" strokeWidth={1.5} />
-							<span className="flex-1 truncate text-left">{label}</span>
-						</SidebarItem>
-					);
-				})}
-			</SidebarNav>
-			<SidebarFooter>
-				{compact ? (
-					<Tooltip delayDuration={0}>
-						<TooltipTrigger asChild>
-							<Avatar className="cursor-pointer">
-								{profileAvatar ? <AvatarImage src={profileAvatar} alt={profileName} /> : null}
-								<AvatarFallback className="text-basalt-sm">
-									{profileName.slice(0, 1)}
-								</AvatarFallback>
-							</Avatar>
-						</TooltipTrigger>
-						<TooltipContent side="right" sideOffset={8}>
-							{profileName}
-						</TooltipContent>
-					</Tooltip>
-				) : (
-					<SidebarUser
-						name={profileName}
-						email="私人训练空间"
-						avatar={
-							<Avatar>
-								{profileAvatar ? <AvatarImage src={profileAvatar} alt={profileName} /> : null}
-								<AvatarFallback className="text-basalt-sm">
-									{profileName.trim().slice(0, 1) || <ShieldCheck size={18} strokeWidth={1.5} />}
-								</AvatarFallback>
-							</Avatar>
-						}
-					/>
-				)}
-				<Button variant="ghost" asChild className="rail-project-link">
-					<a href="https://hexly.ai/projects/rhino" target="_blank" rel="noopener noreferrer">
-						在 Hexly 项目页查看 Rhino
-					</a>
-				</Button>
-			</SidebarFooter>
-		</Sidebar>
-	);
+		setMobileOpen(false);
+	}, [page, contentKey, setMobileOpen]);
+
+	const headerBreadcrumbs = [{ label: "首页", href: "/calendar" }, ...(breadcrumbs ?? [])];
+	const navigatePage = (next: Page) => {
+		navigate(next);
+		setMobileOpen(false);
+	};
+
 	return (
 		<AppShell className={`basalt-ui rhino-app${immersive ? " workout-immersive" : ""}`}>
 			<AppSkipLink
@@ -278,62 +65,73 @@ export function Frame({
 			>
 				跳到主要内容
 			</AppSkipLink>
-			{!mobile && rail}
+
+			{!isMobile && (
+				<PersistedSidebarProvider>
+					<Sidebar
+						ariaLabel="主导航侧栏"
+						activePage={page}
+						onNavigate={navigatePage}
+						identity={identity}
+					/>
+				</PersistedSidebarProvider>
+			)}
+
+			{isMobile && (
+				<Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+					<SheetContent
+						id="mobile-navigation-sheet"
+						side="left"
+						className="w-[260px] max-w-[260px] border-0 bg-basalt-background p-0 sm:max-w-[260px] sm:p-0"
+						onCloseAutoFocus={(event) => {
+							event.preventDefault();
+							menuButton.current?.focus();
+						}}
+					>
+						<SheetHeader className="sr-only">
+							<SheetTitle>Rhino 导航</SheetTitle>
+							<SheetDescription>切换训练、计划、动作和个人档案</SheetDescription>
+						</SheetHeader>
+						<SidebarProvider collapsed={false} defaultWidth={260}>
+							<Sidebar
+								ariaLabel="主导航抽屉"
+								variant="mobile"
+								activePage={page}
+								onNavigate={navigatePage}
+								onDismiss={() => setMobileOpen(false)}
+								identity={identity}
+							/>
+						</SidebarProvider>
+					</SheetContent>
+				</Sheet>
+			)}
+
 			<AppMain id="main-content">
 				<AppHeader
 					density="compact"
 					className="rhino-header"
 					leading={
-						mobile ? (
-							<Sheet open={open} onOpenChange={setOpen}>
-								<SheetTrigger asChild>
-									<Button
-										variant="ghost"
-										size="icon"
-										aria-label="打开导航"
-										onClick={(event) => event.currentTarget.focus()}
-									>
-										<Menu size={18} aria-hidden="true" />
-									</Button>
-								</SheetTrigger>
-								<SheetContent side="left" className="navigation-sheet">
-									<SheetTitle className="sr-only">Rhino 导航</SheetTitle>
-									<SheetDescription className="sr-only">
-										切换训练、计划、动作和个人档案
-									</SheetDescription>
-									{rail}
-								</SheetContent>
-							</Sheet>
+						isMobile ? (
+							<AppHeaderMenuButton
+								ref={menuButton}
+								label="打开导航"
+								aria-expanded={mobileOpen}
+								aria-haspopup="dialog"
+								aria-controls={mobileOpen ? "mobile-navigation-sheet" : undefined}
+								onClick={() => {
+									menuButton.current?.focus();
+									setMobileOpen(true);
+								}}
+							/>
 						) : undefined
 					}
-					breadcrumbs={breadcrumbs}
+					breadcrumbs={headerBreadcrumbs}
+					breadcrumbsLabel="面包屑导航"
 					title={title ?? pageLabels[page]}
 					actions={
 						<>
 							<EnvironmentSwitch />
-							<HeaderActionLink href="https://github.com/nocoo/rhino" label="Rhino 的 GitHub 仓库">
-								<Github size={18} strokeWidth={1.5} aria-hidden="true" />
-							</HeaderActionLink>
-							<HeaderActionLink
-								className="header-project-link"
-								href="https://hexly.ai/projects/rhino"
-								label="在 Hexly 项目页查看 Rhino"
-							>
-								<svg
-									width="18"
-									height="18"
-									viewBox="0 0 24 24"
-									fill="none"
-									stroke="currentColor"
-									strokeWidth={1.5}
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									aria-hidden="true"
-								>
-									<path d="m12 2 8.66 5v10L12 22l-8.66-5V7Z" />
-									<path d="M12 2v20M3.34 7l17.32 10m0-10L3.34 17" />
-								</svg>
-							</HeaderActionLink>
+							<ProjectLinks github="nocoo/rhino" hexly="rhino" name="Rhino" />
 							<ThemeToggle aria-label="切换主题" />
 						</>
 					}
@@ -347,3 +145,14 @@ export function Frame({
 		</AppShell>
 	);
 }
+
+export function Frame(props: Parameters<typeof FrameInner>[0]) {
+	return (
+		<MobileNavProvider>
+			<FrameInner {...props} />
+		</MobileNavProvider>
+	);
+}
+
+// Re-export for tests and documentation.
+export { ACCESS_LOGOUT_URL };
