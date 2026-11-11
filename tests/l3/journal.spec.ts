@@ -71,7 +71,7 @@ test("automated E2E is visible, isolated and locked in UI and server", async ({ 
 		expect(result.status()).toBe(409);
 	}
 	await expect(
-		page.getByRole("link", { name: "Rhino 的 GitHub 仓库", exact: true }),
+		page.getByRole("link", { name: "GitHub repository (opens in a new tab)", exact: true }),
 	).toBeInViewport();
 	const overflow = await page.evaluate(
 		() => document.documentElement.scrollWidth > window.innerWidth,
@@ -218,19 +218,23 @@ test("Chinese blue shell, owner avatar and opt-in YouTube reference", async ({
 		}),
 	);
 	await page.goto("/today");
+	const mobile = testInfo.project.name === "mobile";
 	const menu = page.getByRole("button", { name: "打开导航", exact: true });
-	if (await menu.isVisible()) await menu.click();
-	const rail = page.getByRole("complementary", { name: "主导航侧栏" });
+	if (mobile) {
+		await menu.click();
+		await expect(page.getByRole("dialog", { name: "Rhino 导航" })).toBeVisible();
+	}
+	const rail = page.getByRole("complementary", { name: mobile ? "主导航抽屉" : "主导航侧栏" });
 	const avatar = rail.getByRole("img", { name: "测试用户", exact: true });
 	await expect(avatar).toBeVisible();
 	await expect(avatar).toHaveCSS("width", "36px");
 	await expect(avatar).toHaveCSS("height", "36px");
 	await page.getByRole("button", { name: "动作实验室", exact: true }).click();
 	await expect(
-		page.getByRole("link", { name: "Rhino 的 GitHub 仓库", exact: true }),
+		page.getByRole("link", { name: "GitHub repository (opens in a new tab)", exact: true }),
 	).toHaveAttribute("href", "https://github.com/nocoo/rhino");
 	await expect(
-		page.getByRole("link", { name: "在 Hexly 项目页查看 Rhino", exact: true }),
+		page.getByRole("link", { name: "Rhino on hexly.ai (opens in a new tab)", exact: true }),
 	).toHaveAttribute("href", "https://hexly.ai/projects/rhino");
 	const accent = await page.evaluate(() =>
 		getComputedStyle(document.documentElement).getPropertyValue("--basalt-primary"),
@@ -378,7 +382,6 @@ test("Basalt shell geometry, collapse and drawer focus match the reference", asy
 	await page.goto("/today");
 	await page.locator(".page-body").waitFor();
 	const mobile = testInfo.project.name === "mobile";
-	const rail = page.getByRole("complementary", { name: "主导航侧栏" });
 	const menu = page.getByRole("button", { name: "打开导航", exact: true });
 	const island = page.locator(".rhino-island");
 	const geometry = await island.evaluate((element) => {
@@ -387,11 +390,15 @@ test("Basalt shell geometry, collapse and drawer focus match the reference", asy
 		return { top: rect.top, left: rect.left, padding: style.paddingLeft };
 	});
 	expect(geometry).toEqual({ top: 52, left: mobile ? 8 : 272, padding: mobile ? "16px" : "32px" });
-	if (mobile) await menu.click();
+	if (mobile) {
+		await menu.click();
+		await expect(page.getByRole("dialog", { name: "Rhino 导航" })).toBeVisible();
+	}
+	const rail = page.getByRole("complementary", { name: mobile ? "主导航抽屉" : "主导航侧栏" });
 	await expect(rail).toHaveCSS("width", "260px");
 	const logo = await page.locator('[data-slot="sidebar-header"] img[alt="Rhino"]').boundingBox();
 	const item = rail.getByRole("button", { name: "今日训练", exact: true });
-	expect((await item.boundingBox())?.x).toBe(8);
+	expect((await item.boundingBox())?.x).toBe(16);
 	await expect(item).toHaveCSS("font-size", "14px");
 	await expect(item).toHaveCSS("height", "38px");
 	if (mobile) {
@@ -405,11 +412,21 @@ test("Basalt shell geometry, collapse and drawer focus match the reference", asy
 		await menu.click();
 		await page.setViewportSize({ width: 768, height: 900 });
 		await expect(page.getByRole("dialog")).toHaveCount(0);
-		await expect(rail).toHaveCSS("width", "260px");
+		const tabletRail = page.getByRole("complementary", { name: "主导航侧栏" });
+		await expect(tabletRail).toHaveCSS("width", "260px");
 		await expect(page.locator("body")).not.toHaveCSS("pointer-events", "none");
 		await page.setViewportSize({ width: 390, height: 844 });
-		await expect(menu).toBeVisible();
+		await page.goto("/today");
+		await page.locator(".page-body").waitFor();
+		await expect(page.getByRole("button", { name: "打开导航", exact: true })).toBeVisible();
 		await expect(page.getByRole("dialog")).toHaveCount(0);
+		const opener = page.getByRole("button", { name: "打开导航", exact: true });
+		await opener.click();
+		await page
+			.getByRole("complementary", { name: "主导航抽屉" })
+			.getByRole("button", { name: "个人档案", exact: true })
+			.click();
+		await expect(page.getByLabel("生日", { exact: true })).toBeVisible();
 	} else {
 		await page.getByRole("button", { name: "收起侧栏", exact: true }).click();
 		await expect(rail).toHaveCSS("width", "68px");
@@ -491,6 +508,28 @@ test("all pages retain responsive spacing and usable controls in both themes", a
 			}
 		}
 	}
+});
+
+test("sidebar sign-out uses Cloudflare Access logout URL", async ({ page }) => {
+	await page.setViewportSize({ width: 1440, height: 900 });
+	await page.goto("/today");
+	await page.locator(".page-body").waitFor();
+	const signOut = page.getByRole("link", { name: "退出登录", exact: true });
+	await expect(signOut).toBeVisible();
+	await expect(signOut).toHaveAttribute("href", "/cdn-cgi/access/logout");
+});
+
+test("mobile drawer closes from dismiss toggle and restores menu focus", async ({ page }) => {
+	await page.setViewportSize({ width: 390, height: 900 });
+	await page.goto("/today");
+	await page.locator(".page-body").waitFor();
+	const opener = page.getByRole("button", { name: "打开导航", exact: true });
+	await opener.click();
+	const drawer = page.getByRole("dialog", { name: "Rhino 导航" });
+	await expect(drawer).toBeVisible();
+	await drawer.getByRole("button", { name: "关闭导航", exact: true }).click();
+	await expect(drawer).toHaveCount(0);
+	await expect(opener).toBeFocused();
 });
 
 test("navigation retains Basalt blur and motion in both themes", async ({ page }, info) => {

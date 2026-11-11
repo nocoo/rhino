@@ -165,9 +165,6 @@
 .startup-error img {
 	object-fit: contain;
 }
-.rail-project-link {
-	display: none;
-}
 .island-wrap {
 	padding: 0 12px 12px;
 	flex: 1;
@@ -809,19 +806,6 @@
 .chart {
 	height: 260px;
 }
-.navigation-sheet {
-	width: 260px;
-	max-width: 100vw;
-	border: none;
-	background: hsl(var(--basalt-background));
-	padding: 0;
-	gap: 0;
-}
-.navigation-sheet .rhino-sidebar {
-	height: 100%;
-	width: 100%;
-	border: none;
-}
 .dark {
 	--rhino-stage: #c3cede;
 }
@@ -893,14 +877,6 @@
 	}
 	.form-grid {
 		grid-template-columns: minmax(0, 1fr);
-	}
-}
-@media (max-width: 359px) {
-	.header-project-link {
-		display: none;
-	}
-	.rail-project-link {
-		display: inline-flex;
 	}
 }
 @media (prefers-reduced-motion: reduce) {

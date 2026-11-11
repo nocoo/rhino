@@ -39,7 +39,7 @@ test("calendar is home and native history restores pages and exercise paths", as
 	await expect(page).toHaveURL(/\/library$/);
 	await page.goForward();
 	await expect(page).toHaveURL(/\/library\/romanian-deadlift$/);
-	const crumb = page.getByRole("navigation", { name: "Breadcrumb" });
+	const crumb = page.getByRole("navigation", { name: "面包屑导航" });
 	const libraryCrumb = crumb.getByRole("link", { name: "动作实验室", exact: true });
 	await followHistoryLink(libraryCrumb);
 	await expect(page).toHaveURL(/\/library$/);
