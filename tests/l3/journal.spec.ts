@@ -416,7 +416,9 @@ test("Basalt shell geometry, collapse and drawer focus match the reference", asy
 		await expect(tabletRail).toHaveCSS("width", "260px");
 		await expect(page.locator("body")).not.toHaveCSS("pointer-events", "none");
 		await page.setViewportSize({ width: 390, height: 844 });
-		await expect(menu).toBeVisible();
+		await page.waitForFunction(() => window.matchMedia("(max-width: 767px)").matches);
+		const mobileMenu = page.getByRole("button", { name: "打开导航", exact: true });
+		await expect(mobileMenu).toBeVisible();
 		await expect(page.getByRole("dialog")).toHaveCount(0);
 	} else {
 		await page.getByRole("button", { name: "收起侧栏", exact: true }).click();
