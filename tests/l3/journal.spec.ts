@@ -70,7 +70,9 @@ test("automated E2E is visible, isolated and locked in UI and server", async ({ 
 		});
 		expect(result.status()).toBe(409);
 	}
-	await expect(page.getByRole("link", { name: "GitHub repository", exact: true })).toBeInViewport();
+	await expect(
+		page.getByRole("link", { name: "GitHub repository (opens in a new tab)", exact: true }),
+	).toBeInViewport();
 	const overflow = await page.evaluate(
 		() => document.documentElement.scrollWidth > window.innerWidth,
 	);
@@ -218,20 +220,20 @@ test("Chinese blue shell, owner avatar and opt-in YouTube reference", async ({
 	await page.goto("/today");
 	const menu = page.getByRole("button", { name: "打开导航", exact: true });
 	if (await menu.isVisible()) await menu.click();
-	const rail = page.getByRole("complementary", { name: "主导航侧栏" });
+	const rail = page.getByRole("complementary", {
+		name: (await menu.isVisible()) ? "主导航抽屉" : "主导航侧栏",
+	});
 	const avatar = rail.getByRole("img", { name: "测试用户", exact: true });
 	await expect(avatar).toBeVisible();
 	await expect(avatar).toHaveCSS("width", "36px");
 	await expect(avatar).toHaveCSS("height", "36px");
 	await page.getByRole("button", { name: "动作实验室", exact: true }).click();
-	await expect(page.getByRole("link", { name: "GitHub repository", exact: true })).toHaveAttribute(
-		"href",
-		"https://github.com/nocoo/rhino",
-	);
-	await expect(page.getByRole("link", { name: "Rhino on hexly.ai", exact: true })).toHaveAttribute(
-		"href",
-		"https://hexly.ai/projects/rhino",
-	);
+	await expect(
+		page.getByRole("link", { name: "GitHub repository (opens in a new tab)", exact: true }),
+	).toHaveAttribute("href", "https://github.com/nocoo/rhino");
+	await expect(
+		page.getByRole("link", { name: "Rhino on hexly.ai (opens in a new tab)", exact: true }),
+	).toHaveAttribute("href", "https://hexly.ai/projects/rhino");
 	const accent = await page.evaluate(() =>
 		getComputedStyle(document.documentElement).getPropertyValue("--basalt-primary"),
 	);
@@ -378,7 +380,6 @@ test("Basalt shell geometry, collapse and drawer focus match the reference", asy
 	await page.goto("/today");
 	await page.locator(".page-body").waitFor();
 	const mobile = testInfo.project.name === "mobile";
-	const rail = page.getByRole("complementary", { name: "主导航侧栏" });
 	const menu = page.getByRole("button", { name: "打开导航", exact: true });
 	const island = page.locator(".rhino-island");
 	const geometry = await island.evaluate((element) => {
@@ -388,10 +389,11 @@ test("Basalt shell geometry, collapse and drawer focus match the reference", asy
 	});
 	expect(geometry).toEqual({ top: 52, left: mobile ? 8 : 272, padding: mobile ? "16px" : "32px" });
 	if (mobile) await menu.click();
+	const rail = page.getByRole("complementary", { name: mobile ? "主导航抽屉" : "主导航侧栏" });
 	await expect(rail).toHaveCSS("width", "260px");
 	const logo = await page.locator('[data-slot="sidebar-header"] img[alt="Rhino"]').boundingBox();
 	const item = rail.getByRole("button", { name: "今日训练", exact: true });
-	expect((await item.boundingBox())?.x).toBe(8);
+	expect((await item.boundingBox())?.x).toBe(16);
 	await expect(item).toHaveCSS("font-size", "14px");
 	await expect(item).toHaveCSS("height", "38px");
 	if (mobile) {
