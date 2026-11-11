@@ -59,11 +59,13 @@ it("enforces synthetic claims and single owner without using production test key
 		sub: "rhino-local-owner",
 		mode: "access",
 		email: null,
+		accessName: null,
 	});
 	expect(await authenticate(request(), { ...env, RESOURCE_ENV: "local" })).toEqual({
 		sub: "rhino-local-owner",
 		mode: "local",
 		email: null,
+		accessName: null,
 	});
 	expect(
 		await authenticate(request(await identity.token({ email: "synthetic@example.test" })), env),

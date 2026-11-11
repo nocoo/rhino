@@ -8,4 +8,5 @@ export type AuthContext = {
 	sub: string;
 	mode: "local" | "access";
 	email: string | null;
+	accessName: string | null;
 };

@@ -6,14 +6,18 @@ import * as client from "../../../src/lib/api";
 
 vi.mock("../../../src/lib/api", () => ({ api: vi.fn() }));
 const api = vi.mocked(client.api);
-const EMPTY_IDENTITY = { name: null, avatar: null };
+const EMPTY_IDENTITY = { email: null, name: null, avatar: null };
 
 beforeEach(() => vi.resetAllMocks());
 afterEach(cleanup);
 
 describe("useIdentity", () => {
 	it("resolves the identity profile from the API", async () => {
-		api.mockResolvedValueOnce({ name: "Owner", avatar: "https://images.example.test/avatar.webp" });
+		api.mockResolvedValueOnce({
+			email: "owner@example.com",
+			name: "Owner",
+			avatar: "https://images.example.test/avatar.webp",
+		});
 		const { result } = renderHook(useIdentity);
 		expect(api).toHaveBeenCalledWith(
 			"/identity",
@@ -21,6 +25,7 @@ describe("useIdentity", () => {
 		);
 		await waitFor(() =>
 			expect(result.current).toEqual({
+				email: "owner@example.com",
 				name: "Owner",
 				avatar: "https://images.example.test/avatar.webp",
 			}),

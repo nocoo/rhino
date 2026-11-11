@@ -3,7 +3,11 @@ import type { IdentityProfile } from "../domain/contracts";
 import { api } from "../lib/api";
 
 export function useIdentity() {
-	const [identity, setIdentity] = useState<IdentityProfile>({ name: null, avatar: null });
+	const [identity, setIdentity] = useState<IdentityProfile>({
+		email: null,
+		name: null,
+		avatar: null,
+	});
 	useEffect(() => {
 		const controller = new AbortController();
 		void api<IdentityProfile>("/identity", { signal: controller.signal })

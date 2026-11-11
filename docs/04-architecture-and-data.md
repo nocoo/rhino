@@ -145,22 +145,22 @@ All personal endpoints require the owner. JSON responses use `Cache-Control:
 no-store`. The API uses method-specific routing and JSON errors, never an HTML
 SPA fallback for an unknown `/api` path.
 
-| Method and path                   | Contract                                                                                                                             |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `GET /api/profile`                | Profile, readiness and guidance state                                                                                                |
-| `PUT /api/profile`                | Version-checked singleton update                                                                                                     |
-| `GET /api/measurements?from=&to=` | Bounded dated observations                                                                                                           |
-| `PUT /api/measurements/:id`       | Stable-ID creation or version-checked correction; duplicate date is an explicit conflict                                             |
-| `DELETE /api/measurements/:id`    | Confirmed, version-checked deletion; disclose derived BMI changes                                                                    |
-| `GET /api/plans`                  | Current revision and bounded history                                                                                                 |
-| `POST /api/plans/preview`         | Recompute validated deterministic preview without a write                                                                            |
-| `PUT /api/plans/:requestId`       | Accept one new revision against the expected current revision                                                                        |
-| `GET /api/sessions?from=&to=`     | Bounded history with cursors when needed                                                                                             |
-| `GET /api/sessions/:id`           | Snapshot, actuals, save version                                                                                                      |
-| `PUT /api/sessions/:id`           | Stable-ID creation, preparation, start, quick-save, completion, or explicit correction                                               |
-| `GET /api/progress?from=&to=`     | Derived actual totals and body measurements, never fabricated scores                                                                 |
-| `GET /api/live`                   | Anonymous minimal database readiness, name/version/revision; no personal records or error details                                    |
-| `GET /api/identity`               | Optional display name/avatar from the hashed, owner-verified JWT email; never an email header; no-store and fail-soft profile lookup |
+| Method and path                   | Contract                                                                                                                                                             |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/profile`                | Profile, readiness and guidance state                                                                                                                                |
+| `PUT /api/profile`                | Version-checked singleton update                                                                                                                                     |
+| `GET /api/measurements?from=&to=` | Bounded dated observations                                                                                                                                           |
+| `PUT /api/measurements/:id`       | Stable-ID creation or version-checked correction; duplicate date is an explicit conflict                                                                             |
+| `DELETE /api/measurements/:id`    | Confirmed, version-checked deletion; disclose derived BMI changes                                                                                                    |
+| `GET /api/plans`                  | Current revision and bounded history                                                                                                                                 |
+| `POST /api/plans/preview`         | Recompute validated deterministic preview without a write                                                                                                            |
+| `PUT /api/plans/:requestId`       | Accept one new revision against the expected current revision                                                                                                        |
+| `GET /api/sessions?from=&to=`     | Bounded history with cursors when needed                                                                                                                             |
+| `GET /api/sessions/:id`           | Snapshot, actuals, save version                                                                                                                                      |
+| `PUT /api/sessions/:id`           | Stable-ID creation, preparation, start, quick-save, completion, or explicit correction                                                                               |
+| `GET /api/progress?from=&to=`     | Derived actual totals and body measurements, never fabricated scores                                                                                                 |
+| `GET /api/live`                   | Anonymous minimal database readiness, name/version/revision; no personal records or error details                                                                    |
+| `GET /api/identity`               | Verified JWT email plus optional display name/avatar from hashed `lizheng.blog` lookup; name falls back to JWT `name`, then email local-part; no-store and fail-soft |
 
 The owner authorized anonymous health in local revision `7376d23`. Only exact GET
 `/api/live` precedes Worker authentication; business routes still verify the owner.

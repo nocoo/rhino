@@ -1,5 +1,4 @@
 import { z } from "zod";
-import type { IdentityProfile } from "../src/domain/contracts";
 
 const profileSchema = z.object({
 	name: z.string().trim().min(1).max(120).nullable(),
@@ -12,7 +11,9 @@ const profileSchema = z.object({
 		.nullable(),
 });
 
-export async function authorProfile(email: string | null): Promise<IdentityProfile> {
+export type AuthorProfile = { name: string | null; avatar: string | null };
+
+export async function authorProfile(email: string | null): Promise<AuthorProfile> {
 	const empty = { name: null, avatar: null };
 	if (!email?.trim()) return empty;
 	try {
