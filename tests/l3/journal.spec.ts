@@ -412,7 +412,8 @@ test("Basalt shell geometry, collapse and drawer focus match the reference", asy
 		await menu.click();
 		await page.setViewportSize({ width: 768, height: 900 });
 		await expect(page.getByRole("dialog")).toHaveCount(0);
-		await expect(rail).toHaveCSS("width", "260px");
+		const tabletRail = page.getByRole("complementary", { name: "主导航侧栏" });
+		await expect(tabletRail).toHaveCSS("width", "260px");
 		await expect(page.locator("body")).not.toHaveCSS("pointer-events", "none");
 		await page.setViewportSize({ width: 390, height: 844 });
 		await expect(menu).toBeVisible();
