@@ -32,6 +32,26 @@ checkout is not a release guarantee.
 
 ## Shell and Information Hierarchy
 
+### Basalt 3.3.4 Drawer Acceptance (2026-11-14)
+
+The current standalone package is pinned to `@nocoo/basalt` **3.3.4**. Mobile
+navigation uses `SidebarDrawer` with its built-in accessible title/description,
+forced-expanded provider and focus restoration. The inner Sidebar keeps its
+260px width, with a dismiss-mode SidebarToggle and close-on-navigation behavior.
+No consumer CSS patches the drawer or overrides its width/padding.
+
+The owner explicitly approved changing the outer drawer acceptance from 260px
+to **320px**, while the inner Sidebar remains **260px**. This changes acceptance,
+not Basalt implementation; earlier failed 260px outer measurements remain valid
+historical failures. `tests/l3/journal.spec.ts` updates only that outer-width
+expectation and explicitly checks the inner width. `tests/l3/sidebar.spec.ts`
+covers both themes on desktop/mobile, zero drawer padding, first-Escape dismissal,
+focus restoration, route closure, hidden collapsed brand/version, 36px avatars
+with equal expanded/collapsed y coordinates, and 16px email line-height.
+
+The dated layout notes below retain the original implementation history rather
+than redefining the current package geometry.
+
 ### Implemented Basalt Layout Correction (2026-10-09)
 
 The installed API/CSS contract is `@nocoo/basalt` **2.1.8**, standalone CSS.

@@ -1,5 +1,15 @@
 # Retrospective
 
+## 2026-11-14 - Drawer opener lookup during modal acceptance
+
+The new sidebar browser test looked up the menu button by accessible role while
+its modal drawer was open. Radix intentionally hides the background tree from
+assistive technology, so the lookup failed before measuring the drawer. The
+opener lookup now includes hidden elements only to inspect its retained ARIA
+attributes during the modal state. Closing still requires visible focus return.
+Future modal tests must distinguish background attribute inspection from
+controls available to the user; this does not relax drawer geometry assertions.
+
 ## 2026-10-09 - Initial implementation integration
 
 The first implementation exposed several integration mistakes before release.
