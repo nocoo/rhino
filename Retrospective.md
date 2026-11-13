@@ -16,6 +16,13 @@ with a 1200s outer execution window. Keep the interrupted log, budget the full
 multi-commit probe suite separately from a single L1 hook, and do not change the
 repository's individual probe or gate timeouts to accommodate tool execution.
 
+Read-only review found that the new dark-theme sidebar case only simulated a
+system preference, while Rhino intentionally starts ThemeProvider in light mode
+with persistence disabled. The case now uses the real theme control and asserts
+`html[data-mode]` before measuring. Earlier runs with the dark label did not prove
+dark rendering; only the corrected reruns establish both-theme acceptance.
+Match browser media emulation to the application's actual preference ownership.
+
 ## 2026-10-09 - Initial implementation integration
 
 The first implementation exposed several integration mistakes before release.
