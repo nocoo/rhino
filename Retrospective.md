@@ -10,6 +10,12 @@ attributes during the modal state. Closing still requires visible focus return.
 Future modal tests must distinguish background attribute inspection from
 controls available to the user; this does not relax drawer geometry assertions.
 
+The first full rejection-probe run was interrupted by the command tool's 300s
+budget after the missing-tool probe. The unmodified suite subsequently completed
+with a 1200s outer execution window. Keep the interrupted log, budget the full
+multi-commit probe suite separately from a single L1 hook, and do not change the
+repository's individual probe or gate timeouts to accommodate tool execution.
+
 ## 2026-10-09 - Initial implementation integration
 
 The first implementation exposed several integration mistakes before release.
