@@ -24,6 +24,10 @@ for (const theme of ["light", "dark"]) {
 		);
 		await page.goto("/today");
 		await page.locator(".page-body").waitFor();
+		if (theme === "dark") {
+			await page.getByRole("button", { name: "切换主题", exact: true }).click();
+		}
+		await expect(page.locator("html")).toHaveAttribute("data-mode", theme);
 		const mobile = info.project.name === "mobile";
 		const menu = page.getByRole("button", { name: "打开导航", exact: true, includeHidden: true });
 		if (mobile) await menu.click();
