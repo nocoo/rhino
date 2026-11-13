@@ -1,5 +1,28 @@
 # Retrospective
 
+## 2026-11-14 - Drawer opener lookup during modal acceptance
+
+The new sidebar browser test looked up the menu button by accessible role while
+its modal drawer was open. Radix intentionally hides the background tree from
+assistive technology, so the lookup failed before measuring the drawer. The
+opener lookup now includes hidden elements only to inspect its retained ARIA
+attributes during the modal state. Closing still requires visible focus return.
+Future modal tests must distinguish background attribute inspection from
+controls available to the user; this does not relax drawer geometry assertions.
+
+The first full rejection-probe run was interrupted by the command tool's 300s
+budget after the missing-tool probe. The unmodified suite subsequently completed
+with a 1200s outer execution window. Keep the interrupted log, budget the full
+multi-commit probe suite separately from a single L1 hook, and do not change the
+repository's individual probe or gate timeouts to accommodate tool execution.
+
+Read-only review found that the new dark-theme sidebar case only simulated a
+system preference, while Rhino intentionally starts ThemeProvider in light mode
+with persistence disabled. The case now uses the real theme control and asserts
+`html[data-mode]` before measuring. Earlier runs with the dark label did not prove
+dark rendering; only the corrected reruns establish both-theme acceptance.
+Match browser media emulation to the application's actual preference ownership.
+
 ## 2026-10-09 - Initial implementation integration
 
 The first implementation exposed several integration mistakes before release.

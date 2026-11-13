@@ -1,16 +1,8 @@
-import {
-	ContentIsland,
-	Sheet,
-	SheetContent,
-	SheetDescription,
-	SheetHeader,
-	SheetTitle,
-	SidebarProvider,
-} from "@nocoo/basalt";
+import { ContentIsland, SidebarDrawer } from "@nocoo/basalt";
 import { AppHeader, AppHeaderMenuButton, ProjectLinks } from "@nocoo/basalt/components/app-header";
 import { AppMain, AppShell, AppSkipLink } from "@nocoo/basalt/components/app-shell";
 import { ThemeToggle } from "@nocoo/basalt/components/theme-toggle";
-import { type ReactNode, useEffect, useRef } from "react";
+import { type ReactNode, useEffect, useId, useRef } from "react";
 import { type Page, pageLabels } from "../domain/routes";
 import { useBrowserChrome } from "../hooks/use-browser-chrome";
 import { useIsMobile } from "../hooks/use-mobile";
@@ -43,6 +35,7 @@ function FrameInner({
 	const isMobile = useIsMobile();
 	const { mobileOpen, setMobileOpen } = useMobileNav();
 	const menuButton = useRef<HTMLButtonElement>(null);
+	const drawerId = useId();
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: close the drawer when route content changes
 	useEffect(() => {
@@ -78,32 +71,23 @@ function FrameInner({
 			)}
 
 			{isMobile && (
-				<Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-					<SheetContent
-						id="mobile-navigation-sheet"
-						side="left"
-						className="w-[260px] max-w-[260px] border-0 bg-basalt-background p-0 sm:max-w-[260px] sm:p-0"
-						onCloseAutoFocus={(event) => {
-							event.preventDefault();
-							menuButton.current?.focus();
-						}}
-					>
-						<SheetHeader className="sr-only">
-							<SheetTitle>Rhino 导航</SheetTitle>
-							<SheetDescription>切换训练、计划、动作和个人档案</SheetDescription>
-						</SheetHeader>
-						<SidebarProvider collapsed={false} defaultWidth={260}>
-							<Sidebar
-								ariaLabel="主导航抽屉"
-								variant="mobile"
-								activePage={page}
-								onNavigate={navigatePage}
-								onDismiss={() => setMobileOpen(false)}
-								identity={identity}
-							/>
-						</SidebarProvider>
-					</SheetContent>
-				</Sheet>
+				<SidebarDrawer
+					id={drawerId}
+					open={mobileOpen}
+					onOpenChange={setMobileOpen}
+					returnFocusRef={menuButton}
+					title="Rhino 导航"
+					description="切换训练、计划、动作和个人档案"
+				>
+					<Sidebar
+						ariaLabel="主导航抽屉"
+						variant="mobile"
+						activePage={page}
+						onNavigate={navigatePage}
+						onDismiss={() => setMobileOpen(false)}
+						identity={identity}
+					/>
+				</SidebarDrawer>
 			)}
 
 			<AppMain id="main-content">
@@ -117,7 +101,7 @@ function FrameInner({
 								label="打开导航"
 								aria-expanded={mobileOpen}
 								aria-haspopup="dialog"
-								aria-controls={mobileOpen ? "mobile-navigation-sheet" : undefined}
+								aria-controls={drawerId}
 								onClick={() => {
 									menuButton.current?.focus();
 									setMobileOpen(true);

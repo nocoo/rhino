@@ -402,7 +402,11 @@ test("Basalt shell geometry, collapse and drawer focus match the reference", asy
 	await expect(item).toHaveCSS("font-size", "14px");
 	await expect(item).toHaveCSS("height", "38px");
 	if (mobile) {
-		await expect(page.getByRole("dialog")).toHaveCSS("width", "260px");
+		await expect(page.getByRole("dialog")).toHaveCSS("width", "320px");
+		await expect(page.getByRole("dialog").locator("[data-basalt-sidebar]")).toHaveCSS(
+			"width",
+			"260px",
+		);
 		await page.keyboard.press("Escape");
 		await expect(menu).toBeFocused();
 		await menu.click();
