@@ -64,7 +64,7 @@ for (const theme of ["light", "dark"]) {
 				body: JSON.stringify({ expanded, drawer: geometry }),
 				contentType: "application/json",
 			});
-			await expect.soft(drawer).toHaveCSS("width", "320px");
+			await expect.soft(drawer).toHaveCSS("width", "260px");
 			await expect(drawer.locator("[data-basalt-sidebar]")).toHaveCSS("width", "260px");
 			await expect.soft(drawer).toHaveCSS("padding-left", "0px");
 			await expect.soft(drawer).toHaveCSS("padding-right", "0px");
