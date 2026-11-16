@@ -27,9 +27,9 @@
 		"gate:verify": "bun scripts/verify-gates.ts"
 	},
 	"dependencies": {
-		"@nocoo/basalt": "3.3.4",
-		"jose": "6.2.13",
-		"lucide-react": "1.70.0",
+		"@nocoo/basalt": "3.3.6",
+		"jose": "6.2.17",
+		"lucide-react": "1.73.0",
 		"react": "19.3.1",
 		"react-dom": "19.3.1",
 		"recharts": "3.10.1",
@@ -38,23 +38,23 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.6.6",
-		"@cloudflare/vite-plugin": "1.66.0",
+		"@cloudflare/vite-plugin": "1.69.1",
 		"@cloudflare/workers-types": "5.20261024.1",
-		"@playwright/test": "1.65.0",
+		"@playwright/test": "1.65.1",
 		"@testing-library/react": "16.3.3",
 		"@types/bun": "1.4.4",
 		"@types/node": "26.6.6",
 		"@types/react": "19.3.0",
 		"@types/react-dom": "19.3.0",
 		"@types/three": "0.187.0",
-		"@vitejs/plugin-react": "6.1.2",
+		"@vitejs/plugin-react": "6.3.0",
 		"@vitest/coverage-v8": "5.1.0",
 		"husky": "9.1.7",
-		"jsdom": "31.0.0",
+		"jsdom": "31.0.1",
 		"typescript": "7.0.2",
-		"vite": "8.3.5",
+		"vite": "8.3.8",
 		"vitest": "5.1.0",
-		"wrangler": "4.156.0"
+		"wrangler": "4.162.0"
 	},
 	"overrides": {
 		"sharp": "0.35.5",
