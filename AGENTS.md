@@ -1,139 +1,66 @@
 # Rhino
 
-Single-owner fitness planning and journaling with Vite/React/Basalt, a Cloudflare
-Worker API and D1. Read [README.md](README.md) and [docs](docs/README.md).
-Instructions apply repository-wide; there are no nested handbooks.
+Single-owner fitness planner/journal on Vite, React, Basalt, Cloudflare Workers, and D1.
+Docs: [README.md](README.md) · [English](docs/README.en.md) · [Docs](docs/README.md) · [Release Runbook](docs/08-local-and-release.md) · [Retrospective](Retrospective.md)
 
 ## Commands
 
-Use Bun 1.4.2 and Node 26.12.1. TypeScript is pinned to **7.0.2**.
-The machine blocks the official npm registry; follow the global mirror policy
-without writing mirror tarball URLs into the committed lockfile.
+Run from root with Bun 1.4.2, Node 26.12.1, TS **7.0.2**, and stable Wrangler (`package.json`, not `cf`).
 
-| Command                                | Purpose                                                         |
-| -------------------------------------- | --------------------------------------------------------------- |
-| `bun install --frozen-lockfile`        | Install the exact lock and initialize Husky                     |
-| `bun run dev`                          | Local-only Vite/Worker, port 7057, local D1                     |
-| `bun run login:prod`                   | Authenticate the explicit development Prod proxy through Access |
-| `bun run db:migrate`                   | Apply migrations only to daily-development local D1             |
-| `bun run typegen`                      | Regenerate checked-in Wrangler binding declarations             |
-| `bun run typecheck`                    | Strict TS across app, Worker, tests and scripts                 |
-| `bun run lint`                         | Biome recommended rules and formatting, reject warnings         |
-| `bun run test:coverage`                | Full UT, four 95% thresholds, reject skips/empty/report loss    |
-| `bun run test:l2`                      | Real HTTP/Worker/D1 API scenarios with synthetic JWTs           |
-| `bun run test:l3`                      | Desktop/mobile Chromium critical workflows                      |
-| `bun run gate:l1`                      | Check the exact staged index in an isolated snapshot            |
-| `bun run gate:verify`                  | Disposable Git/Husky healthy and rejection probes               |
-| `bun run gate:security`                | Gitleaks and OSV; missing scanners fail closed                  |
-| `bun run gate:pre-push`                | Pushed-ref L2 and G2 (normally invoked by Husky)                |
-| `bun run build`                        | Build Worker and static assets, not deployment                  |
-| `node assets-source/build-model.mjs`   | Rebuild the shared rig and eleven clips                         |
-| `node assets-source/build-posters.mjs` | Render matching static phase posters                            |
+```sh
+bun install --frozen-lockfile # Install exact lock + Husky
+bun run dev                   # https://rhino.dev.hexly.ai -> 127.0.0.1:7057
+bun run login:prod            # Auth dev Prod proxy via Access
+bun run db:migrate            # Migrate daily local D1 only
+bun run typegen               # Regenerate Wrangler binding types
+bun run typecheck             # S1: strict TS (app, Worker, tests, scripts)
+bun run lint                  # S2: Biome recommended + format, 0 warnings
+bun run test:coverage         # L1: UT, 4x >=95%, no skips/empty/missing report
+bun run test:l2               # L2: HTTP/Worker/D1 API tests, synthetic JWTs
+bun run test:l3               # L4: desktop/mobile Chromium Playwright
+bun run gate:l1               # Staged-index snapshot check (S1/S2/L1)
+bun run gate:verify           # Disposable Git/Husky rejection probes
+bun run gate:security         # G1/G2: Gitleaks + OSV (fail closed if missing)
+bun run gate:pre-push         # Pushed-ref L2 + G1/G2 (Husky hook)
+bun run build                 # B1: Worker + static assets (no deploy)
+node assets-source/build-model.mjs   # Rebuild shared 3D rig and 11 clips
+node assets-source/build-posters.mjs # Render static phase posters
+```
 
-## Boundaries
+## Invariants
 
-- Communicate in Chinese with the owner's requested honorific. Code, technical
-  documents, comments and Git messages use English; product UI is Chinese-first.
-  Follow system0 README conventions: Chinese `README.md` and a complete English
-  counterpart at `docs/README.en.md`.
-- Use feature hooks as view models, pure domain functions, and bound D1 SQL.
-  Do not move logic into `.tsx` to escape coverage or add compatibility layers.
-- Plans are immutable revisions. Draft sessions can be adjusted; started
-  session targets/date/timezone/provenance are immutable. Actuals can be corrected
-  under version checks. Never infer performed work from planned work.
-- Dates use YYYY-MM-DD, instants UTC, kg/cm values are not rounded in storage.
-  BMI is not a diagnosis. Age-based heart rate is an uncertain estimate for the
-  documented 18-64 scope, never a load prescription or safety ceiling.
-- Production verifies Access RS256 issuer/audience/expiry/subject and exact
-  OWNER_SUB. Blank owner fails closed. Never trust an email header or auto-claim.
-- Optional sidebar identity uses only verified JWT email with the lizheng.blog
-  hashed-email profile service. Failure must not block training-data loading.
-- `local` uses a synthetic identity behind loopback Vite/Caddy restrictions.
-  `test` requires real synthetic JWT verification using JSON `TEST_ACCESS_JWKS`.
-  Production ignores test JWKS and uses the fixed remote Access key endpoint.
-- Mutations require exact APP_ORIGIN and JSON; streamed bodies are capped at
-  256 KiB. API responses are no-store. Do not log personal payloads or JWTs.
-- Tests use per-run `.wrangler/tests/run-*` state and a verified `_test_marker`.
-  The marker belongs to tests, never the production migration. No remote test
-  bindings, inherited CF credentials, daily-state reset or broad cleanup.
-- The development header selects Local/E2E/Prod through instance-scoped API URLs.
-  Every server start defaults to Local. E2E is disposable; automated tests are
-  locked to it. Prod forwards to the fixed Access-protected Worker, not remote D1.
-  Never send a production token to the browser or silently retarget stale requests.
-- Use the installed Basalt public controls/tokens and Lucide. Keep one viewer,
-  default pause, resource cleanup and static/text alternatives on failed WebGL.
-- Preserve the approved brand masters. Small sidebar/startup/browser marks use
-  transparent foregrounds; README uses the selected presentation. See
-  `assets/brand/README.md` for consumer sizes and platform-specific roles.
+- **UI & README**: Chinese-first UI; pair Chinese [README.md](README.md) with [docs/README.en.md](docs/README.en.md).
+- **Layering**: Keep logic in feature hooks, pure domain functions, and bound D1 SQL; never move logic into `.tsx` to escape coverage.
+- **Immutability**: Plans are immutable revisions; drafts are editable, started session targets/date/timezone/provenance are immutable; version-check actuals, never infer performed from planned.
+- **Units & health**: `YYYY-MM-DD` dates, UTC instants, unrounded `kg`/`cm`. BMI is not a diagnosis; age HR is an uncertain 18–64 estimate, never a load prescription or safety ceiling.
+- **Prod auth**: Verify Access RS256 issuer/audience/expiry/subject vs exact `OWNER_SUB`; blank owner fails closed; never trust email headers or auto-claim.
+- **Auth envs**: `local` uses loopback synthetic identity; `test` verifies synthetic JWTs via JSON `TEST_ACCESS_JWKS`; prod ignores it for the fixed remote Access endpoint.
+- **Sidebar identity**: Optional `GET /api/identity` calls `lizheng.blog` hashed-email profile only from verified JWT email; errors never block training data.
+- **HTTP safety**: Mutations require exact `APP_ORIGIN` and JSON (256 KiB streamed cap). API responses are `no-store`; never log personal payloads or JWTs.
+- **Dev gateway**: Header switches Local/E2E/Prod via instance-scoped URLs (defaults to Local on start); Prod proxies to the Access Worker (not remote D1), never leaks tokens, rejects stale requests.
+- **Test isolation**: Use per-run `.wrangler/tests/run-*` and verified `_test_marker` (never in prod migrations); no remote bindings, inherited CF creds, daily-state resets, or broad cleanup.
+- **Basalt & 3D**: Use installed Basalt public controls/tokens and Lucide; keep one 3D viewer, default pause, resource cleanup, and static/text fallbacks on failed WebGL.
+- **Brand masters**: Keep approved masters; small app/browser marks use transparent foregrounds, README uses selected presentation ([brand guide](assets/brand/README.md)).
+- **Preview gate**: 11 motions (catalog 1.2.0, opt-in YouTube refs) are unreviewed previews ([docs/05](docs/05-experience-and-3d.md)); never set `instructionReady=true` or claim review/completion.
+- **Deploy**: Push CI on `main` auto-deploys (`deploy.yml`): exact-source proof, fresh `main`, no admin bypass or recurring reviewer approval; missing creds fail closed ([docs/08](docs/08-local-and-release.md)).
+- **Live vs auth**: Access bypass covers anonymous `GET /api/live` (version/revision + D1, `no-store`, 503 on error); business routes need JWTs and verifier checks `/api/profile` redirect.
 
-## Verification and Release
+## Quality & Local Gates
 
-Husky pre-commit invokes coverage, strict TS and lint on the staged snapshot.
-Four coverage metrics each require >=95%, including auth and feature `.ts`
-models. Pure `.tsx` views and Three.js rendering use browser/visual verification.
-Rejection probes prove the gate, not application health. Store L1 audit reports
-in nmem, not a tracked certification document. Do not invent grades or timings.
+Follows `system1-quality`; CI slots and `base-ci` pin live in `.github/workflows/quality-slots.yml` (`quality / Z1: Gate` required on `main`; `ci.yml` adds `l1-rejection` and `proof`). Status terms: `enforced`, `planned`, `manual`, `N/A`.
 
-### L1 measured evidence (system0-6dq-l1 v1.1.3)
+- **Exceptions / gaps**: `L3 Integration` is `N/A` (covered by L1/L2); `P1 Package` is `N/A` (private app); CI `L4 E2E` runs `test:l3`; L1 95% excludes pure `.tsx` views and Three.js (browser-verified).
+- **Local hooks**: Installed by `bun install --frozen-lockfile` (`.husky/`); `pre-commit` runs `gate:l1` on staged index (`S1/S2/L1`), `pre-push` runs `gate:pre-push` on pushed refs (`L2/G1/G2`).
+- **Evidence**: Rejection probes prove the gate, not app health; tie release evidence to exact SHA, never invent grades/timings ([L1 baseline](docs/12-l1-gate-evidence.md)).
 
-Recorded at pinned `main` revision `aadae12` on Linux x86_64 with Bun 1.4.4,
-Node from the project CI pin, and `bun install --frozen-lockfile` (clean tree).
+## Resources & Isolation
 
-| Check              | Command                                                      | Exit              | Cold  | Warm  |
-| ------------------ | ------------------------------------------------------------ | ----------------- | ----- | ----- |
-| Husky chain        | `sh .husky/pre-commit` (= `bun run gate:l1` on staged index) | 0 (healthy index) | —     | 12.7s |
-| L1 snapshot gate   | `bun run gate:l1`                                            | 0                 | 13.8s | 12.7s |
-| L1 rejection suite | `bun run gate:verify`                                        | 0                 | ~30s  | ~30s  |
+| Lane  | Endpoint / State                                             | Boundary                                                                   |
+| ----- | ------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| Dev   | `rhino.dev.hexly.ai` -> `127.0.0.1:7057`, `.wrangler/state`  | Daily local D1 + synthetic user; default on start; keep server running     |
+| Tests | `127.0.0.1:<port>`, `.wrangler/tests/run-*` + `_test_marker` | Isolated fixtures; automated tests locked to E2E; no CF creds/remotes      |
+| Prod  | `rhino.hexly.ai`, D1 `fe36652a-9c84-485f-bae3-384f395e45ea`  | Access `nocoo`; read-only unless authorized; dev proxies via `cloudflared` |
 
-Coverage from the staged snapshot run (`gate:l1`, exit 0): statements **98.61%**,
-branches **96.23%**, functions **98.75%**, lines **99.02%** (each floor 95%).
+## Retrospective
 
-Parallel steps inside `gate:l1`: `typecheck`, `lint`, `test:coverage`; failures
-aggregate through `Promise.allSettled` and reject the hook. Wall time remains
-under the 30s target on this machine without skipping checks.
-
-`gate:verify` builds a disposable Husky repo (real runners), proves a healthy
-commit, then auto-cleans after verifying rejection for: UT failure; each coverage
-metric below floor (fixture uses a 101% probe threshold); lint error and warning;
-type error; `test.skip` and `test.only`; staged bug with unstaged fix; missing
-tool; child signal; timeout; missing `coverage-summary.json`; empty suite;
-parallel sole failure (typecheck fails while lint and UT succeed). CI runs
-`bun run gate:verify` in the `l1-rejection` job beside the shared L1 quality job.
-
-The implementation has passed UT, L2 and desktop/mobile L3 locally and in CI.
-Production D1 readiness and deployed version/revision are verified separately
-through anonymous GET `/api/live`; business access still needs owner verification.
-Keep release evidence tied to its exact revision, not unpublished local changes.
-
-Local URL: `https://rhino.dev.hexly.ai`, Caddy to `127.0.0.1:7057`.
-Production target: `https://rhino.hexly.ai`, Access team `nocoo`.
-Use stable Wrangler 4.156.0; this project has not migrated to beta `cf`.
-base-ci is pinned to `777bbe4f9bacab8a91d8c01974480a6ee23d28e0` (v2026.15).
-Deployment automatically follows successful push CI on this repository's `main`,
-with exact-source proof, fresh main and protected `production`. PR, fork, failed
-and manually dispatched CI runs cannot deploy. No manual deploy dispatch or
-reviewer approval is required. The confirmed production D1 is
-`fe36652a-9c84-485f-bae3-384f395e45ea`.
-The production environment allows only main and disables admin bypass. The owner
-explicitly removed recurring reviewer approval; do not reintroduce it. Deployment
-credentials are configured, but missing credentials must still fail closed.
-The existing shared Access bypass covers `/api/live`; its anonymous GET returns
-only version/revision and minimal database health, with no-store and 503 on failure.
-All business routes still require Worker JWT verification. Check `/api/profile`
-for the edge login redirect; public readiness does not prove owner authentication.
-The deployment verifier requires anonymous uncached health with the manifest
-version and proven checkout SHA, then checks the business Access redirect.
-
-Eleven motions are **unreviewed illustrative previews**, not qualified instruction.
-Catalog 1.2.0 includes the Chinese labels and corrected hinge/contact paths.
-All eleven movements have opt-in attributed YouTube references, not endorsements.
-The realistic-motion acceptance gate in docs/05 remains open. Do not set
-`instructionReady=true`, claim expert review or declare feature-complete without
-corresponding evidence. Owner preview acceptance cannot substitute for
-professional review; any preview release must preserve its limitations.
-
-Commit coherent changes using explicit paths and normal hooks, lowercase
-Conventional Commits <=50 characters. No unrequested pushes, hook bypasses,
-destructive resets or edits to unrelated infrastructure. Avoid exporting
-credentials. Do not change certificates, Keychain or ACL settings.
-Record actual incidents in `Retrospective.md`.
+Log incidents in [Retrospective.md](Retrospective.md); promote recurring rules to `Invariants` and safeguards to tests/hooks.

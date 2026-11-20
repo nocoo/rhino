@@ -20,6 +20,7 @@ current implementation and open acceptance gates; none certifies medical safety.
 | [09 Video References](09-video-references.md)                     | Attributed external movement demonstrations and verification limits         |
 | [10 Immersive Workout](10-immersive-workout.md)                   | Mobile timeline, durable clocks, step recording and completion              |
 | [11 Calendar and PWA](11-calendar-and-pwa.md)                     | Cross-month plans, actual records and Safari installation                   |
+| [12 L1 Gate Evidence](12-l1-gate-evidence.md)                     | Point-in-time L1 snapshot timings and rejection-probe coverage              |
 
 ## Reading Conventions
 
