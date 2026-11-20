@@ -23,7 +23,7 @@ import {
 	Save,
 	Timer,
 	Wind,
-} from "lucide-react";
+} from "@nocoo/basalt/icons";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { Choice, Field } from "../components/fields";
 import { NumberStepper } from "../components/number-stepper";

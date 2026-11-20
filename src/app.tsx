@@ -1,5 +1,5 @@
 import { Button, LayerCard } from "@nocoo/basalt";
-import { AlertTriangle, CheckCircle2, RefreshCw } from "lucide-react";
+import { AlertTriangle, CheckCircle2, RefreshCw } from "@nocoo/basalt/icons";
 import { Component, type ReactNode, useEffect } from "react";
 import { Frame, type Page } from "./components/frame";
 import { HistoryLinks } from "./components/history-links";

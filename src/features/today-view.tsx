@@ -1,7 +1,7 @@
 import { Button, LayerCard } from "@nocoo/basalt";
-import { StatCard, StatGrid } from "@nocoo/basalt/charts/stat-card";
 import { PageHeader } from "@nocoo/basalt/components/page-header";
 import { SectionRule } from "@nocoo/basalt/components/section-rule";
+import { StatCard, StatGrid } from "@nocoo/basalt/components/stat-card";
 import {
 	ArrowRight,
 	CalendarDays,
@@ -11,7 +11,7 @@ import {
 	Leaf,
 	Play,
 	Sparkles,
-} from "lucide-react";
+} from "@nocoo/basalt/icons";
 import { Suspense } from "react";
 import type { Page } from "../components/frame";
 import { WorkoutSummary } from "../components/workout-summary";
@@ -73,21 +73,21 @@ export function TodayView({
 					label="本周训练"
 					value={`${completed} / ${current?.input.weeklyFrequency ?? "—"}`}
 					subtitle="完成的真实记录"
-					icon={CheckCheck}
+					icon={<CheckCheck />}
 					iconColor="text-basalt-primary"
 				/>
 				<StatCard
 					label="有氧累积 · min"
 					value={Math.round(minutes)}
 					subtitle="中等强度等效分钟"
-					icon={Clock3}
+					icon={<Clock3 />}
 					iconColor="text-basalt-primary"
 				/>
 				<StatCard
 					label="力量训练 · 次"
 					value={strength}
 					subtitle="目标每周 ≥ 2 次"
-					icon={HeartPulse}
+					icon={<HeartPulse />}
 					iconColor="text-basalt-primary"
 				/>
 			</StatGrid>

@@ -28,7 +28,7 @@ import {
 	ChartNoAxesCombined,
 	type LucideIcon,
 	UserRound,
-} from "lucide-react";
+} from "@nocoo/basalt/icons";
 import { type ReactNode, useCallback, useState } from "react";
 import { version } from "../../../package.json";
 import type { IdentityProfile } from "../../domain/contracts";
@@ -81,7 +81,7 @@ export function PersistedSidebarProvider({ children }: { children: ReactNode }) 
 	);
 
 	return (
-		<SidebarProvider collapsed={collapsed} onCollapsedChange={onCollapsedChange} defaultWidth={260}>
+		<SidebarProvider collapsed={collapsed} onCollapsedChange={onCollapsedChange}>
 			{children}
 		</SidebarProvider>
 	);

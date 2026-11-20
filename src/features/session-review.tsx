@@ -9,7 +9,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@nocoo/basalt/components/table";
-import { ArrowLeft, Pencil, Play } from "lucide-react";
+import { ArrowLeft, Pencil, Play } from "@nocoo/basalt/icons";
 import { emphasisNames, exerciseNames, WorkoutSummary } from "../components/workout-summary";
 import { recordedWork } from "../domain/calendar";
 import type { SessionRecord } from "../domain/contracts";

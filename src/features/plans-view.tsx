@@ -1,7 +1,14 @@
 import { Button, LayerCard } from "@nocoo/basalt";
 import { PageHeader } from "@nocoo/basalt/components/page-header";
 import { SectionRule } from "@nocoo/basalt/components/section-rule";
-import { CalendarDays, Check, History, RefreshCw, SlidersHorizontal, Sparkles } from "lucide-react";
+import {
+	CalendarDays,
+	Check,
+	History,
+	RefreshCw,
+	SlidersHorizontal,
+	Sparkles,
+} from "@nocoo/basalt/icons";
 import { useState } from "react";
 import { Choice, Field } from "../components/fields";
 import { WorkoutSummary } from "../components/workout-summary";

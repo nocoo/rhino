@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.2.9 - 2026-11-20
+
+- Upgrade `@nocoo/basalt` to `^3.5.1` (`3.5.1`), remove `lucide-react`, and
+  rewrite icon imports to `@nocoo/basalt/icons`.
+- Migrate `StatCard` / `StatGrid` to `@nocoo/basalt/components/stat-card` and
+  `LineChart` to an application-owned Recharts `TrendLineChart` built on
+  `@nocoo/basalt/components/chart`.
+- Align sidebar width to Basalt's `240px` default and update L3 shell geometry
+  assertions.
+
 ## v0.2.8 - 2026-11-10
 
 - Bump lucide-react, vitest, Biome, Playwright, and jsdom to the versions

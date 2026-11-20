@@ -1,5 +1,5 @@
 import { Button } from "@nocoo/basalt";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "@nocoo/basalt/icons";
 
 export function NumberStepper({
 	label,

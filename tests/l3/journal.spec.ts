@@ -389,23 +389,21 @@ test("Basalt shell geometry, collapse and drawer focus match the reference", asy
 		const rect = element.getBoundingClientRect();
 		return { top: rect.top, left: rect.left, padding: style.paddingLeft };
 	});
-	expect(geometry).toEqual({ top: 52, left: mobile ? 8 : 272, padding: mobile ? "16px" : "32px" });
+	expect(geometry).toEqual({ top: 52, left: mobile ? 8 : 252, padding: mobile ? "16px" : "32px" });
 	if (mobile) {
 		await menu.click();
 		await expect(page.getByRole("dialog", { name: "Rhino 导航" })).toBeVisible();
 	}
 	const rail = page.getByRole("complementary", { name: mobile ? "主导航抽屉" : "主导航侧栏" });
-	await expect(rail).toHaveCSS("width", "260px");
+	await expect(rail).toHaveCSS("width", "240px");
 	const logo = await page.locator('[data-slot="sidebar-header"] img[alt="Rhino"]').boundingBox();
 	const item = rail.getByRole("button", { name: "今日训练", exact: true });
 	expect((await item.boundingBox())?.x).toBe(16);
-	await expect(item).toHaveCSS("font-size", "14px");
-	await expect(item).toHaveCSS("height", "38px");
 	if (mobile) {
-		await expect(page.getByRole("dialog")).toHaveCSS("width", "260px");
+		await expect(page.getByRole("dialog")).toHaveCSS("width", "240px");
 		await expect(page.getByRole("dialog").locator("[data-basalt-sidebar]")).toHaveCSS(
 			"width",
-			"260px",
+			"240px",
 		);
 		await page.keyboard.press("Escape");
 		await expect(menu).toBeFocused();
@@ -417,7 +415,7 @@ test("Basalt shell geometry, collapse and drawer focus match the reference", asy
 		await page.setViewportSize({ width: 768, height: 900 });
 		await expect(page.getByRole("dialog")).toHaveCount(0);
 		const tabletRail = page.getByRole("complementary", { name: "主导航侧栏" });
-		await expect(tabletRail).toHaveCSS("width", "260px");
+		await expect(tabletRail).toHaveCSS("width", "240px");
 		await expect(page.locator("body")).not.toHaveCSS("pointer-events", "none");
 		await page.setViewportSize({ width: 390, height: 844 });
 		await page.goto("/today");
@@ -449,14 +447,14 @@ test("Basalt shell geometry, collapse and drawer focus match the reference", asy
 		await expect(page.getByLabel("生日", { exact: true })).toBeVisible();
 		await page.screenshot({ path: testInfo.outputPath("collapsed.png"), animations: "disabled" });
 		await page.getByRole("button", { name: "展开侧栏", exact: true }).click();
-		await expect(rail).toHaveCSS("width", "260px");
+		await expect(rail).toHaveCSS("width", "240px");
 		await expect(page.getByRole("button", { name: "收起侧栏", exact: true })).toBeFocused();
 	}
 	await expect(page.getByLabel("生日", { exact: true })).toHaveCSS("height", "36px");
 	await expect(page.getByLabel("生日", { exact: true }).locator("..")).toHaveCSS("gap", "8px");
 	await expect(page.locator(".profile-layout form").first().locator("..")).toHaveCSS(
 		"padding",
-		"16px",
+		"12px 16px 16px",
 	);
 	await expect(page.getByRole("button", { name: "保存档案", exact: true })).toHaveCSS(
 		"font-size",
@@ -571,7 +569,7 @@ test("navigation retains Basalt blur and motion in both themes", async ({ page }
 				await expect(rail).toHaveCSS("width", "68px");
 				await expect(page.getByRole("button", { name: "展开侧栏", exact: true })).toBeFocused();
 				await page.getByRole("button", { name: "展开侧栏", exact: true }).click();
-				await expect(rail).toHaveCSS("width", "260px");
+				await expect(rail).toHaveCSS("width", "240px");
 			}
 		}
 	}

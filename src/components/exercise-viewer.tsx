@@ -1,6 +1,6 @@
 import { Button } from "@nocoo/basalt";
 import { Slider } from "@nocoo/basalt/components/slider";
-import { Focus, Layers3, Pause, Play, RotateCcw, RotateCw, View } from "lucide-react";
+import { Focus, Layers3, Pause, Play, RotateCcw, RotateCw, View } from "@nocoo/basalt/icons";
 import { useEffect, useRef, useState } from "react";
 import type { StrengthExerciseId } from "../domain/contracts";
 import {
