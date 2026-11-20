@@ -1,7 +1,6 @@
 import { Button, LayerCard } from "@nocoo/basalt";
-import { LineChart } from "@nocoo/basalt/charts/line";
-import { StatCard, StatGrid } from "@nocoo/basalt/charts/stat-card";
 import { PageHeader } from "@nocoo/basalt/components/page-header";
+import { StatCard, StatGrid } from "@nocoo/basalt/components/stat-card";
 import {
 	Table,
 	TableBody,
@@ -10,7 +9,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@nocoo/basalt/components/table";
-import { Activity, ArrowUpRight, HeartPulse, Plus, Scale, TrendingUp } from "lucide-react";
+import { Activity, ArrowUpRight, HeartPulse, Plus, Scale, TrendingUp } from "@nocoo/basalt/icons";
+import { TrendLineChart } from "../components/trend-line-chart";
 import type { RhinoModel } from "./use-rhino-model";
 
 const sessionStatusLabels = {
@@ -61,19 +61,19 @@ export function ProgressView({
 					label="最近体重 · kg"
 					value={String(latest?.value ?? "—")}
 					subtitle={latest?.effectiveDate ?? "等待第一条记录"}
-					icon={Scale}
+					icon={<Scale />}
 					iconColor="text-basalt-primary"
 				/>
 				<StatCard
 					label="身体质量指数 · BMI"
 					value={String(latest?.displayedBmi ?? "—")}
 					subtitle="不等于体脂率，不直接决定训练强度"
-					icon={TrendingUp}
+					icon={<TrendingUp />}
 					iconColor="text-basalt-primary"
 				/>
 				<StatCard
 					label="中等强度心率参考 · bpm"
-					icon={HeartPulse}
+					icon={<HeartPulse />}
 					iconColor="text-basalt-primary"
 					value={
 						guidance?.status === "available"
@@ -101,7 +101,7 @@ export function ProgressView({
 					</LayerCard.Header>
 					<LayerCard.Body>
 						{data.length ? (
-							<LineChart
+							<TrendLineChart
 								data={data}
 								series={[{ key: "weight", label: "体重" }]}
 								className="chart"
@@ -128,7 +128,7 @@ export function ProgressView({
 					</LayerCard.Header>
 					<LayerCard.Body>
 						{data.some((item) => item.bmi !== null) ? (
-							<LineChart
+							<TrendLineChart
 								data={data}
 								series={[{ key: "bmi", label: "BMI" }]}
 								className="chart"

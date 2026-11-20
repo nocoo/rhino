@@ -1,6 +1,6 @@
 {
 	"name": "rhino",
-	"version": "0.2.8",
+	"version": "0.2.9",
 	"private": true,
 	"type": "module",
 	"packageManager": "bun@1.4.2",
@@ -27,9 +27,8 @@
 		"gate:verify": "bun scripts/verify-gates.ts"
 	},
 	"dependencies": {
-		"@nocoo/basalt": "3.3.6",
+		"@nocoo/basalt": "3.5.1",
 		"jose": "6.2.17",
-		"lucide-react": "1.73.0",
 		"react": "19.3.1",
 		"react-dom": "19.3.1",
 		"recharts": "3.10.1",

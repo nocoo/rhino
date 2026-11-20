@@ -20,7 +20,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@nocoo/basalt/components/table";
-import { ArrowUpRight, type LucideIcon, Pencil, Trash2 } from "lucide-react";
+import { ArrowUpRight, type LucideIcon, Pencil, Trash2 } from "@nocoo/basalt/icons";
 import { useRef } from "react";
 import { emphasisNames } from "../components/workout-summary";
 import { recordedWork } from "../domain/calendar";

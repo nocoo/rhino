@@ -9,7 +9,15 @@ import {
 	TableHeader,
 	TableRow,
 } from "@nocoo/basalt/components/table";
-import { Check, Dumbbell, HeartPulse, History, Ruler, Scale, ShieldCheck } from "lucide-react";
+import {
+	Check,
+	Dumbbell,
+	HeartPulse,
+	History,
+	Ruler,
+	Scale,
+	ShieldCheck,
+} from "@nocoo/basalt/icons";
 import { useState } from "react";
 import { Choice, Field } from "../components/fields";
 import { EQUIPMENT } from "../data/exercises";

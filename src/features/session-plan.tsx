@@ -1,5 +1,5 @@
 import { Button, LayerCard } from "@nocoo/basalt";
-import { Eye } from "lucide-react";
+import { Eye } from "@nocoo/basalt/icons";
 import { Choice } from "../components/fields";
 import { NumberStepper } from "../components/number-stepper";
 import { emphasisNames, exerciseNames } from "../components/workout-summary";

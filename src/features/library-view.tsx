@@ -2,7 +2,7 @@ import { Button, LayerCard } from "@nocoo/basalt";
 import { PageHeader } from "@nocoo/basalt/components/page-header";
 import { SectionRule } from "@nocoo/basalt/components/section-rule";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@nocoo/basalt/components/tabs";
-import { ArrowUpRight, BookOpen, Image, Info, Play } from "lucide-react";
+import { ArrowUpRight, BookOpen, Image, Info, Play } from "@nocoo/basalt/icons";
 import { lazy, Suspense, useState } from "react";
 import { exerciseNames } from "../components/workout-summary";
 import { EXERCISE_VIDEO_REFERENCES } from "../data/exercise-videos";

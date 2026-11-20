@@ -10,7 +10,7 @@ import {
 	Clock3,
 	Leaf,
 	Play,
-} from "lucide-react";
+} from "@nocoo/basalt/icons";
 import type { Page } from "../components/frame";
 import { emphasisNames, WorkoutSummary } from "../components/workout-summary";
 import { WEEKDAY_LABELS, weekdayOf } from "../domain/dates";

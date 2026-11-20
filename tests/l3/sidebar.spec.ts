@@ -43,7 +43,7 @@ for (const theme of ["light", "dark"]) {
 			"line-height",
 			"16px",
 		);
-		await expect(rail).toHaveCSS("width", "260px");
+		await expect(rail).toHaveCSS("width", "240px");
 		if (mobile) {
 			const drawer = page.locator('[data-slot="sidebar-drawer"]');
 			await expect(drawer).toBeVisible();
@@ -64,8 +64,8 @@ for (const theme of ["light", "dark"]) {
 				body: JSON.stringify({ expanded, drawer: geometry }),
 				contentType: "application/json",
 			});
-			await expect.soft(drawer).toHaveCSS("width", "260px");
-			await expect(drawer.locator("[data-basalt-sidebar]")).toHaveCSS("width", "260px");
+			await expect.soft(drawer).toHaveCSS("width", "240px");
+			await expect(drawer.locator("[data-basalt-sidebar]")).toHaveCSS("width", "240px");
 			await expect.soft(drawer).toHaveCSS("padding-left", "0px");
 			await expect.soft(drawer).toHaveCSS("padding-right", "0px");
 			const dismiss = rail.getByRole("button", { name: "关闭导航", exact: true });
@@ -99,7 +99,7 @@ for (const theme of ["light", "dark"]) {
 				.toBeHidden();
 			await expect(rail.getByText("owner@example.test", { exact: true })).toHaveCount(0);
 			await page.getByRole("button", { name: "展开侧栏", exact: true }).click();
-			await expect(rail).toHaveCSS("width", "260px");
+			await expect(rail).toHaveCSS("width", "240px");
 			await expect(rail.locator('[data-slot="sidebar-brand-name"]')).toBeVisible();
 		}
 	});

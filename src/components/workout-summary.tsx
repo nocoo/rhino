@@ -1,5 +1,5 @@
 import { Button, LayerCard } from "@nocoo/basalt";
-import { ArrowRight, Bike, Clock3, Dumbbell, Play, SlidersHorizontal } from "lucide-react";
+import { ArrowRight, Bike, Clock3, Dumbbell, Play, SlidersHorizontal } from "@nocoo/basalt/icons";
 import { EXERCISES } from "../data/exercises";
 import type { SessionTarget, StrengthExerciseId } from "../domain/contracts";
 
