@@ -625,6 +625,30 @@ describe("plugin wiring and production token helper", () => {
 		const send = process.send;
 		process.send = vi.fn();
 		const exit = vi.spyOn(process, "exit").mockImplementation(() => undefined as never);
+		const disconnectListeners: Array<() => void> = [];
+		const originalOnce = process.once.bind(process);
+		const onceSpy = vi.spyOn(process, "once").mockImplementation(((
+			event: string | symbol,
+			listener: (...args: unknown[]) => void,
+		) => {
+			if (event === "disconnect") {
+				disconnectListeners.push(listener as () => void);
+				return process;
+			}
+			return originalOnce(event, listener);
+		}) as typeof process.once);
+		const originalOff = process.off.bind(process);
+		const offSpy = vi.spyOn(process, "off").mockImplementation(((
+			event: string | symbol,
+			listener: (...args: unknown[]) => void,
+		) => {
+			if (event === "disconnect") {
+				const index = disconnectListeners.indexOf(listener as () => void);
+				if (index >= 0) disconnectListeners.splice(index, 1);
+				return process;
+			}
+			return originalOff(event, listener);
+		}) as typeof process.off);
 		try {
 			const plugin = rhinoEnvironments();
 			const close = vi.fn().mockResolvedValue(undefined);
@@ -633,20 +657,23 @@ describe("plugin wiring and production token helper", () => {
 			const server = { config: { server: {} }, middlewares: { use: vi.fn() }, close };
 			configure.call({} as never, server as never);
 			mocks.cleanup.mockResolvedValue(undefined);
-			process.emit("disconnect");
+			disconnectListeners.shift()?.();
 			await vi.waitFor(() => expect(exit).toHaveBeenCalledWith(0));
 			expect(mocks.cleanup).toHaveBeenCalledWith(
 				expect.objectContaining({ state: "/tmp/owned", id: "run-id" }),
 			);
 			configure.call({} as never, server as never);
 			mocks.cleanup.mockRejectedValueOnce(new Error("marker mismatch"));
-			process.emit("disconnect");
+			disconnectListeners.shift()?.();
 			await vi.waitFor(() => expect(exit).toHaveBeenCalledWith(1));
 			if (typeof plugin.closeServer === "function")
 				await plugin.closeServer.call({} as never, {} as never);
+			expect(offSpy).toHaveBeenCalledWith("disconnect", expect.any(Function));
 			delete process.env.RHINO_TEST_RUN_ID;
 			expect(() => configure.call({} as never, server as never)).toThrow("owned E2E state");
 		} finally {
+			onceSpy.mockRestore();
+			offSpy.mockRestore();
 			process.send = send;
 			exit.mockRestore();
 			vi.unstubAllEnvs();
