@@ -464,6 +464,7 @@ export function SessionView({
 				<DialogContent
 					className="workout-preview"
 					size="lg"
+					showCloseButton={false}
 					onCloseAutoFocus={(event) => {
 						event.preventDefault();
 						previewTrigger.current?.focus();
@@ -489,6 +490,7 @@ export function SessionView({
 			<Dialog open={ending} onOpenChange={setEnding}>
 				<DialogContent
 					className="workout-ending"
+					showCloseButton={false}
 					onCloseAutoFocus={(event) => {
 						event.preventDefault();
 						endingTrigger.current?.focus();

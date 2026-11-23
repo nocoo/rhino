@@ -1,4 +1,12 @@
-import { ContentIsland, SidebarDrawer } from "@nocoo/basalt";
+import {
+	ContentIsland,
+	Sheet,
+	SheetContent,
+	SheetDescription,
+	SheetHeader,
+	SheetTitle,
+	SidebarProvider,
+} from "@nocoo/basalt";
 import { AppHeader, AppHeaderMenuButton, ProjectLinks } from "@nocoo/basalt/components/app-header";
 import { AppMain, AppShell, AppSkipLink } from "@nocoo/basalt/components/app-shell";
 import { ThemeToggle } from "@nocoo/basalt/components/theme-toggle";
@@ -71,23 +79,36 @@ function FrameInner({
 			)}
 
 			{isMobile && (
-				<SidebarDrawer
-					id={drawerId}
-					open={mobileOpen}
-					onOpenChange={setMobileOpen}
-					returnFocusRef={menuButton}
-					title="Rhino 导航"
-					description="切换训练、计划、动作和个人档案"
-				>
-					<Sidebar
-						ariaLabel="主导航抽屉"
-						variant="mobile"
-						activePage={page}
-						onNavigate={navigatePage}
-						onDismiss={() => setMobileOpen(false)}
-						identity={identity}
-					/>
-				</SidebarDrawer>
+				<Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+					<SheetContent
+						id={drawerId}
+						data-slot="sidebar-drawer"
+						side="left"
+						showCloseButton={false}
+						className="basalt-sidebar-drawer max-h-dvh w-[var(--basalt-size-sidebar-width)] max-w-[var(--basalt-size-sidebar-width)] border-r-0 bg-basalt-background p-0 sm:p-0"
+						onCloseAutoFocus={(event) => {
+							if (menuButton.current) {
+								event.preventDefault();
+								menuButton.current.focus();
+							}
+						}}
+					>
+						<SheetHeader className="sr-only">
+							<SheetTitle>Rhino 导航</SheetTitle>
+							<SheetDescription>切换训练、计划、动作和个人档案</SheetDescription>
+						</SheetHeader>
+						<SidebarProvider collapsed={false}>
+							<Sidebar
+								ariaLabel="主导航抽屉"
+								variant="mobile"
+								activePage={page}
+								onNavigate={navigatePage}
+								onDismiss={() => setMobileOpen(false)}
+								identity={identity}
+							/>
+						</SidebarProvider>
+					</SheetContent>
+				</Sheet>
 			)}
 
 			<AppMain id="main-content">

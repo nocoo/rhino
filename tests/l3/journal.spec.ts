@@ -534,7 +534,7 @@ test("mobile drawer closes from dismiss toggle and restores menu focus", async (
 	await expect(opener).toBeFocused();
 });
 
-test("navigation retains Basalt blur and motion in both themes", async ({ page }, info) => {
+test("navigation retains Basalt scrim and motion in both themes", async ({ page }, info) => {
 	await page.goto("/today");
 	await page.locator(".page-body").waitFor();
 	for (const theme of ["light", "dark"]) {
@@ -545,7 +545,11 @@ test("navigation retains Basalt blur and motion in both themes", async ({ page }
 				const menu = page.getByRole("button", { name: "打开导航", exact: true });
 				await menu.click();
 				const overlay = page.locator(".basalt-sheet-overlay");
-				await expect(overlay).toHaveCSS("backdrop-filter", "blur(6px)");
+				await expect(overlay).toHaveCSS("backdrop-filter", "none");
+				await expect(overlay).toHaveCSS(
+					"background-color",
+					theme === "dark" ? "rgba(0, 0, 0, 0.6)" : "rgba(0, 0, 0, 0.28)",
+				);
 				await expect(page.getByRole("dialog")).toHaveCSS(
 					"animation-name",
 					reducedMotion === "reduce" ? "none" : "basalt-sheet-in",
