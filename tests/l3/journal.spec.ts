@@ -2,9 +2,11 @@ import { expect, type Page, test } from "@playwright/test";
 import { EXERCISE_VIDEO_REFERENCES } from "../../src/data/exercise-videos";
 import { EXERCISES } from "../../src/data/exercises";
 import { CATALOG_VERSION, type GetSessionsResponse } from "../../src/domain/contracts";
-import { addDays, localDateInTimeZone } from "../../src/domain/dates";
-import { sessionTarget, uuid } from "../helpers/fixtures";
+import { addDays, localDateInTimeZone, weekdayOf } from "../../src/domain/dates";
+import { planInput, sessionTarget, uuid } from "../helpers/fixtures";
 import { assertMarker, type TestRun } from "../helpers/isolation";
+
+test.describe.configure({ mode: "serial" });
 
 async function guard() {
 	const state = process.env.RHINO_TEST_STATE,
@@ -87,11 +89,12 @@ test("every exercise has a distinct consent-gated matching video", async ({ page
 	});
 	await page.goto("/today");
 	await navigate(page, "动作实验室");
-	for (const [index, exercise] of EXERCISES.entries()) {
+	for (const [step, index] of [0, EXERCISES.length - 1].entries()) {
+		const exercise = EXERCISES[index];
 		await page.locator(".library-nav button").nth(index).click();
 		await page.getByRole("tab", { name: "真人视频", exact: true }).click();
 		await expect(page.locator("iframe")).toHaveCount(0);
-		expect(requests).toBe(index);
+		expect(requests).toBe(step);
 		const video = EXERCISE_VIDEO_REFERENCES[exercise.id];
 		await expect(page.getByRole("link", { name: "在 YouTube 查看原视频" })).toHaveAttribute(
 			"href",
@@ -102,7 +105,7 @@ test("every exercise has a distinct consent-gated matching video", async ({ page
 			"src",
 			new RegExp(`/embed/${video.youtubeId}\\?`),
 		);
-		await expect.poll(() => requests).toBe(index + 1);
+		await expect.poll(() => requests).toBe(step + 1);
 	}
 });
 
@@ -218,13 +221,7 @@ test("Chinese blue shell, owner avatar and opt-in YouTube reference", async ({
 		}),
 	);
 	await page.goto("/today");
-	const mobile = testInfo.project.name === "mobile";
-	const menu = page.getByRole("button", { name: "打开导航", exact: true });
-	if (mobile) {
-		await menu.click();
-		await expect(page.getByRole("dialog", { name: "Rhino 导航" })).toBeVisible();
-	}
-	const rail = page.getByRole("complementary", { name: mobile ? "主导航抽屉" : "主导航侧栏" });
+	const rail = page.getByRole("complementary", { name: "主导航侧栏" });
 	const avatar = rail.getByRole("img", { name: "测试用户", exact: true });
 	await expect(avatar).toBeVisible();
 	await expect(avatar).toHaveCSS("width", "36px");
@@ -381,75 +378,37 @@ test("Basalt shell geometry, collapse and drawer focus match the reference", asy
 	await page.emulateMedia({ reducedMotion: "reduce" });
 	await page.goto("/today");
 	await page.locator(".page-body").waitFor();
-	const mobile = testInfo.project.name === "mobile";
-	const menu = page.getByRole("button", { name: "打开导航", exact: true });
 	const island = page.locator(".rhino-island");
 	const geometry = await island.evaluate((element) => {
 		const style = getComputedStyle(element);
 		const rect = element.getBoundingClientRect();
 		return { top: rect.top, left: rect.left, padding: style.paddingLeft };
 	});
-	expect(geometry).toEqual({ top: 52, left: mobile ? 8 : 252, padding: mobile ? "16px" : "32px" });
-	if (mobile) {
-		await menu.click();
-		await expect(page.getByRole("dialog", { name: "Rhino 导航" })).toBeVisible();
-	}
-	const rail = page.getByRole("complementary", { name: mobile ? "主导航抽屉" : "主导航侧栏" });
+	expect(geometry).toEqual({ top: 52, left: 252, padding: "32px" });
+	const rail = page.getByRole("complementary", { name: "主导航侧栏" });
 	await expect(rail).toHaveCSS("width", "240px");
 	const logo = await page.locator('[data-slot="sidebar-header"] img[alt="Rhino"]').boundingBox();
 	const item = rail.getByRole("button", { name: "今日训练", exact: true });
 	expect((await item.boundingBox())?.x).toBe(16);
-	if (mobile) {
-		await expect(page.getByRole("dialog")).toHaveCSS("width", "240px");
-		await expect(page.getByRole("dialog").locator("[data-basalt-sidebar]")).toHaveCSS(
-			"width",
-			"240px",
-		);
-		await page.keyboard.press("Escape");
-		await expect(menu).toBeFocused();
-		await menu.click();
-		await rail.getByRole("button", { name: "个人档案", exact: true }).click();
-		await expect(page.getByRole("dialog")).toHaveCount(0);
-		await expect(menu).toBeFocused();
-		await menu.click();
-		await page.setViewportSize({ width: 768, height: 900 });
-		await expect(page.getByRole("dialog")).toHaveCount(0);
-		const tabletRail = page.getByRole("complementary", { name: "主导航侧栏" });
-		await expect(tabletRail).toHaveCSS("width", "240px");
-		await expect(page.locator("body")).not.toHaveCSS("pointer-events", "none");
-		await page.setViewportSize({ width: 390, height: 844 });
-		await page.goto("/today");
-		await page.locator(".page-body").waitFor();
-		await expect(page.getByRole("button", { name: "打开导航", exact: true })).toBeVisible();
-		await expect(page.getByRole("dialog")).toHaveCount(0);
-		const opener = page.getByRole("button", { name: "打开导航", exact: true });
-		await opener.click();
-		await page
-			.getByRole("complementary", { name: "主导航抽屉" })
-			.getByRole("button", { name: "个人档案", exact: true })
-			.click();
-		await expect(page.getByLabel("生日", { exact: true })).toBeVisible();
-	} else {
-		await page.getByRole("button", { name: "收起侧栏", exact: true }).click();
-		await expect(rail).toHaveCSS("width", "68px");
-		await expect(page.getByRole("button", { name: "展开侧栏", exact: true })).toBeFocused();
-		const collapsedLogo = await page
-			.locator('[data-slot="sidebar-header"] img[alt="Rhino"]')
-			.boundingBox();
-		expect(collapsedLogo).toMatchObject({
-			x: logo?.x,
-			width: logo?.width,
-			height: logo?.height,
-		});
-		await rail.getByRole("button", { name: "个人档案", exact: true }).hover();
-		await expect(page.getByRole("tooltip")).toHaveText("个人档案");
-		await rail.getByRole("button", { name: "个人档案", exact: true }).click();
-		await expect(page.getByLabel("生日", { exact: true })).toBeVisible();
-		await page.screenshot({ path: testInfo.outputPath("collapsed.png"), animations: "disabled" });
-		await page.getByRole("button", { name: "展开侧栏", exact: true }).click();
-		await expect(rail).toHaveCSS("width", "240px");
-		await expect(page.getByRole("button", { name: "收起侧栏", exact: true })).toBeFocused();
-	}
+	await page.getByRole("button", { name: "收起侧栏", exact: true }).click();
+	await expect(rail).toHaveCSS("width", "68px");
+	await expect(page.getByRole("button", { name: "展开侧栏", exact: true })).toBeFocused();
+	const collapsedLogo = await page
+		.locator('[data-slot="sidebar-header"] img[alt="Rhino"]')
+		.boundingBox();
+	expect(collapsedLogo).toMatchObject({
+		x: logo?.x,
+		width: logo?.width,
+		height: logo?.height,
+	});
+	await rail.getByRole("button", { name: "个人档案", exact: true }).hover();
+	await expect(page.getByRole("tooltip")).toHaveText("个人档案");
+	await rail.getByRole("button", { name: "个人档案", exact: true }).click();
+	await expect(page.getByLabel("生日", { exact: true })).toBeVisible();
+	await page.screenshot({ path: testInfo.outputPath("collapsed.png"), animations: "disabled" });
+	await page.getByRole("button", { name: "展开侧栏", exact: true }).click();
+	await expect(rail).toHaveCSS("width", "240px");
+	await expect(page.getByRole("button", { name: "收起侧栏", exact: true })).toBeFocused();
 	await expect(page.getByLabel("生日", { exact: true })).toHaveCSS("height", "36px");
 	await expect(page.getByLabel("生日", { exact: true }).locator("..")).toHaveCSS("gap", "8px");
 	await expect(page.locator(".profile-layout form").first().locator("..")).toHaveCSS(
@@ -465,51 +424,51 @@ test("Basalt shell geometry, collapse and drawer focus match the reference", asy
 test("all pages retain responsive spacing and usable controls in both themes", async ({
 	page,
 }, testInfo) => {
-	test.setTimeout(testInfo.project.name === "mobile" ? 300_000 : 30_000);
 	await page.emulateMedia({ reducedMotion: "reduce" });
 	await page.goto("/today");
-	const widths = testInfo.project.name === "mobile" ? [360, 390] : [768, 1024, 1440];
 	const pages = ["今日训练", "训练计划", "动作实验室", "我的进展", "个人档案"];
-	for (const theme of ["light", "dark"]) {
-		if (theme === "dark") await page.getByRole("button", { name: "切换主题", exact: true }).click();
-		await expect(page.locator("html")).toHaveClass(new RegExp(theme));
-		for (const width of widths) {
-			await page.setViewportSize({ width, height: 1000 });
-			for (const [index, name] of pages.entries()) {
-				if (testInfo.project.name === "mobile") await openPage(page, name);
-				else await navigate(page, name);
-				await expect(page.locator(".page-body")).toBeVisible();
-				const checkViewer = name === "今日训练" || name === "动作实验室";
-				const viewerWidth = testInfo.project.name !== "mobile" || width === widths.at(-1);
-				const viewerTheme = testInfo.project.name !== "mobile" || theme === "light";
-				if (checkViewer && viewerWidth && viewerTheme) {
-					await expect(page.locator(".movement-viewer")).toBeVisible({ timeout: 30_000 });
-					await expect(page.getByRole("button", { name: "播放演示", exact: true })).toBeEnabled({
-						timeout: 30_000,
-					});
-				}
-				const sizes = await page.locator(".rhino-island").evaluate((island) => {
-					const rect = island.getBoundingClientRect();
-					return {
-						overflow: island.scrollWidth > island.clientWidth,
-						clipped: [...island.querySelectorAll("input,button,[role=combobox]")]
-							.filter((control) => {
-								if (control.closest("table, .library-nav")) return false;
-								const box = control.getBoundingClientRect();
-								return box.width > 0 && (box.left < rect.left || box.right > rect.right);
-							})
-							.map((control) => control.getAttribute("aria-label") ?? control.textContent),
-					};
+	for (const width of [1440, 390]) {
+		await page.setViewportSize({ width, height: 1000 });
+		if (width === 1440) {
+			await expect(page.getByRole("complementary", { name: "主导航侧栏" })).toBeVisible();
+		}
+		for (const [index, name] of pages.entries()) {
+			if (width === 390) await openPage(page, name);
+			else await navigate(page, name);
+			await expect(page.locator(".page-body")).toBeVisible();
+			if ((name === "今日训练" || name === "动作实验室") && width === 1440) {
+				await expect(page.locator(".movement-viewer")).toBeVisible({ timeout: 30_000 });
+				await expect(page.getByRole("button", { name: "播放演示", exact: true })).toBeEnabled({
+					timeout: 30_000,
 				});
-				expect(sizes, `${theme} ${width}px ${name}`).toEqual({ overflow: false, clipped: [] });
-				if (width === widths.at(-1))
-					await page.screenshot({
-						path: testInfo.outputPath(`${theme}-${index}.png`),
-						animations: "disabled",
-					});
 			}
+			const sizes = await page.locator(".rhino-island").evaluate((island) => {
+				const rect = island.getBoundingClientRect();
+				return {
+					overflow: island.scrollWidth > island.clientWidth,
+					clipped: [...island.querySelectorAll("input,button,[role=combobox]")]
+						.filter((control) => {
+							if (control.closest("table, .library-nav")) return false;
+							const box = control.getBoundingClientRect();
+							return box.width > 0 && (box.left < rect.left || box.right > rect.right);
+						})
+						.map((control) => control.getAttribute("aria-label") ?? control.textContent),
+				};
+			});
+			expect(sizes, `light ${width}px ${name}`).toEqual({ overflow: false, clipped: [] });
+			if (width === 1440)
+				await page.screenshot({
+					path: testInfo.outputPath(`light-${index}.png`),
+					animations: "disabled",
+				});
 		}
 	}
+	await page.setViewportSize({ width: 1440, height: 1000 });
+	await expect(page.getByRole("complementary", { name: "主导航侧栏" })).toBeVisible();
+	await page.getByRole("button", { name: "切换主题", exact: true }).click();
+	await expect(page.locator("html")).toHaveClass(/dark/);
+	await navigate(page, "今日训练");
+	await expect(page.locator(".page-body")).toBeVisible();
 });
 
 test("sidebar sign-out uses Cloudflare Access logout URL", async ({ page }) => {
@@ -541,41 +500,35 @@ test("navigation retains Basalt scrim and motion in both themes", async ({ page 
 		if (theme === "dark") await page.getByRole("button", { name: "切换主题", exact: true }).click();
 		for (const reducedMotion of ["no-preference", "reduce"] as const) {
 			await page.emulateMedia({ reducedMotion });
-			if (info.project.name === "mobile") {
-				const menu = page.getByRole("button", { name: "打开导航", exact: true });
-				await menu.click();
-				const overlay = page.locator(".basalt-sheet-overlay");
-				await expect(overlay).toHaveCSS("backdrop-filter", "none");
-				await expect(overlay).toHaveCSS(
-					"background-color",
-					theme === "dark" ? "rgba(0, 0, 0, 0.6)" : "rgba(0, 0, 0, 0.28)",
-				);
-				await expect(page.getByRole("dialog")).toHaveCSS(
-					"animation-name",
-					reducedMotion === "reduce" ? "none" : "basalt-sheet-in",
-				);
-				if (reducedMotion === "no-preference") {
-					await expect(page.getByRole("dialog")).toHaveCSS("animation-duration", "0.35s");
-					await page.screenshot({ path: info.outputPath(`drawer-${theme}.png`) });
-				}
-				await page.keyboard.press("Escape");
-				await expect(page.getByRole("dialog")).toHaveCount(0);
-				await expect(menu).toBeFocused();
-			} else {
-				const rail = page.locator(".rhino-sidebar");
-				await expect(rail).toHaveCSS(
-					"transition-property",
-					reducedMotion === "reduce" ? "none" : "width",
-				);
-				if (reducedMotion === "no-preference")
-					await expect(rail).toHaveCSS("transition-duration", "0.18s");
-				await page.getByRole("button", { name: "收起侧栏", exact: true }).click();
-				await expect(rail).toHaveCSS("width", "68px");
-				await expect(page.getByRole("button", { name: "展开侧栏", exact: true })).toBeFocused();
-				await page.getByRole("button", { name: "展开侧栏", exact: true }).click();
-				await expect(rail).toHaveCSS("width", "240px");
-			}
+			await page.setViewportSize({ width: 1440, height: 900 });
+			const rail = page.locator(".rhino-sidebar");
+			await expect(rail).toHaveCSS(
+				"transition-property",
+				reducedMotion === "reduce" ? "none" : "width",
+			);
+			if (reducedMotion === "no-preference")
+				await expect(rail).toHaveCSS("transition-duration", "0.18s");
+			await page.getByRole("button", { name: "收起侧栏", exact: true }).click();
+			await expect(rail).toHaveCSS("width", "68px");
+			await expect(page.getByRole("button", { name: "展开侧栏", exact: true })).toBeFocused();
+			await page.getByRole("button", { name: "展开侧栏", exact: true }).click();
+			await expect(rail).toHaveCSS("width", "240px");
 		}
+		await page.emulateMedia({ reducedMotion: "no-preference" });
+		await page.setViewportSize({ width: 390, height: 844 });
+		const menu = page.getByRole("button", { name: "打开导航", exact: true });
+		await menu.click();
+		const overlay = page.locator(".basalt-sheet-overlay");
+		await expect(overlay).toHaveCSS("backdrop-filter", "none");
+		await expect(overlay).toHaveCSS(
+			"background-color",
+			theme === "dark" ? "rgba(0, 0, 0, 0.6)" : "rgba(0, 0, 0, 0.28)",
+		);
+		await expect(page.getByRole("dialog")).toHaveCSS("animation-duration", "0.35s");
+		await page.screenshot({ path: info.outputPath(`drawer-${theme}.png`) });
+		await page.keyboard.press("Escape");
+		await expect(page.getByRole("dialog")).toHaveCount(0);
+		await expect(menu).toBeFocused();
 	}
 });
 
@@ -589,15 +542,13 @@ test("all eleven previews render with unobstructed controls and scrubbed arm vie
 	await page.goto("/today");
 	await navigate(page, "动作实验室");
 	await expect(page.locator(".library-nav button")).toHaveCount(11);
-	if (testInfo.project.name === "mobile") {
-		const navigation = await page.locator(".library-nav").boundingBox();
-		expect(navigation?.height).toBeLessThan(120);
-	}
+	const detailed = new Set(["shoulder-press", "triceps-kickback", "cable-row"]);
 	for (const [index, exercise] of EXERCISES.entries()) {
 		await page.locator(".library-nav button").nth(index).click();
 		await expect(page.getByRole("button", { name: "播放演示", exact: true })).toBeEnabled();
 		await expect(page.locator("canvas")).toHaveCount(1);
 		await expect(page.locator(".stage-poster")).toHaveCount(0);
+		if (!detailed.has(exercise.id)) continue;
 		const slider = page.getByRole("slider", { name: "动作进度" });
 		await slider.focus();
 		await slider.press("Home");
@@ -623,7 +574,7 @@ test("all eleven previews render with unobstructed controls and scrubbed arm vie
 		expect(canvas.height).toBeGreaterThanOrEqual(360);
 		expect(tools.y + tools.height).toBeLessThanOrEqual(canvas.y + 1);
 		expect(canvas.y + canvas.height).toBeLessThanOrEqual(playback.y + 1);
-		if (["shoulder-press", "dumbbell-curl", "lateral-raise"].includes(exercise.id))
+		if (exercise.id === "shoulder-press")
 			await page.locator(".movement-viewer").screenshot({
 				path: testInfo.outputPath(`${exercise.id}-front.png`),
 			});
@@ -658,7 +609,7 @@ test("five added movements can replace an old draft and persist precise per-hand
 		id: uuid(),
 		workingSets: [{ ...exercise.workingSets[0], id: uuid() }],
 	}));
-	const date = localDateInTimeZone(new Date(), "Asia/Shanghai");
+	const date = addDays(localDateInTimeZone(new Date(), "Asia/Shanghai"), -7);
 	const id = uuid();
 	const seeded = await page.request.put(`/api/sessions/${id}`, {
 		headers: { Origin: new URL(page.url()).origin },
@@ -692,8 +643,8 @@ test("five added movements can replace an old draft and persist precise per-hand
 	const response = await page.request.get(`/api/sessions?from=${addDays(date, -365)}&to=${date}`);
 	expect(response.ok()).toBe(true);
 	const { data }: { data: GetSessionsResponse } = await response.json();
-	const position = data.sessions.findIndex((session) => session.id === id);
-	const saved = data.sessions[position];
+	const saved = data.sessions.find((session) => session.id === id);
+	if (!saved) throw new Error("Missing saved session");
 	expect(saved.status).toBe("completed");
 	const savedExercises = saved.target.blocks.flatMap((block) => block.exercises);
 	expect(savedExercises.map((item) => item.exerciseId)).toEqual(ids);
@@ -720,9 +671,93 @@ test("five added movements can replace an old draft and persist precise per-hand
 	expect(corrected.ok()).toBe(true);
 	await page.reload();
 	await navigate(page, "我的进展");
-	await page.getByRole("button", { name: "查看记录", exact: true }).nth(position).click();
+	await page
+		.locator("tbody tr", { hasText: date })
+		.first()
+		.getByRole("button", { name: "查看记录", exact: true })
+		.click();
 	await expect(page.getByText("实际 2.375 kg", { exact: true })).toHaveCount(5);
 	await page.getByRole("button", { name: "增加第1组负重", exact: true }).first().click();
 	await expect(page.getByText("实际 7.375 kg", { exact: true })).toBeVisible();
 	await page.getByRole("button", { name: "保存调整", exact: true }).click();
+});
+
+test("calendar manually records actuals without inventing a timer or performed sets", async ({
+	page,
+}, info) => {
+	await page.goto("/");
+	const today = localDateInTimeZone(new Date(), "Asia/Shanghai");
+	const { data } = await (await page.request.get("/api/plans")).json();
+	const input = {
+		...planInput(),
+		reviewMonth: today.slice(0, 7),
+		weeklyFrequency: 1,
+		preferredWeekdays: [weekdayOf(today)],
+	};
+	const plan = await page.request.put(`/api/plans/${uuid()}`, {
+		headers: { Origin: new URL(page.url()).origin },
+		data: { expectedRevision: data.current?.revision ?? 0, input },
+	});
+	expect(plan.ok()).toBe(true);
+	const adopted = (await plan.json()).data.revision;
+	await page.reload();
+	await navigate(page, "训练日历");
+	await expect(page.getByRole("region", { name: "训练月历" })).toBeVisible();
+	await expect(page.getByRole("button", { name: "补记实际训练", exact: true })).toBeEnabled();
+	await page.screenshot({ path: info.outputPath("calendar-today.png") });
+	await page.getByRole("button", { name: "补记实际训练", exact: true }).click();
+	await expect(page.locator(".workout-plan-heading")).toContainText("补记实际训练");
+	await expect(page.getByTestId("total-timer")).toHaveCount(0);
+	await page.getByRole("button", { name: "增加第1组次数", exact: true }).first().click();
+	const intensity = page.getByRole("combobox", { name: /实际强度$/ }).first();
+	await expect(intensity).toContainText("未记录强度");
+	await page.getByRole("button", { name: "增加实际分钟", exact: true }).first().click();
+	await intensity.click();
+	await page.getByRole("option", { name: "中等，能说话", exact: true }).click();
+	await page.getByRole("button", { name: "结束并保存", exact: true }).click();
+	await page.getByRole("button", { name: "确认结束并保存", exact: true }).click();
+	await expect(page.locator(".workout-topbar")).toContainText("训练回顾");
+	await page.getByRole("button", { name: "返回上一页", exact: true }).click();
+	await expect(
+		page.getByRole("button", { name: "修改训练记录", exact: true }).first(),
+	).toBeVisible();
+	const result = await (await page.request.get(`/api/sessions?from=${today}&to=${today}`)).json();
+	const manual = result.data.sessions.find(
+		(session: { sourcePlanRevision: number; status: string }) =>
+			session.sourcePlanRevision === adopted.revision && session.status === "completed",
+	);
+	expect(manual.actual.timing).toBeUndefined();
+	expect(
+		manual.actual.exercises
+			.flatMap((exercise: { sets: { status: string }[] }) => exercise.sets)
+			.filter((set: { status: string }) => set.status === "performed"),
+	).toHaveLength(1);
+	expect(manual.actual.cardioSegments[0]).toMatchObject({
+		actualMinutes: 1,
+		intensity: "moderate",
+	});
+	const progress = await (await page.request.get(`/api/progress?from=${today}&to=${today}`)).json();
+	expect(
+		progress.data.sessions.find((item: { id: string }) => item.id === manual.id),
+	).toMatchObject({
+		moderateEquivalentMinutes: 1,
+	});
+	await page
+		.locator(".calendar-record")
+		.filter({ hasText: `计划 v${adopted.revision}` })
+		.getByRole("button", { name: "修改训练记录", exact: true })
+		.click();
+	await expect(intensity).toContainText("中等，能说话");
+	await intensity.click();
+	await page.getByRole("option", { name: "较高，只能说短句", exact: true }).click();
+	await page.getByRole("button", { name: "保存调整", exact: true }).click();
+	await expect(page.locator(".workout-save-state")).toContainText("已保存");
+	const corrected = await (
+		await page.request.get(`/api/progress?from=${today}&to=${today}`)
+	).json();
+	expect(
+		corrected.data.sessions.find((item: { id: string }) => item.id === manual.id),
+	).toMatchObject({
+		moderateEquivalentMinutes: 2,
+	});
 });

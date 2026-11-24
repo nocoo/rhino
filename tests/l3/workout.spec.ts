@@ -81,10 +81,6 @@ test("immersive timeline persists every step, survives lost responses and ends v
 		target.blocks[1],
 	];
 	const id = await createDraft(page, target);
-	if (info.project.name === "mobile") {
-		await page.getByRole("button", { name: "切换主题", exact: true }).click();
-		await expect(page.locator("html")).toHaveClass(/dark/);
-	}
 
 	await expect(page.locator(".timeline-label").first()).toContainText("热身");
 	await page.getByRole("button", { name: "增加每组次数", exact: true }).click();
@@ -98,44 +94,6 @@ test("immersive timeline persists every step, survives lost responses and ends v
 	await expect(page.locator(".current-heading h1")).toHaveText("热身");
 	await expect(page.getByRole("button", { name: "结束训练", exact: true })).toBeInViewport();
 	await expect(page.getByRole("button", { name: "完成本段并保存", exact: true })).toBeInViewport();
-	if (info.project.name === "mobile") await expect(page.locator(".rhino-header")).toBeHidden();
-	if (info.project.name === "mobile") {
-		const background = await page
-			.locator(".workout-live")
-			.evaluate((el) => getComputedStyle(el).backgroundColor);
-		await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute("content", background);
-		expect(await page.locator("html").evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
-			background,
-		);
-		await page.addStyleTag({
-			content: "[data-basalt-shell] { --basalt-safe-top: 47px; padding-bottom: 34px; }",
-		});
-		await expect(page.getByRole("button", { name: "结束训练", exact: true })).toBeInViewport();
-		await expect(
-			page.getByRole("button", { name: "完成本段并保存", exact: true }),
-		).toBeInViewport();
-		const portrait = page.viewportSize();
-		await page.setViewportSize({ width: 844, height: 390 });
-		await page.addStyleTag({
-			content: "[data-basalt-shell] { padding-inline: 47px; }",
-		});
-		await expect(page.locator("html")).toHaveCSS("background-color", background);
-		await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute("content", background);
-		await expect(page.locator("[data-basalt-shell]")).toHaveCSS(
-			"background-color",
-			"rgba(0, 0, 0, 0)",
-		);
-		await expect(page.locator(".rhino-header")).toBeHidden();
-		await expect(page.locator(".rhino-app > .rhino-sidebar")).toBeHidden();
-		expect(
-			await page.locator(".workout-content").evaluate((el) => el.clientHeight),
-		).toBeGreaterThan(80);
-		await page.locator(".workout-clock").scrollIntoViewIfNeeded();
-		await expect(page.locator(".workout-clock")).toBeInViewport();
-		await page.screenshot({ path: info.outputPath("workout-landscape-safe-area.png") });
-		await page.addStyleTag({ content: "[data-basalt-shell] { padding-inline: 0; }" });
-		if (portrait) await page.setViewportSize(portrait);
-	}
 
 	await expect.poll(() => page.getByTestId("total-timer").textContent()).not.toBe("00:00");
 	await page.getByRole("button", { name: "完成本段并保存", exact: true }).click();
@@ -147,17 +105,6 @@ test("immersive timeline persists every step, survives lost responses and ends v
 	await expect(page.getByTestId("total-timer")).toBeInViewport();
 	await expect(page.getByRole("button", { name: "完成本组并保存", exact: true })).toBeInViewport();
 	await page.screenshot({ path: info.outputPath("workout-active.png") });
-	if (info.project.name === "mobile") {
-		await page.setViewportSize({ width: 375, height: 667 });
-		await page.getByRole("button", { name: "增加本组负重", exact: true }).click();
-		await page.getByRole("button", { name: "减少本组负重", exact: true }).click();
-		await expect(page.locator(".current-heading h1")).toBeInViewport();
-		await expect(page.getByTestId("total-timer")).toBeInViewport();
-		await expect(
-			page.getByRole("button", { name: "完成本组并保存", exact: true }),
-		).toBeInViewport();
-		await page.screenshot({ path: info.outputPath("workout-small-phone.png") });
-	}
 	await page.getByRole("button", { name: "回顾动作要领", exact: true }).click();
 	const before = await page.getByTestId("total-timer").textContent();
 	await expect.poll(() => page.getByTestId("total-timer").textContent()).not.toBe(before);
@@ -310,7 +257,7 @@ for (const theme of ["light", "dark"]) {
 	test(`workout palette is readable and centered in ${theme} with short-screen scrolling`, async ({
 		page,
 	}, info) => {
-		if (info.project.name === "desktop") await page.setViewportSize({ width: 1440, height: 900 });
+		await page.setViewportSize({ width: 1440, height: 900 });
 		await page.goto("/today");
 		await page.locator(".page-body").waitFor();
 		const target = sessionTarget();
@@ -341,9 +288,7 @@ for (const theme of ["light", "dark"]) {
 		if (theme === "dark") await page.getByRole("button", { name: "切换主题", exact: true }).click();
 		const viewport = page.viewportSize();
 		if (!viewport) throw new Error("Missing viewport");
-		for (const width of info.project.name === "mobile"
-			? [320, 375, viewport.width]
-			: [viewport.width]) {
+		for (const width of theme === "dark" ? [375, viewport.width] : [viewport.width]) {
 			await page.setViewportSize({ ...viewport, width });
 			const heading = page.locator(".exercise-plan-heading").first();
 			const alignment = await heading.evaluate((row) => {

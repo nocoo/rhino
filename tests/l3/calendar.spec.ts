@@ -1,6 +1,6 @@
 import { expect, type Page, test } from "@playwright/test";
-import { addDays, localDateInTimeZone, weekdayOf } from "../../src/domain/dates";
-import { planInput, sessionTarget, uuid } from "../helpers/fixtures";
+import { addDays, localDateInTimeZone } from "../../src/domain/dates";
+import { sessionTarget, uuid } from "../helpers/fixtures";
 import { assertMarker, type TestRun } from "../helpers/isolation";
 
 test.beforeEach(async () => {
@@ -55,84 +55,6 @@ test("calendar reads older months and preserves selection after record review", 
 		.first()
 		.evaluate((el) => el.getBoundingClientRect().width);
 	expect(minWidth).toBeGreaterThanOrEqual(40);
-});
-test("calendar manually records actuals without inventing a timer or performed sets", async ({
-	page,
-}, info) => {
-	await page.goto("/");
-	const today = localDateInTimeZone(new Date(), "Asia/Shanghai");
-	const { data } = await (await page.request.get("/api/plans")).json();
-	const input = {
-		...planInput(),
-		reviewMonth: today.slice(0, 7),
-		weeklyFrequency: 1,
-		preferredWeekdays: [weekdayOf(today)],
-	};
-	const plan = await page.request.put(`/api/plans/${uuid()}`, {
-		headers: { Origin: new URL(page.url()).origin },
-		data: { expectedRevision: data.current?.revision ?? 0, input },
-	});
-	expect(plan.ok()).toBe(true);
-	const adopted = (await plan.json()).data.revision;
-	await page.reload();
-	await openCalendar(page);
-	await expect(page.getByRole("button", { name: "补记实际训练", exact: true })).toBeEnabled();
-	await page.screenshot({ path: info.outputPath("calendar-today.png") });
-	await page.getByRole("button", { name: "补记实际训练", exact: true }).click();
-	await expect(page.locator(".workout-plan-heading")).toContainText("补记实际训练");
-	await expect(page.getByTestId("total-timer")).toHaveCount(0);
-	await page.getByRole("button", { name: "增加第1组次数", exact: true }).first().click();
-	const intensity = page.getByRole("combobox", { name: /实际强度$/ }).first();
-	await expect(intensity).toContainText("未记录强度");
-	await page.getByRole("button", { name: "增加实际分钟", exact: true }).first().click();
-	await intensity.click();
-	await page.getByRole("option", { name: "中等，能说话", exact: true }).click();
-	await page.getByRole("button", { name: "结束并保存", exact: true }).click();
-	await page.getByRole("button", { name: "确认结束并保存", exact: true }).click();
-	await expect(page.locator(".workout-topbar")).toContainText("训练回顾");
-	await page.getByRole("button", { name: "返回上一页", exact: true }).click();
-	await expect(
-		page.getByRole("button", { name: "修改训练记录", exact: true }).first(),
-	).toBeVisible();
-	const result = await (await page.request.get(`/api/sessions?from=${today}&to=${today}`)).json();
-	const manual = result.data.sessions.find(
-		(session: { sourcePlanRevision: number; status: string }) =>
-			session.sourcePlanRevision === adopted.revision && session.status === "completed",
-	);
-	expect(manual.actual.timing).toBeUndefined();
-	expect(
-		manual.actual.exercises
-			.flatMap((exercise: { sets: { status: string }[] }) => exercise.sets)
-			.filter((set: { status: string }) => set.status === "performed"),
-	).toHaveLength(1);
-	expect(manual.actual.cardioSegments[0]).toMatchObject({
-		actualMinutes: 1,
-		intensity: "moderate",
-	});
-	const progress = await (await page.request.get(`/api/progress?from=${today}&to=${today}`)).json();
-	expect(
-		progress.data.sessions.find((item: { id: string }) => item.id === manual.id),
-	).toMatchObject({
-		moderateEquivalentMinutes: 1,
-	});
-	await page
-		.locator(".calendar-record")
-		.filter({ hasText: `计划 v${adopted.revision}` })
-		.getByRole("button", { name: "修改训练记录", exact: true })
-		.click();
-	await expect(intensity).toContainText("中等，能说话");
-	await intensity.click();
-	await page.getByRole("option", { name: "较高，只能说短句", exact: true }).click();
-	await page.getByRole("button", { name: "保存调整", exact: true }).click();
-	await expect(page.locator(".workout-save-state")).toContainText("已保存");
-	const corrected = await (
-		await page.request.get(`/api/progress?from=${today}&to=${today}`)
-	).json();
-	expect(
-		corrected.data.sessions.find((item: { id: string }) => item.id === manual.id),
-	).toMatchObject({
-		moderateEquivalentMinutes: 2,
-	});
 });
 
 test("installed metadata uses approved icons and preserves online-only data access", async ({

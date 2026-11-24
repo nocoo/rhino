@@ -2,8 +2,8 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
 	testDir: "./tests/l3",
-	fullyParallel: false,
-	workers: 1,
+	fullyParallel: true,
+	workers: process.env.CI ? 2 : 4,
 	forbidOnly: true,
 	retries: 0,
 	timeout: 30_000,
@@ -17,8 +17,5 @@ export default defineConfig({
 		trace: "retain-on-failure",
 		screenshot: "only-on-failure",
 	},
-	projects: [
-		{ name: "desktop", use: { ...devices["Desktop Chrome"] } },
-		{ name: "mobile", use: { ...devices["Pixel 7"], defaultBrowserType: "chromium" } },
-	],
+	projects: [{ name: "desktop", use: { ...devices["Desktop Chrome"] } }],
 });

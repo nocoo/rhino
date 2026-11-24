@@ -21,7 +21,6 @@ test.beforeEach(async () => {
 test("calendar is home and native history restores pages and exercise paths", async ({
 	page,
 }, info) => {
-	test.setTimeout(info.project.name === "mobile" ? 60_000 : 30_000);
 	await page.goto("/");
 	await expect(page).toHaveURL(/\/calendar$/);
 	await expect(page.getByRole("region", { name: "训练月历" })).toBeVisible();
@@ -52,11 +51,9 @@ test("calendar is home and native history restores pages and exercise paths", as
 		page.getByRole("heading", { name: "训练日历", exact: true }).last(),
 	).toBeInViewport();
 	expect(await page.locator(".rhino-island").evaluate((island) => island.scrollTop)).toBe(0);
-	if (info.project.name === "desktop") {
-		const cell = await page.locator(".calendar-day").first().boundingBox();
-		expect(cell?.height).toBeGreaterThanOrEqual(70);
-		await expect(page.locator(".calendar-number").first()).toHaveCSS("font-size", "20px");
-	}
+	const cell = await page.locator(".calendar-day").first().boundingBox();
+	expect(cell?.height).toBeGreaterThanOrEqual(70);
+	await expect(page.locator(".calendar-number").first()).toHaveCSS("font-size", "20px");
 	await expect(page.locator(".calendar-stats, .calendar-history, .calendar-day-note")).toHaveCount(
 		0,
 	);

@@ -17,7 +17,7 @@ bun run typecheck             # S1: strict TS (app, Worker, tests, scripts)
 bun run lint                  # S2: Biome recommended + format, 0 warnings
 bun run test:coverage         # L1: UT, 4x >=95%, no skips/empty/missing report
 bun run test:l2               # L2: HTTP/Worker/D1 API tests, synthetic JWTs
-bun run test:l3               # L4: desktop/mobile Chromium Playwright
+bun run test:l3               # L4: Chromium Playwright (desktop + targeted mobile viewports)
 bun run gate:l1               # Staged-index snapshot check (S1/S2/L1)
 bun run gate:verify           # Disposable Git/Husky rejection probes
 bun run gate:security         # G1/G2: Gitleaks + OSV (fail closed if missing)

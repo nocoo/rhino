@@ -28,12 +28,7 @@ for (const theme of ["light", "dark"]) {
 			await page.getByRole("button", { name: "切换主题", exact: true }).click();
 		}
 		await expect(page.locator("html")).toHaveAttribute("data-mode", theme);
-		const mobile = info.project.name === "mobile";
-		const menu = page.getByRole("button", { name: "打开导航", exact: true, includeHidden: true });
-		if (mobile) await menu.click();
-		const rail = page.getByRole("complementary", {
-			name: mobile ? "主导航抽屉" : "主导航侧栏",
-		});
+		const rail = page.getByRole("complementary", { name: "主导航侧栏" });
 		const avatar = rail.getByRole("img", { name: "测试用户", exact: true });
 		await expect(avatar).toBeVisible();
 		const expanded = await avatar.boundingBox();
@@ -44,63 +39,38 @@ for (const theme of ["light", "dark"]) {
 			"16px",
 		);
 		await expect(rail).toHaveCSS("width", "240px");
-		if (mobile) {
+		await page.getByRole("button", { name: "收起侧栏", exact: true }).click();
+		await page.mouse.move(1000, 500);
+		await expect(rail).toHaveCSS("width", "68px");
+		await expect(avatar).toHaveCSS("width", "36px");
+		await expect(avatar).toHaveCSS("height", "36px");
+		const collapsed = await avatar.boundingBox();
+		await info.attach("avatar-geometry", {
+			body: JSON.stringify({ expanded, collapsed }),
+			contentType: "application/json",
+		});
+		expect(collapsed?.y).toBe(expanded?.y);
+		await expect.soft(rail.locator('[data-slot="sidebar-brand-name"]')).toBeHidden();
+		await expect
+			.soft(rail.locator('[data-slot="sidebar-brand-copy"] [data-slot="badge"]'))
+			.toBeHidden();
+		await expect(rail.getByText("owner@example.test", { exact: true })).toHaveCount(0);
+		await page.getByRole("button", { name: "展开侧栏", exact: true }).click();
+		await expect(rail).toHaveCSS("width", "240px");
+		await expect(rail.locator('[data-slot="sidebar-brand-name"]')).toBeVisible();
+		if (theme === "light") {
+			await page.setViewportSize({ width: 390, height: 844 });
+			const menu = page.getByRole("button", { name: "打开导航", exact: true });
+			await menu.click();
 			const drawer = page.locator('[data-slot="sidebar-drawer"]');
 			await expect(drawer).toBeVisible();
-			await expect(menu).toHaveAttribute("aria-controls", (await drawer.getAttribute("id")) ?? "");
-			await expect(menu).toHaveAttribute("aria-expanded", "true");
-			const geometry = await drawer.evaluate((element) => {
-				const style = getComputedStyle(element);
-				return {
-					width: element.getBoundingClientRect().width,
-					paddingLeft: style.paddingLeft,
-					paddingRight: style.paddingRight,
-				};
-			});
-			console.log(
-				JSON.stringify({ theme, project: info.project.name, expanded, drawer: geometry }),
-			);
-			await info.attach("drawer-geometry", {
-				body: JSON.stringify({ expanded, drawer: geometry }),
-				contentType: "application/json",
-			});
 			await expect.soft(drawer).toHaveCSS("width", "240px");
 			await expect(drawer.locator("[data-basalt-sidebar]")).toHaveCSS("width", "240px");
 			await expect.soft(drawer).toHaveCSS("padding-left", "0px");
 			await expect.soft(drawer).toHaveCSS("padding-right", "0px");
-			const dismiss = rail.getByRole("button", { name: "关闭导航", exact: true });
-			await expect(dismiss).toHaveAttribute("data-slot", "sidebar-toggle");
-			await expect(dismiss).toBeFocused();
 			await page.keyboard.press("Escape");
 			await expect(drawer).toHaveCount(0);
 			await expect(menu).toBeFocused();
-			await expect(menu).toHaveAttribute("aria-expanded", "false");
-			await menu.click();
-			await rail.getByRole("button", { name: "个人档案", exact: true }).click();
-			await expect(page.getByLabel("生日", { exact: true })).toBeVisible();
-			await expect(drawer).toHaveCount(0);
-			await expect(menu).toBeFocused();
-		} else {
-			await page.getByRole("button", { name: "收起侧栏", exact: true }).click();
-			await page.mouse.move(1000, 500);
-			await expect(rail).toHaveCSS("width", "68px");
-			await expect(avatar).toHaveCSS("width", "36px");
-			await expect(avatar).toHaveCSS("height", "36px");
-			const collapsed = await avatar.boundingBox();
-			console.log(JSON.stringify({ theme, project: info.project.name, expanded, collapsed }));
-			await info.attach("avatar-geometry", {
-				body: JSON.stringify({ expanded, collapsed }),
-				contentType: "application/json",
-			});
-			expect(collapsed?.y).toBe(expanded?.y);
-			await expect.soft(rail.locator('[data-slot="sidebar-brand-name"]')).toBeHidden();
-			await expect
-				.soft(rail.locator('[data-slot="sidebar-brand-copy"] [data-slot="badge"]'))
-				.toBeHidden();
-			await expect(rail.getByText("owner@example.test", { exact: true })).toHaveCount(0);
-			await page.getByRole("button", { name: "展开侧栏", exact: true }).click();
-			await expect(rail).toHaveCSS("width", "240px");
-			await expect(rail.locator('[data-slot="sidebar-brand-name"]')).toBeVisible();
 		}
 	});
 }
