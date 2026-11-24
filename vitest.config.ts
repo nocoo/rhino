@@ -11,7 +11,6 @@ export default defineConfig({
 		coverage: {
 			provider: "v8",
 			include: [
-				"dev/**/*.ts",
 				"src/domain/**/*.{ts,tsx}",
 				"worker/**/*.ts",
 				"src/models/**/*.{ts,tsx}",
@@ -19,7 +18,11 @@ export default defineConfig({
 				"src/features/**/*.ts",
 				"src/lib/api.ts",
 			],
-			exclude: ["**/*.d.ts"],
+			exclude: [
+				"**/*.d.ts",
+				// Local Vite dev/E2E environment plugin — never bundled into production Worker
+				"dev/**",
+			],
 			reporter: ["text", "json-summary", "lcov"],
 			thresholds: { statements: 95, branches: 95, functions: 95, lines: 95 },
 		},
