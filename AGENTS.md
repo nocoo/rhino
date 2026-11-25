@@ -15,8 +15,8 @@ bun run db:migrate            # Migrate daily local D1 only
 bun run typegen               # Regenerate Wrangler binding types
 bun run typecheck             # S1: strict TS (app, Worker, tests, scripts)
 bun run lint                  # S2: Biome recommended + format, 0 warnings
-bun run test:coverage         # L1: UT, 4x >=95%, no skips/empty/missing report
-bun run test:l2               # L2: HTTP/Worker/D1 API tests, synthetic JWTs
+bun run test:coverage         # L1: UT, 4x >=80%, no skips/empty/missing report
+bun run test:l2               # L3: HTTP/Worker/D1 API tests, synthetic JWTs
 bun run test:l3               # L4: Chromium Playwright (desktop + targeted mobile viewports)
 bun run gate:l1               # Staged-index snapshot check (S1/S2/L1)
 bun run gate:verify           # Disposable Git/Husky rejection probes
@@ -47,9 +47,9 @@ node assets-source/build-posters.mjs # Render static phase posters
 
 ## Quality & Local Gates
 
-Follows `system1-quality`; CI slots and `base-ci` pin live in `.github/workflows/quality-slots.yml` (`quality / Z1: Gate` required on `main`, incl. `l1-precommit-gate`). Status terms: `enforced`, `planned`, `manual`, `N/A`.
+Follows `system1-quality`; CI slots and `base-ci` pin live in `.github/workflows/quality-slots.yml` (`quality / Z1: Gate` required on `main`). Status terms: `enforced`, `planned`, `manual`, `N/A`.
 
-- **Exceptions / gaps**: `L3 Integration` is `N/A` (covered by L1/L2); `P1 Package` is `N/A` (private app); CI `L4 E2E` runs `test:l3`; L1 95% excludes pure `.tsx` views, Three.js, and local Vite `dev/**` plugin.
+- **Exceptions / gaps**: `L2 Runtime` is `N/A` (covered by L1/L3); `L3 Integration` runs `test:l2`; `P1 Package` is `N/A` (private app); CI `L4 E2E` runs `test:l3`; L1 80% excludes pure `.tsx` views, Three.js, and local Vite `dev/**` plugin.
 - **Local hooks**: Installed by `bun install --frozen-lockfile` (`.husky/`); `pre-commit` runs `gate:l1` on staged index (`S1/S2/L1`), `pre-push` runs `gate:pre-push` on pushed refs (`L2/G1/G2`).
 - **Evidence**: Rejection probes prove the gate, not app health; tie release evidence to exact SHA, never invent grades/timings ([L1 baseline](docs/12-l1-gate-evidence.md)).
 

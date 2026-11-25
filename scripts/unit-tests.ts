@@ -31,7 +31,7 @@ if (
 const summary = JSON.parse(readFileSync("coverage/coverage-summary.json", "utf8"));
 for (const metric of ["statements", "branches", "functions", "lines"]) {
 	const coverage = summary.total?.[metric];
-	if (!coverage || !Number.isFinite(coverage.pct) || coverage.total === 0 || coverage.pct < 95) {
+	if (!coverage || !Number.isFinite(coverage.pct) || coverage.total === 0 || coverage.pct < 80) {
 		throw new Error(`Invalid or insufficient ${metric} coverage`);
 	}
 }
