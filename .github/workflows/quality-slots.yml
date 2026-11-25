@@ -178,6 +178,27 @@ jobs:
     steps:
       - run: echo "N/A - Private package"
 
+  l1-precommit-gate:
+    name: "L1: Unit (Pre-commit Gate)"
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup JS and dependencies
+        uses: nocoo/base-ci/.github/actions/setup-js@6424d395d36a815d931f10e557762eb635d511c0 # v2026.16
+        with:
+          package-manager: bun
+          runtime-version: ${{ env.BUN_VERSION }}
+          node-version: ${{ env.NODE_VERSION }}
+          install-policy: blocked
+
+      - name: Run L1 rejection probes
+        run: bun run gate:verify
+
   z1-gate:
     name: "Z1: Gate"
     if: always()
@@ -193,6 +214,7 @@ jobs:
       - l3-integration
       - l4-e2e
       - p1-package
+      - l1-precommit-gate
     runs-on: ubuntu-latest
     outputs:
       tested-sha: ${{ github.sha }}
@@ -208,7 +230,8 @@ jobs:
             "${{ needs.b1-build.result }}" \
             "${{ needs.l1-unit.result }}" \
             "${{ needs.l2-runtime.result }}" \
-            "${{ needs.l4-e2e.result }}"; do
+            "${{ needs.l4-e2e.result }}" \
+            "${{ needs.l1-precommit-gate.result }}"; do
             if [ "$r" != "success" ]; then
               echo "Required slot failed or was skipped: $r"
               exit 1

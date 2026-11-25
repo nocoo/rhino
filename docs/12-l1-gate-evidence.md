@@ -38,5 +38,4 @@ branches **96.23%**, functions **98.75%**, lines **99.02%** (each floor 95%).
   - missing `coverage-summary.json`
   - empty suite
   - parallel sole failure (`typecheck` fails while `lint` and UT succeed)
-- CI runs `bun run gate:verify` in the `l1-rejection` job alongside the
-  `quality` workflow (`.github/workflows/quality-slots.yml`).
+- CI runs `bun run gate:verify` in the `l1-precommit-gate` job (`L1: Unit (Pre-commit Gate)`) inside `.github/workflows/quality-slots.yml`, gated by `Z1: Gate`.

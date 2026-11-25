@@ -18,39 +18,3 @@ jobs:
   quality:
     name: quality
     uses: ./.github/workflows/quality-slots.yml
-
-  l1-rejection:
-    name: L1 rejection probes
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Setup JS and dependencies
-        uses: nocoo/base-ci/.github/actions/setup-js@6424d395d36a815d931f10e557762eb635d511c0 # v2026.16
-        with:
-          package-manager: bun
-          runtime-version: "1.4.2"
-          node-version: "26.12.1"
-          install-policy: blocked
-
-      - name: Run L1 rejection probes
-        run: bun run gate:verify
-
-  proof:
-    needs: [quality, l1-rejection]
-    runs-on: ubuntu-latest
-    timeout-minutes: 2
-    steps:
-      - name: Require aggregate source proof
-        env:
-          TESTED_SHA: ${{ needs.quality.outputs.tested-sha }}
-          EXPECTED_SHA: ${{ github.sha }}
-        run: |
-          set -euo pipefail
-          test -n "$TESTED_SHA"
-          test "$TESTED_SHA" = "$EXPECTED_SHA"
-          echo "Verified complete quality source: $TESTED_SHA"
