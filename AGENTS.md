@@ -49,7 +49,7 @@ node assets-source/build-posters.mjs # Render static phase posters
 
 Follows `system1-quality`; CI slots and `base-ci` pin live in `.github/workflows/quality-slots.yml` (`quality / Z1: Gate` required on `main`). Status terms: `enforced`, `planned`, `manual`, `N/A`.
 
-- **Exceptions / gaps**: `L2 Runtime` is `N/A` (covered by L1/L3); `L3 Integration` runs `test:l2`; `P1 Package` is `N/A` (private app); CI `L4 E2E` runs `test:l3`; L1 80% excludes pure `.tsx` views, Three.js, and local Vite `dev/**` plugin.
+- **Exceptions / gaps**: `L2 Runtime` is `N/A` (covered by L1/L3); `L3 Integration` runs `test:l2`; `P1 Package` verifies Worker bundling via `wrangler deploy --dry-run` reusing `B1` (`b1-dist`); CI `L4 E2E` runs `test:l3`; L1 80% excludes pure `.tsx` views, Three.js, and local Vite `dev/**` plugin.
 - **Local hooks**: Installed by `bun install --frozen-lockfile` (`.husky/`); `pre-commit` runs `gate:l1` on staged index (`S1/S2/L1`), `pre-push` runs `gate:pre-push` on pushed refs (`L2/G1/G2`).
 - **Evidence**: Rejection probes prove the gate, not app health; tie release evidence to exact SHA, never invent grades/timings ([L1 baseline](docs/12-l1-gate-evidence.md)).
 

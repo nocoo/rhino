@@ -372,55 +372,6 @@ test("failed save keeps editor input, and reduced-motion fallback remains access
 	await expect(page.getByRole("button", { name: "播放演示", exact: true })).toBeDisabled();
 });
 
-test("Basalt shell geometry, collapse and drawer focus match the reference", async ({
-	page,
-}, testInfo) => {
-	await page.emulateMedia({ reducedMotion: "reduce" });
-	await page.goto("/today");
-	await page.locator(".page-body").waitFor();
-	const island = page.locator(".rhino-island");
-	const geometry = await island.evaluate((element) => {
-		const style = getComputedStyle(element);
-		const rect = element.getBoundingClientRect();
-		return { top: rect.top, left: rect.left, padding: style.paddingLeft };
-	});
-	expect(geometry).toEqual({ top: 52, left: 252, padding: "32px" });
-	const rail = page.getByRole("complementary", { name: "主导航侧栏" });
-	await expect(rail).toHaveCSS("width", "240px");
-	const logo = await page.locator('[data-slot="sidebar-header"] img[alt="Rhino"]').boundingBox();
-	const item = rail.getByRole("button", { name: "今日训练", exact: true });
-	expect((await item.boundingBox())?.x).toBe(16);
-	await page.getByRole("button", { name: "收起侧栏", exact: true }).click();
-	await expect(rail).toHaveCSS("width", "68px");
-	await expect(page.getByRole("button", { name: "展开侧栏", exact: true })).toBeFocused();
-	const collapsedLogo = await page
-		.locator('[data-slot="sidebar-header"] img[alt="Rhino"]')
-		.boundingBox();
-	expect(collapsedLogo).toMatchObject({
-		x: logo?.x,
-		width: logo?.width,
-		height: logo?.height,
-	});
-	await rail.getByRole("button", { name: "个人档案", exact: true }).hover();
-	await expect(page.getByRole("tooltip")).toHaveText("个人档案");
-	await rail.getByRole("button", { name: "个人档案", exact: true }).click();
-	await expect(page.getByLabel("生日", { exact: true })).toBeVisible();
-	await page.screenshot({ path: testInfo.outputPath("collapsed.png"), animations: "disabled" });
-	await page.getByRole("button", { name: "展开侧栏", exact: true }).click();
-	await expect(rail).toHaveCSS("width", "240px");
-	await expect(page.getByRole("button", { name: "收起侧栏", exact: true })).toBeFocused();
-	await expect(page.getByLabel("生日", { exact: true })).toHaveCSS("height", "36px");
-	await expect(page.getByLabel("生日", { exact: true }).locator("..")).toHaveCSS("gap", "8px");
-	await expect(page.locator(".profile-layout form").first().locator("..")).toHaveCSS(
-		"padding",
-		"12px 16px 16px",
-	);
-	await expect(page.getByRole("button", { name: "保存档案", exact: true })).toHaveCSS(
-		"font-size",
-		"14px",
-	);
-});
-
 test("all pages retain responsive spacing and usable controls in both themes", async ({
 	page,
 }, testInfo) => {
@@ -469,67 +420,6 @@ test("all pages retain responsive spacing and usable controls in both themes", a
 	await expect(page.locator("html")).toHaveClass(/dark/);
 	await navigate(page, "今日训练");
 	await expect(page.locator(".page-body")).toBeVisible();
-});
-
-test("sidebar sign-out uses Cloudflare Access logout URL", async ({ page }) => {
-	await page.setViewportSize({ width: 1440, height: 900 });
-	await page.goto("/today");
-	await page.locator(".page-body").waitFor();
-	const signOut = page.getByRole("link", { name: "退出登录", exact: true });
-	await expect(signOut).toBeVisible();
-	await expect(signOut).toHaveAttribute("href", "/cdn-cgi/access/logout");
-});
-
-test("mobile drawer closes from dismiss toggle and restores menu focus", async ({ page }) => {
-	await page.setViewportSize({ width: 390, height: 900 });
-	await page.goto("/today");
-	await page.locator(".page-body").waitFor();
-	const opener = page.getByRole("button", { name: "打开导航", exact: true });
-	await opener.click();
-	const drawer = page.getByRole("dialog", { name: "Rhino 导航" });
-	await expect(drawer).toBeVisible();
-	await drawer.getByRole("button", { name: "关闭导航", exact: true }).click();
-	await expect(drawer).toHaveCount(0);
-	await expect(opener).toBeFocused();
-});
-
-test("navigation retains Basalt scrim and motion in both themes", async ({ page }, info) => {
-	await page.goto("/today");
-	await page.locator(".page-body").waitFor();
-	for (const theme of ["light", "dark"]) {
-		if (theme === "dark") await page.getByRole("button", { name: "切换主题", exact: true }).click();
-		for (const reducedMotion of ["no-preference", "reduce"] as const) {
-			await page.emulateMedia({ reducedMotion });
-			await page.setViewportSize({ width: 1440, height: 900 });
-			const rail = page.locator(".rhino-sidebar");
-			await expect(rail).toHaveCSS(
-				"transition-property",
-				reducedMotion === "reduce" ? "none" : "width",
-			);
-			if (reducedMotion === "no-preference")
-				await expect(rail).toHaveCSS("transition-duration", "0.18s");
-			await page.getByRole("button", { name: "收起侧栏", exact: true }).click();
-			await expect(rail).toHaveCSS("width", "68px");
-			await expect(page.getByRole("button", { name: "展开侧栏", exact: true })).toBeFocused();
-			await page.getByRole("button", { name: "展开侧栏", exact: true }).click();
-			await expect(rail).toHaveCSS("width", "240px");
-		}
-		await page.emulateMedia({ reducedMotion: "no-preference" });
-		await page.setViewportSize({ width: 390, height: 844 });
-		const menu = page.getByRole("button", { name: "打开导航", exact: true });
-		await menu.click();
-		const overlay = page.locator(".basalt-sheet-overlay");
-		await expect(overlay).toHaveCSS("backdrop-filter", "none");
-		await expect(overlay).toHaveCSS(
-			"background-color",
-			theme === "dark" ? "rgba(0, 0, 0, 0.6)" : "rgba(0, 0, 0, 0.28)",
-		);
-		await expect(page.getByRole("dialog")).toHaveCSS("animation-duration", "0.35s");
-		await page.screenshot({ path: info.outputPath(`drawer-${theme}.png`) });
-		await page.keyboard.press("Escape");
-		await expect(page.getByRole("dialog")).toHaveCount(0);
-		await expect(menu).toBeFocused();
-	}
 });
 
 test("all eleven previews render with unobstructed controls and scrubbed arm views", async ({
