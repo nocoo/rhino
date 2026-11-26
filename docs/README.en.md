@@ -33,7 +33,7 @@ Curls, kickbacks, lateral raises, bent-over rows and calf raises are selectable 
 3. Preview and adopt a weekly plan. Select a session for the day and adjust it before starting.
 4. Save each performed set or cardio segment during training, then explicitly finish the workout. Review records and trends in the progress view.
 
-Personal pages and business APIs require the owner identity. In the current source, anonymous `GET /api/live` exposes only the application name, version, revision and minimal database health, never personal records; unavailable storage returns 503. Source changes are not necessarily deployed: check [Releases](https://github.com/nocoo/rhino/releases) and [deployment results](https://github.com/nocoo/rhino/actions/workflows/deploy.yml).
+Personal pages and business APIs require the owner identity. In the current source, anonymous `GET /api/live` exposes only the application name, version, revision and minimal database health, never personal records; unavailable storage returns 503. Source changes are not necessarily deployed: check [Releases](https://github.com/nocoo/rhino/releases) and [deployment results](https://github.com/nocoo/rhino/actions/workflows/release.yml).
 
 ## Development
 

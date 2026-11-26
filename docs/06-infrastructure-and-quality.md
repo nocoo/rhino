@@ -143,8 +143,8 @@ Deployment workflow requirements:
 - Supply exactly one `deploy-cli` and exact local CLI version. With `cf`, use
   D1 **UUIDs**, not Wrangler database names, and do not pass Wrangler config/path
   inputs. Use the prebuilt production-mode deployment path.
-- Pass only named deployment secrets: `CLOUDFLARE_API_TOKEN` and
-  `CLOUDFLARE_ACCOUNT_ID`. Use least privilege and no `secrets: inherit` shortcut.
+- Pass `CLOUDFLARE_API_TOKEN` secret and `CLOUDFLARE_ACCOUNT_ID` environment
+  variable. Use least privilege and no `secrets: inherit` shortcut.
 - Apply only reviewed migrations to the confirmed production database, with a
   verified recovery plan. Test or development credentials never enter this job.
 - Use bounded anonymous `/api/live` verification for HTTP 200, no-store, the
@@ -155,7 +155,7 @@ Deployment workflow requirements:
 The inspected deploy workflow pins its internal release-source action at
 `8cbdb970c3a38240289c1e152c40dd550ac62dba`. Do not rewrite internal shared workflow
 references in a consumer project. The consumer is installed at
-`.github/workflows/deploy.yml` and retains the shared source and concurrency guards.
+`.github/workflows/release.yml` and retains the shared source and concurrency guards.
 
 ## Planned Commands
 

@@ -33,7 +33,7 @@ Rhino 是单用户健身计划与记录网站。根据每周可训练次数、�
 3. 在「训练计划」预览并采纳周计划；当天选择一次训练，开始前按实际情况调整。
 4. 训练中逐组保存实际完成量，点击「结束训练」完成本场；在「我的进展」回看记录与趋势。
 
-个人页面与业务 API 均需要所有者身份。当前源码的匿名 `GET /api/live` 仅提供应用名称、版本、revision 和最小数据库健康状态，不返回个人记录；数据库不可用时返回 503。源码变更是否上线，以[Release](https://github.com/nocoo/rhino/releases)和[部署结果](https://github.com/nocoo/rhino/actions/workflows/deploy.yml)为准。
+个人页面与业务 API 均需要所有者身份。当前源码的匿名 `GET /api/live` 仅提供应用名称、版本、revision 和最小数据库健康状态，不返回个人记录；数据库不可用时返回 503。源码变更是否上线，以[Release](https://github.com/nocoo/rhino/releases)和[部署结果](https://github.com/nocoo/rhino/actions/workflows/release.yml)为准。
 
 ## 开发
 

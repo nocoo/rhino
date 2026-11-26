@@ -42,7 +42,7 @@ node assets-source/build-posters.mjs # Render static phase posters
 - **Basalt & 3D**: Use installed Basalt public controls/tokens and Lucide; keep one 3D viewer, default pause, resource cleanup, and static/text fallbacks on failed WebGL.
 - **Brand masters**: Keep approved masters; small app/browser marks use transparent foregrounds, README uses selected presentation ([brand guide](assets/brand/README.md)).
 - **Preview gate**: 11 motions (catalog 1.2.0, opt-in YouTube refs) are unreviewed previews ([docs/05](docs/05-experience-and-3d.md)); never set `instructionReady=true` or claim review/completion.
-- **Deploy**: Push CI on `main` auto-deploys (`deploy.yml`): exact-source proof, fresh `main`, no admin bypass or recurring reviewer approval; missing creds fail closed ([docs/08](docs/08-local-and-release.md)).
+- **Deploy**: Push CI on `main` auto-deploys (`release.yml`): exact-source proof, fresh `main`, no admin bypass or recurring reviewer approval; missing creds fail closed ([docs/08](docs/08-local-and-release.md)).
 - **Live vs auth**: Access bypass covers anonymous `GET /api/live` (version/revision + D1, `no-store`, 503 on error); business routes need JWTs and verifier checks `/api/profile` redirect.
 
 ## Quality & Local Gates
