@@ -6,8 +6,6 @@ import { addDays, localDateInTimeZone, weekdayOf } from "../../src/domain/dates"
 import { planInput, sessionTarget, uuid } from "../helpers/fixtures";
 import { assertMarker, type TestRun } from "../helpers/isolation";
 
-test.describe.configure({ mode: "serial" });
-
 async function guard() {
 	const state = process.env.RHINO_TEST_STATE,
 		id = process.env.RHINO_TEST_RUN_ID,
@@ -274,104 +272,6 @@ test("Chinese blue shell, owner avatar and opt-in YouTube reference", async ({
 		.locator(".movement-viewer")
 		.screenshot({ path: testInfo.outputPath("rdl-corrected-side.png") });
 });
-test("profile, measurements, plan, workout and reopened progress persist", async ({
-	page,
-}, testInfo) => {
-	await page.goto("/today");
-	await navigate(page, "个人档案");
-	await page.getByLabel("生日", { exact: true }).fill("1990-02-28");
-	await page.getByRole("button", { name: "保存档案", exact: true }).click();
-	await expect(page.getByText("档案已保存", { exact: true })).toBeVisible();
-	await page.getByLabel("体重（kg）").fill("72.123");
-	await page.getByRole("button", { name: "记录体重", exact: true }).click();
-	await expect(
-		page.getByText("测量记录已保存，同日记录会更新而非重复新增", { exact: true }),
-	).toBeVisible();
-	await page.getByLabel("身高（cm）").fill("180.125");
-	await page.getByRole("button", { name: "记录身高", exact: true }).click();
-	await expect(
-		page.getByText("测量记录已保存，同日记录会更新而非重复新增", { exact: true }),
-	).toBeVisible();
-	await navigate(page, "训练计划");
-	await page.getByRole("button", { name: "生成计划", exact: true }).click();
-	await page.getByRole("button", { name: "采用这个计划", exact: true }).click();
-	await expect(
-		page.getByText("新计划已采用，旧版本与训练记录已保留", { exact: true }),
-	).toBeVisible();
-	await navigate(page, "今日训练");
-	await page.getByRole("button", { name: "开始训练", exact: true }).click();
-	await expect(page.getByRole("button", { name: "确认并开始", exact: true })).toBeVisible();
-	await page.getByRole("combobox", { name: "切换本次训练计划", exact: true }).click();
-	await page.getByRole("option", { name: /^方案 2 ·/ }).click();
-	await expect(page.getByRole("combobox", { name: "切换本次训练计划", exact: true })).toContainText(
-		"方案 2",
-	);
-	await page.screenshot({
-		path: testInfo.outputPath("session-preparation.png"),
-		animations: "disabled",
-	});
-	await page.getByRole("button", { name: "确认并开始", exact: true }).click();
-	await expect(page.getByRole("button", { name: "结束训练", exact: true })).toBeVisible();
-	await page.screenshot({
-		path: testInfo.outputPath("session-active.png"),
-		animations: "disabled",
-	});
-	await page.getByRole("button", { name: "增加实际分钟", exact: true }).click();
-	await page.getByRole("button", { name: "完成本段并保存", exact: true }).click();
-	await page.getByRole("button", { name: "结束训练", exact: true }).click();
-	await page.getByRole("button", { name: "确认结束并保存", exact: true }).click();
-	await expect(page.getByText("训练已记录。下一次，继续。", { exact: true })).toBeVisible();
-	await page.reload();
-	await navigate(page, "我的进展");
-	await expect(page.getByText("72.123", { exact: false }).first()).toBeVisible();
-	const response = await page.request.get("/api/sessions?from=2026-01-01&to=2026-12-31");
-	expect(response.ok()).toBe(true);
-	const result = await response.json();
-	expect(
-		result.data.sessions.some((session: { status: string }) => session.status === "completed"),
-	).toBe(true);
-});
-test("failed save keeps editor input, and reduced-motion fallback remains accessible", async ({
-	page,
-}) => {
-	await page.emulateMedia({ reducedMotion: "reduce" });
-	await page.addInitScript(() => {
-		const original = HTMLCanvasElement.prototype.getContext;
-		HTMLCanvasElement.prototype.getContext = function (
-			this: HTMLCanvasElement,
-			type: string,
-			...args: unknown[]
-		) {
-			if (type.includes("webgl")) return null;
-			return original.call(this, type, ...args);
-		} as typeof original;
-	});
-	await page.goto("/today");
-	await navigate(page, "个人档案");
-	await page.getByLabel("体重（kg）").fill("73.25");
-	await page.route("**/api/measurements/*", async (route) => {
-		if (route.request().method() === "PUT") await route.abort("failed");
-		else await route.continue();
-	});
-	await page.getByRole("button", { name: "记录体重", exact: true }).click();
-	await expect(page.getByRole("alert")).toBeVisible();
-	await expect(page.getByLabel("体重（kg）")).toHaveValue("73.25");
-	await page.unroute("**/api/measurements/*");
-	await page.getByRole("button", { name: "记录体重", exact: true }).click();
-	await expect(
-		page.getByText("测量记录已保存，同日记录会更新而非重复新增", { exact: true }),
-	).toBeVisible();
-	await navigate(page, "动作实验室");
-	await page
-		.locator(".library-nav")
-		.getByRole("button", { name: /俯身哑铃臂屈伸/ })
-		.click();
-	const poster = page.getByRole("img", { name: "动作起始与中间阶段的静态示意，尚未经专业审核" });
-	await expect(poster).toBeVisible();
-	await expect(poster).toHaveJSProperty("naturalWidth", 680);
-	await expect(page.getByRole("button", { name: "播放演示", exact: true })).toBeDisabled();
-});
-
 test("all pages retain responsive spacing and usable controls in both themes", async ({
 	page,
 }, testInfo) => {
@@ -482,172 +382,290 @@ test("all eleven previews render with unobstructed controls and scrubbed arm vie
 	expect(errors).toEqual([]);
 });
 
-test("five added movements can replace an old draft and persist precise per-hand loads", async ({
-	page,
-}) => {
-	await page.goto("/today");
-	await navigate(page, "个人档案");
-	await page.getByLabel("生日", { exact: true }).fill("1990-02-28");
-	await page.getByRole("button", { name: "保存档案", exact: true }).click();
-	await expect(page.getByText("档案已保存", { exact: true })).toBeVisible();
-	const names = ["哑铃弯举", "俯身哑铃臂屈伸", "哑铃侧平举", "俯身哑铃划船", "哑铃提踵"];
-	const ids = ["dumbbell-curl", "triceps-kickback", "lateral-raise", "bent-over-row", "calf-raise"];
-	const target = sessionTarget();
-	const exercise = target.blocks[0].exercises[0];
-	target.blocks[0].exercises = names.map(() => ({
-		...structuredClone(exercise),
-		id: uuid(),
-		workingSets: [{ ...exercise.workingSets[0], id: uuid() }],
-	}));
-	const date = addDays(localDateInTimeZone(new Date(), "Asia/Shanghai"), -7);
-	const id = uuid();
-	const seeded = await page.request.put(`/api/sessions/${id}`, {
-		headers: { Origin: new URL(page.url()).origin },
-		data: {
-			expectedVersion: 0,
-			mutationId: uuid(),
-			sourcePlanRevision: null,
-			localDate: date,
-			timezone: "Asia/Shanghai",
-			status: "draft",
-			target,
-			actual: null,
-		},
-	});
-	expect(seeded.ok()).toBe(true);
-	await page.goto(`/sessions/${id}`);
-	for (const [index, name] of names.entries()) {
-		await page.getByRole("combobox", { name: "训练动作", exact: true }).nth(index).click();
-		await page.getByRole("option", { name, exact: true }).click();
-	}
-	await page.getByRole("button", { name: "确认并开始", exact: true }).click();
-	for (const [index] of names.entries()) {
-		if (index > 0) await page.getByRole("button", { name: "开始下一组 / 段", exact: true }).click();
-		await page.getByRole("button", { name: "选用 15 kg", exact: true }).click();
-		await page.getByRole("button", { name: "完成本组并保存", exact: true }).click();
-	}
-	await page.getByRole("button", { name: "结束训练", exact: true }).click();
-	await page.getByRole("button", { name: "确认结束并保存", exact: true }).click();
-	await expect(page.getByText("训练已记录。下一次，继续。", { exact: true })).toBeVisible();
-	await page.reload();
-	const response = await page.request.get(`/api/sessions?from=${addDays(date, -365)}&to=${date}`);
-	expect(response.ok()).toBe(true);
-	const { data }: { data: GetSessionsResponse } = await response.json();
-	const saved = data.sessions.find((session) => session.id === id);
-	if (!saved) throw new Error("Missing saved session");
-	expect(saved.status).toBe("completed");
-	const savedExercises = saved.target.blocks.flatMap((block) => block.exercises);
-	expect(savedExercises.map((item) => item.exerciseId)).toEqual(ids);
-	for (const item of savedExercises) {
-		expect(item).toMatchObject({ catalogVersion: CATALOG_VERSION, loadConvention: "per-hand" });
-		expect(item.workingSets[0].loadKg).toBeNull();
-	}
-	expect(saved.actual?.exercises.map((item) => item.sets[0].loadKg)).toEqual(names.map(() => 15));
-	if (!saved.actual) throw new Error("Missing actuals");
-	for (const item of saved.actual.exercises) item.sets[0].loadKg = 2.375;
-	const corrected = await page.request.put(`/api/sessions/${id}`, {
-		headers: { Origin: new URL(page.url()).origin },
-		data: {
-			expectedVersion: saved.version,
-			mutationId: uuid(),
-			sourcePlanRevision: saved.sourcePlanRevision,
-			localDate: saved.localDate,
-			timezone: saved.timezone,
-			status: saved.status,
-			target: saved.target,
-			actual: saved.actual,
-		},
-	});
-	expect(corrected.ok()).toBe(true);
-	await page.reload();
-	await navigate(page, "我的进展");
-	await page
-		.locator("tbody tr", { hasText: date })
-		.first()
-		.getByRole("button", { name: "查看记录", exact: true })
-		.click();
-	await expect(page.getByText("实际 2.375 kg", { exact: true })).toHaveCount(5);
-	await page.getByRole("button", { name: "增加第1组负重", exact: true }).first().click();
-	await expect(page.getByText("实际 7.375 kg", { exact: true })).toBeVisible();
-	await page.getByRole("button", { name: "保存调整", exact: true }).click();
-});
+test.describe
+	.serial("mutating journal flows", () => {
+		test("profile, measurements, plan, workout and reopened progress persist", async ({
+			page,
+		}, testInfo) => {
+			await page.goto("/today");
+			await navigate(page, "个人档案");
+			await page.getByLabel("生日", { exact: true }).fill("1990-02-28");
+			await page.getByRole("button", { name: "保存档案", exact: true }).click();
+			await expect(page.getByText("档案已保存", { exact: true })).toBeVisible();
+			await page.getByLabel("体重（kg）").fill("72.123");
+			await page.getByRole("button", { name: "记录体重", exact: true }).click();
+			await expect(
+				page.getByText("测量记录已保存，同日记录会更新而非重复新增", { exact: true }),
+			).toBeVisible();
+			await page.getByLabel("身高（cm）").fill("180.125");
+			await page.getByRole("button", { name: "记录身高", exact: true }).click();
+			await expect(
+				page.getByText("测量记录已保存，同日记录会更新而非重复新增", { exact: true }),
+			).toBeVisible();
+			await navigate(page, "训练计划");
+			await page.getByRole("button", { name: "生成计划", exact: true }).click();
+			await page.getByRole("button", { name: "采用这个计划", exact: true }).click();
+			await expect(
+				page.getByText("新计划已采用，旧版本与训练记录已保留", { exact: true }),
+			).toBeVisible();
+			await navigate(page, "今日训练");
+			await page.getByRole("button", { name: "开始训练", exact: true }).click();
+			await expect(page.getByRole("button", { name: "确认并开始", exact: true })).toBeVisible();
+			await page.getByRole("combobox", { name: "切换本次训练计划", exact: true }).click();
+			await page.getByRole("option", { name: /^方案 2 ·/ }).click();
+			await expect(
+				page.getByRole("combobox", { name: "切换本次训练计划", exact: true }),
+			).toContainText("方案 2");
+			await page.screenshot({
+				path: testInfo.outputPath("session-preparation.png"),
+				animations: "disabled",
+			});
+			await page.getByRole("button", { name: "确认并开始", exact: true }).click();
+			await expect(page.getByRole("button", { name: "结束训练", exact: true })).toBeVisible();
+			await page.screenshot({
+				path: testInfo.outputPath("session-active.png"),
+				animations: "disabled",
+			});
+			await page.getByRole("button", { name: "增加实际分钟", exact: true }).click();
+			await page.getByRole("button", { name: "完成本段并保存", exact: true }).click();
+			await page.getByRole("button", { name: "结束训练", exact: true }).click();
+			await page.getByRole("button", { name: "确认结束并保存", exact: true }).click();
+			await expect(page.getByText("训练已记录。下一次，继续。", { exact: true })).toBeVisible();
+			await page.reload();
+			await navigate(page, "我的进展");
+			await expect(page.getByText("72.123", { exact: false }).first()).toBeVisible();
+			const response = await page.request.get("/api/sessions?from=2026-01-01&to=2026-12-31");
+			expect(response.ok()).toBe(true);
+			const result = await response.json();
+			expect(
+				result.data.sessions.some((session: { status: string }) => session.status === "completed"),
+			).toBe(true);
+		});
+		test("failed save keeps editor input, and reduced-motion fallback remains accessible", async ({
+			page,
+		}) => {
+			await page.emulateMedia({ reducedMotion: "reduce" });
+			await page.addInitScript(() => {
+				const original = HTMLCanvasElement.prototype.getContext;
+				HTMLCanvasElement.prototype.getContext = function (
+					this: HTMLCanvasElement,
+					type: string,
+					...args: unknown[]
+				) {
+					if (type.includes("webgl")) return null;
+					return original.call(this, type, ...args);
+				} as typeof original;
+			});
+			await page.goto("/today");
+			await navigate(page, "个人档案");
+			await page.getByLabel("体重（kg）").fill("73.25");
+			await page.route("**/api/measurements/*", async (route) => {
+				if (route.request().method() === "PUT") await route.abort("failed");
+				else await route.continue();
+			});
+			await page.getByRole("button", { name: "记录体重", exact: true }).click();
+			await expect(page.getByRole("alert")).toBeVisible();
+			await expect(page.getByLabel("体重（kg）")).toHaveValue("73.25");
+			await page.unroute("**/api/measurements/*");
+			await page.getByRole("button", { name: "记录体重", exact: true }).click();
+			await expect(
+				page.getByText("测量记录已保存，同日记录会更新而非重复新增", { exact: true }),
+			).toBeVisible();
+			await navigate(page, "动作实验室");
+			await page
+				.locator(".library-nav")
+				.getByRole("button", { name: /俯身哑铃臂屈伸/ })
+				.click();
+			const poster = page.getByRole("img", {
+				name: "动作起始与中间阶段的静态示意，尚未经专业审核",
+			});
+			await expect(poster).toBeVisible();
+			await expect(poster).toHaveJSProperty("naturalWidth", 680);
+			await expect(page.getByRole("button", { name: "播放演示", exact: true })).toBeDisabled();
+		});
 
-test("calendar manually records actuals without inventing a timer or performed sets", async ({
-	page,
-}, info) => {
-	await page.goto("/");
-	const today = localDateInTimeZone(new Date(), "Asia/Shanghai");
-	const { data } = await (await page.request.get("/api/plans")).json();
-	const input = {
-		...planInput(),
-		reviewMonth: today.slice(0, 7),
-		weeklyFrequency: 1,
-		preferredWeekdays: [weekdayOf(today)],
-	};
-	const plan = await page.request.put(`/api/plans/${uuid()}`, {
-		headers: { Origin: new URL(page.url()).origin },
-		data: { expectedRevision: data.current?.revision ?? 0, input },
+		test("five added movements can replace an old draft and persist precise per-hand loads", async ({
+			page,
+		}) => {
+			await page.goto("/today");
+			await navigate(page, "个人档案");
+			await page.getByLabel("生日", { exact: true }).fill("1990-02-28");
+			await page.getByRole("button", { name: "保存档案", exact: true }).click();
+			await expect(page.getByText("档案已保存", { exact: true })).toBeVisible();
+			const names = ["哑铃弯举", "俯身哑铃臂屈伸", "哑铃侧平举", "俯身哑铃划船", "哑铃提踵"];
+			const ids = [
+				"dumbbell-curl",
+				"triceps-kickback",
+				"lateral-raise",
+				"bent-over-row",
+				"calf-raise",
+			];
+			const target = sessionTarget();
+			const exercise = target.blocks[0].exercises[0];
+			target.blocks[0].exercises = names.map(() => ({
+				...structuredClone(exercise),
+				id: uuid(),
+				workingSets: [{ ...exercise.workingSets[0], id: uuid() }],
+			}));
+			const date = addDays(localDateInTimeZone(new Date(), "Asia/Shanghai"), -7);
+			const id = uuid();
+			const seeded = await page.request.put(`/api/sessions/${id}`, {
+				headers: { Origin: new URL(page.url()).origin },
+				data: {
+					expectedVersion: 0,
+					mutationId: uuid(),
+					sourcePlanRevision: null,
+					localDate: date,
+					timezone: "Asia/Shanghai",
+					status: "draft",
+					target,
+					actual: null,
+				},
+			});
+			expect(seeded.ok()).toBe(true);
+			await page.goto(`/sessions/${id}`);
+			for (const [index, name] of names.entries()) {
+				await page.getByRole("combobox", { name: "训练动作", exact: true }).nth(index).click();
+				await page.getByRole("option", { name, exact: true }).click();
+			}
+			await page.getByRole("button", { name: "确认并开始", exact: true }).click();
+			for (const [index] of names.entries()) {
+				if (index > 0)
+					await page.getByRole("button", { name: "开始下一组 / 段", exact: true }).click();
+				await page.getByRole("button", { name: "选用 15 kg", exact: true }).click();
+				await page.getByRole("button", { name: "完成本组并保存", exact: true }).click();
+			}
+			await page.getByRole("button", { name: "结束训练", exact: true }).click();
+			await page.getByRole("button", { name: "确认结束并保存", exact: true }).click();
+			await expect(page.getByText("训练已记录。下一次，继续。", { exact: true })).toBeVisible();
+			await page.reload();
+			const response = await page.request.get(
+				`/api/sessions?from=${addDays(date, -365)}&to=${date}`,
+			);
+			expect(response.ok()).toBe(true);
+			const { data }: { data: GetSessionsResponse } = await response.json();
+			const saved = data.sessions.find((session) => session.id === id);
+			if (!saved) throw new Error("Missing saved session");
+			expect(saved.status).toBe("completed");
+			const savedExercises = saved.target.blocks.flatMap((block) => block.exercises);
+			expect(savedExercises.map((item) => item.exerciseId)).toEqual(ids);
+			for (const item of savedExercises) {
+				expect(item).toMatchObject({ catalogVersion: CATALOG_VERSION, loadConvention: "per-hand" });
+				expect(item.workingSets[0].loadKg).toBeNull();
+			}
+			expect(saved.actual?.exercises.map((item) => item.sets[0].loadKg)).toEqual(
+				names.map(() => 15),
+			);
+			if (!saved.actual) throw new Error("Missing actuals");
+			for (const item of saved.actual.exercises) item.sets[0].loadKg = 2.375;
+			const corrected = await page.request.put(`/api/sessions/${id}`, {
+				headers: { Origin: new URL(page.url()).origin },
+				data: {
+					expectedVersion: saved.version,
+					mutationId: uuid(),
+					sourcePlanRevision: saved.sourcePlanRevision,
+					localDate: saved.localDate,
+					timezone: saved.timezone,
+					status: saved.status,
+					target: saved.target,
+					actual: saved.actual,
+				},
+			});
+			expect(corrected.ok()).toBe(true);
+			await page.reload();
+			await navigate(page, "我的进展");
+			await page
+				.locator("tbody tr", { hasText: date })
+				.first()
+				.getByRole("button", { name: "查看记录", exact: true })
+				.click();
+			await expect(page.getByText("实际 2.375 kg", { exact: true })).toHaveCount(5);
+			await page.getByRole("button", { name: "增加第1组负重", exact: true }).first().click();
+			await expect(page.getByText("实际 7.375 kg", { exact: true })).toBeVisible();
+			await page.getByRole("button", { name: "保存调整", exact: true }).click();
+		});
+
+		test("calendar manually records actuals without inventing a timer or performed sets", async ({
+			page,
+		}, info) => {
+			await page.goto("/");
+			const today = localDateInTimeZone(new Date(), "Asia/Shanghai");
+			const { data } = await (await page.request.get("/api/plans")).json();
+			const input = {
+				...planInput(),
+				reviewMonth: today.slice(0, 7),
+				weeklyFrequency: 1,
+				preferredWeekdays: [weekdayOf(today)],
+			};
+			const plan = await page.request.put(`/api/plans/${uuid()}`, {
+				headers: { Origin: new URL(page.url()).origin },
+				data: { expectedRevision: data.current?.revision ?? 0, input },
+			});
+			expect(plan.ok()).toBe(true);
+			const adopted = (await plan.json()).data.revision;
+			await page.reload();
+			await navigate(page, "训练日历");
+			await expect(page.getByRole("region", { name: "训练月历" })).toBeVisible();
+			await expect(page.getByRole("button", { name: "补记实际训练", exact: true })).toBeEnabled();
+			await page.screenshot({ path: info.outputPath("calendar-today.png") });
+			await page.getByRole("button", { name: "补记实际训练", exact: true }).click();
+			await expect(page.locator(".workout-plan-heading")).toContainText("补记实际训练");
+			await expect(page.getByTestId("total-timer")).toHaveCount(0);
+			await page.getByRole("button", { name: "增加第1组次数", exact: true }).first().click();
+			const intensity = page.getByRole("combobox", { name: /实际强度$/ }).first();
+			await expect(intensity).toContainText("未记录强度");
+			await page.getByRole("button", { name: "增加实际分钟", exact: true }).first().click();
+			await intensity.click();
+			await page.getByRole("option", { name: "中等，能说话", exact: true }).click();
+			await page.getByRole("button", { name: "结束并保存", exact: true }).click();
+			await page.getByRole("button", { name: "确认结束并保存", exact: true }).click();
+			await expect(page.locator(".workout-topbar")).toContainText("训练回顾");
+			await page.getByRole("button", { name: "返回上一页", exact: true }).click();
+			await expect(
+				page.getByRole("button", { name: "修改训练记录", exact: true }).first(),
+			).toBeVisible();
+			const result = await (
+				await page.request.get(`/api/sessions?from=${today}&to=${today}`)
+			).json();
+			const manual = result.data.sessions.find(
+				(session: { sourcePlanRevision: number; status: string }) =>
+					session.sourcePlanRevision === adopted.revision && session.status === "completed",
+			);
+			expect(manual.actual.timing).toBeUndefined();
+			expect(
+				manual.actual.exercises
+					.flatMap((exercise: { sets: { status: string }[] }) => exercise.sets)
+					.filter((set: { status: string }) => set.status === "performed"),
+			).toHaveLength(1);
+			expect(manual.actual.cardioSegments[0]).toMatchObject({
+				actualMinutes: 1,
+				intensity: "moderate",
+			});
+			const progress = await (
+				await page.request.get(`/api/progress?from=${today}&to=${today}`)
+			).json();
+			expect(
+				progress.data.sessions.find((item: { id: string }) => item.id === manual.id),
+			).toMatchObject({
+				moderateEquivalentMinutes: 1,
+			});
+			await page
+				.locator(".calendar-record")
+				.filter({ hasText: `计划 v${adopted.revision}` })
+				.getByRole("button", { name: "修改训练记录", exact: true })
+				.click();
+			await expect(intensity).toContainText("中等，能说话");
+			await intensity.click();
+			await page.getByRole("option", { name: "较高，只能说短句", exact: true }).click();
+			await page.getByRole("button", { name: "保存调整", exact: true }).click();
+			await expect(page.locator(".workout-save-state")).toContainText("已保存");
+			const corrected = await (
+				await page.request.get(`/api/progress?from=${today}&to=${today}`)
+			).json();
+			expect(
+				corrected.data.sessions.find((item: { id: string }) => item.id === manual.id),
+			).toMatchObject({
+				moderateEquivalentMinutes: 2,
+			});
+		});
 	});
-	expect(plan.ok()).toBe(true);
-	const adopted = (await plan.json()).data.revision;
-	await page.reload();
-	await navigate(page, "训练日历");
-	await expect(page.getByRole("region", { name: "训练月历" })).toBeVisible();
-	await expect(page.getByRole("button", { name: "补记实际训练", exact: true })).toBeEnabled();
-	await page.screenshot({ path: info.outputPath("calendar-today.png") });
-	await page.getByRole("button", { name: "补记实际训练", exact: true }).click();
-	await expect(page.locator(".workout-plan-heading")).toContainText("补记实际训练");
-	await expect(page.getByTestId("total-timer")).toHaveCount(0);
-	await page.getByRole("button", { name: "增加第1组次数", exact: true }).first().click();
-	const intensity = page.getByRole("combobox", { name: /实际强度$/ }).first();
-	await expect(intensity).toContainText("未记录强度");
-	await page.getByRole("button", { name: "增加实际分钟", exact: true }).first().click();
-	await intensity.click();
-	await page.getByRole("option", { name: "中等，能说话", exact: true }).click();
-	await page.getByRole("button", { name: "结束并保存", exact: true }).click();
-	await page.getByRole("button", { name: "确认结束并保存", exact: true }).click();
-	await expect(page.locator(".workout-topbar")).toContainText("训练回顾");
-	await page.getByRole("button", { name: "返回上一页", exact: true }).click();
-	await expect(
-		page.getByRole("button", { name: "修改训练记录", exact: true }).first(),
-	).toBeVisible();
-	const result = await (await page.request.get(`/api/sessions?from=${today}&to=${today}`)).json();
-	const manual = result.data.sessions.find(
-		(session: { sourcePlanRevision: number; status: string }) =>
-			session.sourcePlanRevision === adopted.revision && session.status === "completed",
-	);
-	expect(manual.actual.timing).toBeUndefined();
-	expect(
-		manual.actual.exercises
-			.flatMap((exercise: { sets: { status: string }[] }) => exercise.sets)
-			.filter((set: { status: string }) => set.status === "performed"),
-	).toHaveLength(1);
-	expect(manual.actual.cardioSegments[0]).toMatchObject({
-		actualMinutes: 1,
-		intensity: "moderate",
-	});
-	const progress = await (await page.request.get(`/api/progress?from=${today}&to=${today}`)).json();
-	expect(
-		progress.data.sessions.find((item: { id: string }) => item.id === manual.id),
-	).toMatchObject({
-		moderateEquivalentMinutes: 1,
-	});
-	await page
-		.locator(".calendar-record")
-		.filter({ hasText: `计划 v${adopted.revision}` })
-		.getByRole("button", { name: "修改训练记录", exact: true })
-		.click();
-	await expect(intensity).toContainText("中等，能说话");
-	await intensity.click();
-	await page.getByRole("option", { name: "较高，只能说短句", exact: true }).click();
-	await page.getByRole("button", { name: "保存调整", exact: true }).click();
-	await expect(page.locator(".workout-save-state")).toContainText("已保存");
-	const corrected = await (
-		await page.request.get(`/api/progress?from=${today}&to=${today}`)
-	).json();
-	expect(
-		corrected.data.sessions.find((item: { id: string }) => item.id === manual.id),
-	).toMatchObject({
-		moderateEquivalentMinutes: 2,
-	});
-});
