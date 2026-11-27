@@ -42,12 +42,12 @@ node assets-source/build-posters.mjs # Render static phase posters
 - **Basalt & 3D**: Use installed Basalt public controls/tokens and Lucide; keep one 3D viewer, default pause, resource cleanup, and static/text fallbacks on failed WebGL.
 - **Brand masters**: Keep approved masters; small app/browser marks use transparent foregrounds, README uses selected presentation ([brand guide](assets/brand/README.md)).
 - **Preview gate**: 11 motions (catalog 1.2.0, opt-in YouTube refs) are unreviewed previews ([docs/05](docs/05-experience-and-3d.md)); never set `instructionReady=true` or claim review/completion.
-- **Deploy**: Push CI on `main` auto-deploys (`release.yml`): exact-source proof, fresh `main`, no admin bypass or recurring reviewer approval; missing creds fail closed ([docs/08](docs/08-local-and-release.md)).
+- **Deploy**: Unified [.github/workflows/pipeline.yml](.github/workflows/pipeline.yml) runs `quality` ([quality-slots.yml](.github/workflows/quality-slots.yml)) then `D1`–`D5` Worker deploy on `main` push (`workflow_dispatch` requires `deploy=true`), reusing `B1` (`b1-dist`), applying D1 migrations, deploying via locked `wrangler`, and running `verify-deployment.ts`; missing creds fail closed ([docs/08](docs/08-local-and-release.md)).
 - **Live vs auth**: Access bypass covers anonymous `GET /api/live` (version/revision + D1, `no-store`, 503 on error); business routes need JWTs and verifier checks `/api/profile` redirect.
 
 ## Quality & Local Gates
 
-Follows `system1-quality`; CI slots and `base-ci` pin live in `.github/workflows/quality-slots.yml` (`quality / Z1: Gate` required on `main`). Status terms: `enforced`, `planned`, `manual`, `N/A`.
+Follows `system1-quality`; CI slots and `nocoo/base-ci@3703a073693d598159e87f77f99587e586c14cfe` (`v2026.24`) pin live in `.github/workflows/quality-slots.yml`, invoked by `.github/workflows/pipeline.yml` (`quality / Z1: Gate` required on `main`). Status terms: `enforced`, `planned`, `manual`, `N/A`.
 
 - **Exceptions / gaps**: `L2 Runtime` is `N/A` (covered by L1/L3); `L3 Integration` runs `test:l2`; `P1 Package` verifies Worker bundling via `wrangler deploy --dry-run` reusing `B1` (`b1-dist`); CI `L4 E2E` runs `test:l3`; L1 80% excludes pure `.tsx` views, Three.js, and local Vite `dev/**` plugin.
 - **Local hooks**: Installed by `bun install --frozen-lockfile` (`.husky/`); `pre-commit` runs `gate:l1` on staged index (`S1/S2/L1`), `pre-push` runs `gate:pre-push` on pushed refs (`L2/G1/G2`).

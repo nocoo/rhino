@@ -1,0 +1,54 @@
+name: Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request: {}
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: Deploy after quality gate passes
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  quality:
+    uses: ./.github/workflows/quality-slots.yml
+
+  deploy:
+    needs: [quality]
+    if: >-
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.deploy == true)
+    uses: nocoo/base-ci/.github/workflows/deploy-worker.yml@3703a073693d598159e87f77f99587e586c14cfe # v2026.24
+    with:
+      package-manager: bun
+      runtime-version: "1.4.2"
+      node-version: "26.12.1"
+      install-policy: blocked
+      deploy-cli: wrangler
+      wrangler-config: wrangler.jsonc
+      artifact-name: b1-dist
+      artifact-path: .
+      artifact-unpack-command: |
+        bun scripts/verify-production.ts
+        node -e '
+          const fs = require("node:fs");
+          const p = "dist/rhino/wrangler.json";
+          const c = JSON.parse(fs.readFileSync(p, "utf8"));
+          c.vars.DEPLOY_REVISION = process.env.SOURCE_SHA;
+          fs.writeFileSync(p, `${JSON.stringify(c, null, "\t")}\n`);
+        '
+      d1-migrations: true
+      d1-databases: rhino
+      deploy-script: node node_modules/wrangler/bin/wrangler.js deploy --config dist/rhino/wrangler.json
+      environment: production
+      verify-command: bun scripts/verify-deployment.ts
+      verify-retries: 6
+      verify-retry-seconds: 5
+    secrets:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
